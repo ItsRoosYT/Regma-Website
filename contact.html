@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Regma IT</title>
+  <meta name="description" content="Get in touch with Regma IT." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav id="main-nav">
+    <a href="index.html" class="nav-logo">Regma <span>IT</span></a>
+    <div class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
+      </ul>
+    </div>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn-nav">Contact us</a>
+    </div>
+    <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="services.html">Services</a>
+    <a href="contact.html">Contact us</a>
+  </div>
+
+  <main>
+    <div class="section">
+      <div class="contact-grid">
+        <div class="contact-info">
+          <h2>Get in <span>touch</span></h2>
+          <p>Have a project in mind or just want to explore what we can do together? Send us a message and we'll get back to you.</p>
+          <div class="contact-detail">
+            <div class="contact-detail-icon">📍</div>
+            <span>Sweden</span>
+          </div>
+          <div class="contact-detail">
+            <div class="contact-detail-icon">🏢</div>
+            <span>Regma IT</span>
+          </div>
+          <div class="contact-detail">
+            <div class="contact-detail-icon">🔖</div>
+            <span>SNI 62020 — Data consulting activities</span>
+          </div>
+        </div>
+
+        <div>
+          <form id="contact-form" novalidate>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" placeholder="Your name" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="your@email.com" required />
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell us about your project…" required></textarea>
+            </div>
+            <button type="submit" class="btn">Send message</button>
+            <div class="form-success" id="form-success">
+              Thanks for reaching out! We'll be in touch soon.
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 Regma IT · Sweden</p>
+    <ul class="footer-nav">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </footer>
+
+  <script src="nav.js"></script>
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      this.querySelectorAll('input, textarea, button[type="submit"]').forEach(el => el.disabled = true);
+      document.getElementById('form-success').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
