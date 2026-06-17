@@ -4,87 +4,112 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Services — Regma IT</title>
-  <meta name="description" content="IT Consulting, Software Development, and App Development services from Regma IT." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <nav id="main-nav">
-    <a href="index.html" class="nav-logo">Regma <span>IT</span></a>
-    <div class="nav-center">
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="services.html" class="active">Services</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-    <div class="nav-cta">
-      <a href="contact.html" class="btn-nav">Contact us</a>
-    </div>
-    <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-
-  <div class="mobile-menu" id="mobile-menu">
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="services.html">Services</a>
-    <a href="contact.html">Contact us</a>
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+      <li><a href="about.html" data-i18n="nav_about">About</a></li>
+      <li><a href="services.html" class="active" data-i18n="nav_services">Services</a></li>
+      <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+    </ul>
   </div>
-
-  <div class="page-header">
-    <div class="page-header-inner">
-      <h1>Our <span>Services</span></h1>
-      <p>Three core areas of expertise — delivered with focus and care.</p>
+  <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
+    <div class="lang-wrap">
+      <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span id="lang-current">EN</span>
+      </button>
+      <div id="lang-dropdown">
+        <button data-lang="en"><span class="lang-code">EN</span> English</button>
+        <button data-lang="sv"><span class="lang-code">SV</span> Svenska</button>
+        <button data-lang="no"><span class="lang-code">NO</span> Norsk</button>
+        <button data-lang="de"><span class="lang-code">DE</span> Deutsch</button>
+        <button data-lang="fr"><span class="lang-code">FR</span> Français</button>
+        <button data-lang="es"><span class="lang-code">ES</span> Español</button>
+      </div>
     </div>
+    <a href="contact.html" class="btn-contact" data-i18n="nav_cta">Contact us</a>
   </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-  <main>
-    <div class="section">
-      <div class="services-page-cards">
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M12 2a7 7 0 0 1 7 7c0 4-7 13-7 13S5 13 5 9a7 7 0 0 1 7-7z"/>
-            <circle cx="12" cy="9" r="2.5"/>
+<div class="mobile-drawer">
+  <a href="index.html" data-i18n="nav_home">Home</a>
+  <a href="about.html" data-i18n="nav_about">About</a>
+  <a href="services.html" data-i18n="nav_services">Services</a>
+  <a href="contact.html" data-i18n="nav_cta">Contact us</a>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1 data-i18n="ph_services_h">Our <em>Services</em></h1>
+    <p data-i18n="ph_services_p">Three focused areas of expertise — delivered with clarity and care.</p>
+  </div>
+</div>
+
+<main>
+  <div class="section">
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
           </svg>
-          <h3>IT Consulting</h3>
-          <p>Strategic technology guidance aligned with your business goals. We help you make the right decisions about your IT infrastructure, systems, and digital strategy — so your technology works for your business, not against it.</p>
         </div>
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <h3 data-i18n="card1_h">IT Consulting</h3>
+        <p data-i18n="card1_p">Strategic guidance to align technology with your business goals — from infrastructure decisions to digital transformation.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
           </svg>
-          <h3>Software Development</h3>
-          <p>Custom software built to solve your unique challenges. From architecture to deployment, we design and build reliable, maintainable systems tailored to your requirements — no off-the-shelf compromises.</p>
         </div>
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+        <h3 data-i18n="card2_h">Software Development</h3>
+        <p data-i18n="card2_p">Custom software built to solve your unique challenges. Clean architecture, clear timelines, and code you can own long-term.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
           </svg>
-          <h3>App Development</h3>
-          <p>Web and mobile applications designed for real users. We build intuitive, performant applications with a focus on user experience, scalability, and long-term maintainability.</p>
         </div>
+        <h3 data-i18n="card3_h">App Development</h3>
+        <p data-i18n="card3_p">Web and mobile applications designed for real users. Fast, accessible, and built to scale with your product.</p>
       </div>
 
-      <div class="services-page-cta">
-        <p>Ready to talk about your project?</p>
-        <a href="contact.html" class="btn">Get in touch</a>
-      </div>
     </div>
-  </main>
+    <div class="services-cta">
+      <p data-i18n="svc_cta_p">Have a project in mind?</p>
+      <a href="contact.html" class="btn" data-i18n="btn_touch">Get in touch</a>
+    </div>
+  </div>
+</main>
 
-  <footer>
-    <p>© 2026 Regma IT · Sweden</p>
-    <ul class="footer-nav">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="services.html">Services</a></li>
-      <li><a href="contact.html">Contact</a></li>
-    </ul>
-  </footer>
+<footer>
+  <p data-i18n="footer">© 2026 Regma IT · Sweden</p>
+  <ul class="footer-links">
+    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="about.html" data-i18n="nav_about">About</a></li>
+    <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+    <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+  </ul>
+</footer>
 
-  <script src="nav.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

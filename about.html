@@ -4,76 +4,86 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About — Regma IT</title>
-  <meta name="description" content="Learn about Regma IT, a Swedish IT consulting company." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <nav id="main-nav">
-    <a href="index.html" class="nav-logo">Regma <span>IT</span></a>
-    <div class="nav-center">
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html" class="active">About</a></li>
-        <li><a href="services.html">Services</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-    <div class="nav-cta">
-      <a href="contact.html" class="btn-nav">Contact us</a>
-    </div>
-    <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-
-  <div class="mobile-menu" id="mobile-menu">
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="services.html">Services</a>
-    <a href="contact.html">Contact us</a>
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+      <li><a href="about.html" class="active" data-i18n="nav_about">About</a></li>
+      <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+      <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+    </ul>
   </div>
-
-  <div class="page-header">
-    <div class="page-header-inner">
-      <h1>About <span>Regma IT</span></h1>
-      <p>A Swedish IT consulting company built on trust and expertise.</p>
-    </div>
-  </div>
-
-  <main>
-    <div class="section">
-      <div class="about-content">
-        <p>
-          Regma IT is a Swedish consulting firm operating within IT, software development, and application development. We work closely with our clients to understand their unique challenges and deliver technology solutions that create lasting value.
-        </p>
-        <p>
-          Our approach is straightforward: listen carefully, advise honestly, and build reliably. Whether you need strategic IT guidance or a team to build your next product, we bring focused expertise to every engagement.
-        </p>
-        <p>
-          Based in Sweden, we serve clients across industries — from startups finding their footing to established companies modernising their systems.
-        </p>
-
-        <ul class="detail-list">
-          <li><span>Company</span><span>Regma IT</span></li>
-          <li><span>Country</span><span>Sweden</span></li>
-          <li><span>Industry</span><span>SNI 62020 — Data consulting activities</span></li>
-          <li><span>Services</span><span>IT Consulting, Software Development, App Development</span></li>
-        </ul>
+  <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
+    <div class="lang-wrap">
+      <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span id="lang-current">EN</span>
+      </button>
+      <div id="lang-dropdown">
+        <button data-lang="en"><span class="lang-code">EN</span> English</button>
+        <button data-lang="sv"><span class="lang-code">SV</span> Svenska</button>
+        <button data-lang="no"><span class="lang-code">NO</span> Norsk</button>
+        <button data-lang="de"><span class="lang-code">DE</span> Deutsch</button>
+        <button data-lang="fr"><span class="lang-code">FR</span> Français</button>
+        <button data-lang="es"><span class="lang-code">ES</span> Español</button>
       </div>
     </div>
-  </main>
+    <a href="contact.html" class="btn-contact" data-i18n="nav_cta">Contact us</a>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-  <footer>
-    <p>© 2026 Regma IT · Sweden</p>
-    <ul class="footer-nav">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="services.html">Services</a></li>
-      <li><a href="contact.html">Contact</a></li>
-    </ul>
-  </footer>
+<div class="mobile-drawer">
+  <a href="index.html" data-i18n="nav_home">Home</a>
+  <a href="about.html" data-i18n="nav_about">About</a>
+  <a href="services.html" data-i18n="nav_services">Services</a>
+  <a href="contact.html" data-i18n="nav_cta">Contact us</a>
+</div>
 
-  <script src="nav.js"></script>
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1 data-i18n="ph_about_h">About <em>Regma IT</em></h1>
+    <p data-i18n="ph_about_p">A Swedish IT consulting company built on trust and expertise.</p>
+  </div>
+</div>
+
+<main>
+  <div class="section">
+    <div class="about-body">
+      <p data-i18n="about_p1">Regma IT is a Swedish consulting firm operating within IT, software development, and application development. We work closely with our clients to understand their unique challenges and deliver technology that creates lasting value.</p>
+      <p data-i18n="about_p2">Our approach is straightforward: listen carefully, advise honestly, and build reliably. Whether you need strategic IT guidance or a team to build your next product, we bring focused expertise to every engagement.</p>
+      <p data-i18n="about_p3">Based in Sweden, we serve clients across industries — from startups finding their footing to established companies modernising their systems.</p>
+      <ul class="meta-list">
+        <li><b data-i18n="meta_company">Company</b> <span>Regma IT</span></li>
+        <li><b data-i18n="meta_country">Country</b> <span data-i18n="meta_country_val">Sweden</span></li>
+        <li><b data-i18n="meta_industry">Industry</b> <span data-i18n="meta_industry_val">SNI 62020 — Data consulting activities</span></li>
+        <li><b data-i18n="meta_services">Services</b> <span data-i18n="meta_services_val">IT Consulting, Software Development, App Development</span></li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p data-i18n="footer">© 2026 Regma IT · Sweden</p>
+  <ul class="footer-links">
+    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="about.html" data-i18n="nav_about">About</a></li>
+    <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+    <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+  </ul>
+</footer>
+
+<script src="nav.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

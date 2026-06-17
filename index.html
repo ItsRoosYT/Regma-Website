@@ -9,161 +9,127 @@
 </head>
 <body>
 
-  <nav id="main-nav">
-    <a href="index.html" class="nav-logo">Regma <span>IT</span></a>
-    <div class="nav-center">
-      <ul class="nav-links">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="services.html">Services</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-    <div class="nav-cta">
-      <a href="contact.html" class="btn-nav">Contact us</a>
-    </div>
-    <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-
-  <div class="mobile-menu" id="mobile-menu">
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="services.html">Services</a>
-    <a href="contact.html">Contact us</a>
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html" class="active" data-i18n="nav_home">Home</a></li>
+      <li><a href="about.html" data-i18n="nav_about">About</a></li>
+      <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+      <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+    </ul>
   </div>
-
-  <main>
-    <!-- HERO -->
-    <section class="hero">
-      <div class="badge">Based in Sweden</div>
-      <h1>IT consulting &amp; software development</h1>
-      <p>We help businesses build, improve, and maintain modern software solutions — from strategy to deployment.</p>
-      <div class="btn-group">
-        <a href="contact.html" class="btn">Get in touch</a>
-        <a href="services.html" class="btn">Our services</a>
+  <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
+    <div class="lang-wrap">
+      <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span id="lang-current">EN</span>
+      </button>
+      <div id="lang-dropdown">
+        <button data-lang="en"><span class="lang-code">EN</span> English</button>
+        <button data-lang="sv"><span class="lang-code">SV</span> Svenska</button>
+        <button data-lang="no"><span class="lang-code">NO</span> Norsk</button>
+        <button data-lang="de"><span class="lang-code">DE</span> Deutsch</button>
+        <button data-lang="fr"><span class="lang-code">FR</span> Français</button>
+        <button data-lang="es"><span class="lang-code">ES</span> Español</button>
       </div>
-    </section>
+    </div>
+    <a href="contact.html" class="btn-contact" data-i18n="nav_cta">Contact us</a>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-    <hr class="divider" />
+<div class="mobile-drawer">
+  <a href="index.html" data-i18n="nav_home">Home</a>
+  <a href="about.html" data-i18n="nav_about">About</a>
+  <a href="services.html" data-i18n="nav_services">Services</a>
+  <a href="contact.html" data-i18n="nav_cta">Contact us</a>
+</div>
 
-    <!-- SERVICES -->
-    <div class="services-section">
-      <p class="section-label">What we do</p>
-      <div class="cards">
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+<main>
+
+  <section class="hero">
+    <div class="badge"><span class="badge-dot"></span><span data-i18n="badge">Based in Sweden</span></div>
+    <h1 data-i18n="hero_h1">IT consulting &amp; software development</h1>
+    <p data-i18n="hero_p">We help businesses build, improve, and maintain modern software solutions — from strategy to deployment.</p>
+    <div class="hero-btns">
+      <a href="contact.html" class="btn" data-i18n="btn_touch">Get in touch</a>
+      <a href="services.html" class="btn" data-i18n="btn_services">Our services</a>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <div class="services-wrap">
+    <p class="section-label" data-i18n="label_what">What we do</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
           </svg>
-          <h3>IT Consulting</h3>
-          <p>Strategic guidance to align technology with your business goals — from infrastructure planning to vendor selection and digital transformation.</p>
         </div>
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <h3 data-i18n="card1_h">IT Consulting</h3>
+        <p data-i18n="card1_p">Strategic guidance to align technology with your business goals — from infrastructure decisions to digital transformation.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
           </svg>
-          <h3>Software Development</h3>
-          <p>Custom software built around your exact requirements. Clean architecture, reliable delivery, and code you can maintain long after launch.</p>
         </div>
-        <div class="card">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+        <h3 data-i18n="card2_h">Software Development</h3>
+        <p data-i18n="card2_p">Custom software built to solve your unique challenges. Clean architecture, clear timelines, and code you can own long-term.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
           </svg>
-          <h3>App Development</h3>
-          <p>Web and mobile applications designed for real users. Fast, accessible, and built to scale as your product grows.</p>
         </div>
+        <h3 data-i18n="card3_h">App Development</h3>
+        <p data-i18n="card3_p">Web and mobile applications designed for real users. Fast, accessible, and built to scale with your product.</p>
       </div>
+
     </div>
+  </div>
 
-    <hr class="divider" />
-
-    <!-- WHY US -->
-    <div class="why-section">
-      <p class="section-label">Why Regma IT</p>
-      <div class="why-grid">
-        <div class="why-item">
-          <div class="why-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div>
-            <h4>Direct access to expertise</h4>
-            <p>You work directly with senior consultants — no account managers in the way, no hand-offs to junior staff mid-project.</p>
-          </div>
-        </div>
-        <div class="why-item">
-          <div class="why-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-            </svg>
-          </div>
-          <div>
-            <h4>Focused scope, clear delivery</h4>
-            <p>We define what we're building before we start. No scope creep, no vague timelines — just clear milestones and deliverables.</p>
-          </div>
-        </div>
-        <div class="why-item">
-          <div class="why-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-          </div>
-          <div>
-            <h4>Honest advice, always</h4>
-            <p>We tell you what you need, not what sells the most hours. If a simpler solution works, that's what we recommend.</p>
-          </div>
-        </div>
-        <div class="why-item">
-          <div class="why-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <div>
-            <h4>Built to last</h4>
-            <p>We write code and design systems you can own, operate, and extend. No vendor lock-in or black-box solutions.</p>
-          </div>
-        </div>
-      </div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val">SNI 62020</div>
+      <div class="stat-lbl" data-i18n="stat1_lbl">Data consulting, Sweden</div>
     </div>
-
-    <!-- STATS -->
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-value">SNI 62020</div>
-        <div class="stat-label">Data consulting, Sweden</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value">100%</div>
-        <div class="stat-label">Focus on quality</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value">SE</div>
-        <div class="stat-label">Swedish company</div>
-      </div>
+    <div class="stat">
+      <div class="stat-val">100%</div>
+      <div class="stat-lbl" data-i18n="stat2_lbl">Focus on quality</div>
     </div>
-
-    <!-- BOTTOM CTA -->
-    <div class="bottom-cta">
-      <h2>Ready to get started?</h2>
-      <p>Tell us about your project and we'll get back to you within one business day.</p>
-      <a href="contact.html" class="btn btn-primary">Start a conversation</a>
+    <div class="stat">
+      <div class="stat-val">SE</div>
+      <div class="stat-lbl" data-i18n="stat3_lbl">Swedish company</div>
     </div>
-  </main>
+  </div>
 
-  <footer>
-    <p>© 2026 Regma IT · Sweden</p>
-    <ul class="footer-nav">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="services.html">Services</a></li>
-      <li><a href="contact.html">Contact</a></li>
-    </ul>
-  </footer>
+</main>
 
-  <script src="nav.js"></script>
+<footer>
+  <p data-i18n="footer">© 2026 Regma IT · Sweden</p>
+  <ul class="footer-links">
+    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="about.html" data-i18n="nav_about">About</a></li>
+    <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+    <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+  </ul>
+</footer>
+
+<script src="nav.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

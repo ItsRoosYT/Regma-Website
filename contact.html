@@ -4,97 +4,105 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact — Regma IT</title>
-  <meta name="description" content="Get in touch with Regma IT." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <nav id="main-nav">
-    <a href="index.html" class="nav-logo">Regma <span>IT</span></a>
-    <div class="nav-center">
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="services.html">Services</a></li>
-        <li><a href="contact.html" class="active">Contact</a></li>
-      </ul>
-    </div>
-    <div class="nav-cta">
-      <a href="contact.html" class="btn-nav">Contact us</a>
-    </div>
-    <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-
-  <div class="mobile-menu" id="mobile-menu">
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="services.html">Services</a>
-    <a href="contact.html">Contact us</a>
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+      <li><a href="about.html" data-i18n="nav_about">About</a></li>
+      <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+      <li><a href="contact.html" class="active" data-i18n="nav_contact">Contact</a></li>
+    </ul>
   </div>
-
-  <main>
-    <div class="section">
-      <div class="contact-grid">
-        <div class="contact-info">
-          <h2>Get in <span>touch</span></h2>
-          <p>Have a project in mind or just want to explore what we can do together? Send us a message and we'll get back to you.</p>
-          <div class="contact-detail">
-            <div class="contact-detail-icon">📍</div>
-            <span>Sweden</span>
-          </div>
-          <div class="contact-detail">
-            <div class="contact-detail-icon">🏢</div>
-            <span>Regma IT</span>
-          </div>
-          <div class="contact-detail">
-            <div class="contact-detail-icon">🔖</div>
-            <span>SNI 62020 — Data consulting activities</span>
-          </div>
-        </div>
-
-        <div>
-          <form id="contact-form" novalidate>
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" name="name" placeholder="Your name" required />
-            </div>
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="your@email.com" required />
-            </div>
-            <div class="form-group">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" placeholder="Tell us about your project…" required></textarea>
-            </div>
-            <button type="submit" class="btn">Send message</button>
-            <div class="form-success" id="form-success">
-              Thanks for reaching out! We'll be in touch soon.
-            </div>
-          </form>
-        </div>
+  <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
+    <div class="lang-wrap">
+      <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span id="lang-current">EN</span>
+      </button>
+      <div id="lang-dropdown">
+        <button data-lang="en"><span class="lang-code">EN</span> English</button>
+        <button data-lang="sv"><span class="lang-code">SV</span> Svenska</button>
+        <button data-lang="no"><span class="lang-code">NO</span> Norsk</button>
+        <button data-lang="de"><span class="lang-code">DE</span> Deutsch</button>
+        <button data-lang="fr"><span class="lang-code">FR</span> Français</button>
+        <button data-lang="es"><span class="lang-code">ES</span> Español</button>
       </div>
     </div>
-  </main>
+    <a href="contact.html" class="btn-contact" data-i18n="nav_cta">Contact us</a>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-  <footer>
-    <p>© 2026 Regma IT · Sweden</p>
-    <ul class="footer-nav">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="services.html">Services</a></li>
-      <li><a href="contact.html">Contact</a></li>
-    </ul>
-  </footer>
+<div class="mobile-drawer">
+  <a href="index.html" data-i18n="nav_home">Home</a>
+  <a href="about.html" data-i18n="nav_about">About</a>
+  <a href="services.html" data-i18n="nav_services">Services</a>
+  <a href="contact.html" data-i18n="nav_cta">Contact us</a>
+</div>
 
-  <script src="nav.js"></script>
-  <script>
-    document.getElementById('contact-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      this.querySelectorAll('input, textarea, button[type="submit"]').forEach(el => el.disabled = true);
-      document.getElementById('form-success').style.display = 'block';
-    });
-  </script>
+<main>
+  <div class="section">
+    <div class="contact-wrap">
+
+      <div class="contact-info">
+        <h2 data-i18n="contact_h1">Get in <em>touch</em></h2>
+        <p data-i18n="contact_p">Have a project in mind or just want to explore what we can do together? Send us a message and we'll get back to you within one business day.</p>
+        <div class="c-row"><div class="c-icon">📍</div> <span data-i18n="contact_loc">Sweden</span></div>
+        <div class="c-row"><div class="c-icon">🏢</div> <span data-i18n="contact_co">Regma IT</span></div>
+        <div class="c-row"><div class="c-icon">🔖</div> <span data-i18n="contact_sni">SNI 62020 — Data consulting activities</span></div>
+      </div>
+
+      <div>
+        <form id="contact-form" novalidate>
+          <div class="form-row">
+            <label for="name" data-i18n="form_name">Name</label>
+            <input type="text" id="name" name="name" data-i18n="form_name_ph" placeholder="Your name" required />
+          </div>
+          <div class="form-row">
+            <label for="email" data-i18n="form_email">Email</label>
+            <input type="email" id="email" name="email" data-i18n="form_email_ph" placeholder="your@email.com" required />
+          </div>
+          <div class="form-row">
+            <label for="message" data-i18n="form_msg">Message</label>
+            <textarea id="message" name="message" data-i18n="form_msg_ph" placeholder="Tell us about your project…" required></textarea>
+          </div>
+          <button type="submit" class="btn" data-i18n="form_btn">Send message</button>
+          <div class="form-success" id="form-success" data-i18n="form_ok">Thanks for reaching out — we'll be in touch soon.</div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p data-i18n="footer">© 2026 Regma IT · Sweden</p>
+  <ul class="footer-links">
+    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="about.html" data-i18n="nav_about">About</a></li>
+    <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+    <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+  </ul>
+</footer>
+
+<script src="nav.js"></script>
+<script src="i18n.js"></script>
+<script>
+  document.getElementById('contact-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    this.querySelectorAll('input,textarea,button').forEach(el => el.disabled = true);
+    document.getElementById('form-success').style.display = 'block';
+  });
+</script>
 </body>
 </html>
