@@ -8,6 +8,15 @@
 </head>
 <body>
 
+<div id="loader">
+  <div class="loader-logo">Regma <em>IT</em></div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<div class="announce">
+  <em>Now accepting new clients</em> &nbsp;·&nbsp; IT consulting &amp; software development across Sweden
+</div>
+
 <nav>
   <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
   <div class="nav-center">
@@ -18,7 +27,7 @@
       <li><a href="contact.html" class="active" data-i18n="nav_contact">Contact</a></li>
     </ul>
   </div>
-  <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
+  <div class="nav-right">
     <div class="lang-wrap">
       <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -53,16 +62,14 @@
 <main>
   <div class="section">
     <div class="contact-wrap">
-
-      <div class="contact-info">
+      <div class="contact-info reveal">
         <h2 data-i18n="contact_h1">Get in <em>touch</em></h2>
         <p data-i18n="contact_p">Have a project in mind or just want to explore what we can do together? Send us a message and we'll get back to you within one business day.</p>
-        <div class="c-row"><div class="c-icon">📍</div> <span data-i18n="contact_loc">Sweden</span></div>
-        <div class="c-row"><div class="c-icon">🏢</div> <span data-i18n="contact_co">Regma IT</span></div>
-        <div class="c-row"><div class="c-icon">🔖</div> <span data-i18n="contact_sni">SNI 62020 — Data consulting activities</span></div>
+        <div class="c-row"><div class="c-icon">📍</div><span data-i18n="contact_loc">Sweden</span></div>
+        <div class="c-row"><div class="c-icon">🏢</div><span data-i18n="contact_co">Regma IT</span></div>
+        <div class="c-row"><div class="c-icon">🔖</div><span data-i18n="contact_sni">SNI 62020 — Data consulting activities</span></div>
       </div>
-
-      <div>
+      <div class="reveal reveal-delay-1">
         <form id="contact-form" novalidate>
           <div class="form-row">
             <label for="name" data-i18n="form_name">Name</label>
@@ -76,11 +83,10 @@
             <label for="message" data-i18n="form_msg">Message</label>
             <textarea id="message" name="message" data-i18n="form_msg_ph" placeholder="Tell us about your project…" required></textarea>
           </div>
-          <button type="submit" class="btn" data-i18n="form_btn">Send message</button>
+          <button type="submit" class="btn btn-primary" data-i18n="form_btn">Send message</button>
           <div class="form-success" id="form-success" data-i18n="form_ok">Thanks for reaching out — we'll be in touch soon.</div>
         </form>
       </div>
-
     </div>
   </div>
 </main>
@@ -97,6 +103,7 @@
 
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
+<script src="animations.js"></script>
 <script>
   document.getElementById('contact-form').addEventListener('submit', function(e) {
     e.preventDefault();

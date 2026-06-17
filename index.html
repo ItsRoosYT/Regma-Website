@@ -9,6 +9,18 @@
 </head>
 <body>
 
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">Regma <em>IT</em></div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announce">
+  <em>Now accepting new clients</em> &nbsp;·&nbsp; IT consulting &amp; software development across Sweden
+</div>
+
+<!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
   <div class="nav-center">
@@ -19,7 +31,7 @@
       <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
     </ul>
   </div>
-  <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
+  <div class="nav-right">
     <div class="lang-wrap">
       <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -53,23 +65,71 @@
 
 <main>
 
-  <section class="hero">
-    <div class="badge"><span class="badge-dot"></span><span data-i18n="badge">Based in Sweden</span></div>
-    <h1 data-i18n="hero_h1">IT consulting &amp; software development</h1>
-    <p data-i18n="hero_p">We help businesses build, improve, and maintain modern software solutions — from strategy to deployment.</p>
-    <div class="hero-btns">
-      <a href="contact.html" class="btn" data-i18n="btn_touch">Get in touch</a>
-      <a href="services.html" class="btn" data-i18n="btn_services">Our services</a>
+  <!-- HERO -->
+  <div class="hero-wrap">
+    <div class="hero-text">
+      <div class="badge"><span class="badge-dot"></span><span data-i18n="badge">Based in Sweden</span></div>
+      <h1 data-i18n="hero_h1">IT consulting &amp;<br><em>software development</em></h1>
+      <p data-i18n="hero_p">We help businesses build, improve, and maintain modern software solutions — from strategy to deployment.</p>
+      <div class="hero-btns">
+        <a href="contact.html" class="btn btn-primary" data-i18n="btn_touch">Get in touch</a>
+        <a href="services.html" class="btn" data-i18n="btn_services">Our services</a>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          SNI 62020 registered
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Sweden-based team
+        </div>
+        <div class="trust-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Fast response time
+        </div>
+      </div>
     </div>
-  </section>
+
+    <div class="hero-visual">
+      <div class="visual-wrap">
+        <div class="visual-badge">
+          <span class="vb-val">100%</span>
+          <span class="vb-lbl">On-time delivery</span>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="t-dot r"></span>
+            <span class="t-dot y"></span>
+            <span class="t-dot g"></span>
+            <span class="t-title">regma-it ~ terminal</span>
+          </div>
+          <div class="terminal-body">
+            <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">analyze</span> <span class="t-arg">--client requirements</span></div>
+            <div class="t-line"><span class="t-out">Business goals mapped</span></div>
+            <div class="t-line">&nbsp;</div>
+            <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">architect</span> <span class="t-arg">--solution optimal</span></div>
+            <div class="t-line"><span class="t-out">Tech stack selected</span></div>
+            <div class="t-line">&nbsp;</div>
+            <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">deploy</span> <span class="t-arg">--env production</span></div>
+            <div class="t-line"><span class="t-out">Delivered on schedule</span></div>
+            <div class="t-line">&nbsp;</div>
+            <div class="t-line"><span class="t-prompt">$</span> <span class="t-cursor"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <hr class="divider" />
 
+  <!-- SERVICES -->
   <div class="services-wrap">
-    <p class="section-label" data-i18n="label_what">What we do</p>
+    <p class="section-label reveal" data-i18n="label_what">What we do</p>
+    <h2 class="section-title reveal reveal-delay-1">Three areas. One focused partner.</h2>
+    <p class="section-sub reveal reveal-delay-2">From strategy to deployment — we cover the full stack of your IT needs.</p>
     <div class="cards">
-
-      <div class="card">
+      <div class="card reveal reveal-delay-1">
         <div class="card-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
@@ -78,8 +138,7 @@
         <h3 data-i18n="card1_h">IT Consulting</h3>
         <p data-i18n="card1_p">Strategic guidance to align technology with your business goals — from infrastructure decisions to digital transformation.</p>
       </div>
-
-      <div class="card">
+      <div class="card reveal reveal-delay-2">
         <div class="card-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
@@ -88,8 +147,7 @@
         <h3 data-i18n="card2_h">Software Development</h3>
         <p data-i18n="card2_p">Custom software built to solve your unique challenges. Clean architecture, clear timelines, and code you can own long-term.</p>
       </div>
-
-      <div class="card">
+      <div class="card reveal reveal-delay-3">
         <div class="card-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
@@ -98,22 +156,58 @@
         <h3 data-i18n="card3_h">App Development</h3>
         <p data-i18n="card3_p">Web and mobile applications designed for real users. Fast, accessible, and built to scale with your product.</p>
       </div>
-
     </div>
   </div>
 
+  <!-- PROCESS -->
+  <div class="process-section">
+    <div class="process-inner">
+      <p class="section-label reveal">How we work</p>
+      <h2 class="section-title reveal reveal-delay-1">Simple process. Clear results.</h2>
+      <p class="section-sub reveal reveal-delay-2">No jargon, no surprises — just a straightforward path from idea to delivered product.</p>
+      <div class="process-steps">
+        <div class="step reveal reveal-delay-1">
+          <div class="step-num">01</div>
+          <h3>Discover</h3>
+          <p>We learn your business, goals, constraints, and existing systems before writing a single line of code.</p>
+        </div>
+        <div class="step reveal reveal-delay-2">
+          <div class="step-num">02</div>
+          <h3>Design &amp; Plan</h3>
+          <p>We architect the right solution, agree on scope and timeline, and eliminate ambiguity upfront.</p>
+        </div>
+        <div class="step reveal reveal-delay-3">
+          <div class="step-num">03</div>
+          <h3>Build &amp; Deliver</h3>
+          <p>We build with precision, keep you updated throughout, and deliver clean work you can maintain.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
   <div class="stats">
-    <div class="stat">
+    <div class="stat reveal">
       <div class="stat-val">SNI 62020</div>
       <div class="stat-lbl" data-i18n="stat1_lbl">Data consulting, Sweden</div>
     </div>
-    <div class="stat">
+    <div class="stat reveal reveal-delay-1">
       <div class="stat-val">100%</div>
       <div class="stat-lbl" data-i18n="stat2_lbl">Focus on quality</div>
     </div>
-    <div class="stat">
+    <div class="stat reveal reveal-delay-2">
       <div class="stat-val">SE</div>
       <div class="stat-lbl" data-i18n="stat3_lbl">Swedish company</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM CTA -->
+  <div class="cta-strip reveal">
+    <h2>Ready to <em>modernise your IT?</em></h2>
+    <p>Tell us about your project and we'll get back to you within one business day.</p>
+    <div class="cta-btns">
+      <a href="contact.html" class="btn btn-primary">Start a conversation</a>
+      <a href="services.html" class="btn" data-i18n="btn_services">See our services</a>
     </div>
   </div>
 
@@ -131,5 +225,6 @@
 
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
+<script src="animations.js"></script>
 </body>
 </html>

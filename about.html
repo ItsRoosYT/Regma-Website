@@ -8,6 +8,15 @@
 </head>
 <body>
 
+<div id="loader">
+  <div class="loader-logo">Regma <em>IT</em></div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<div class="announce">
+  <em>Now accepting new clients</em> &nbsp;·&nbsp; IT consulting &amp; software development across Sweden
+</div>
+
 <nav>
   <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
   <div class="nav-center">
@@ -18,7 +27,7 @@
       <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
     </ul>
   </div>
-  <div class="nav-right" style="display:flex;align-items:center;gap:8px;">
+  <div class="nav-right">
     <div class="lang-wrap">
       <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -60,10 +69,10 @@
 <main>
   <div class="section">
     <div class="about-body">
-      <p data-i18n="about_p1">Regma IT is a Swedish consulting firm operating within IT, software development, and application development. We work closely with our clients to understand their unique challenges and deliver technology that creates lasting value.</p>
-      <p data-i18n="about_p2">Our approach is straightforward: listen carefully, advise honestly, and build reliably. Whether you need strategic IT guidance or a team to build your next product, we bring focused expertise to every engagement.</p>
-      <p data-i18n="about_p3">Based in Sweden, we serve clients across industries — from startups finding their footing to established companies modernising their systems.</p>
-      <ul class="meta-list">
+      <p class="reveal" data-i18n="about_p1">Regma IT is a Swedish consulting firm operating within IT, software development, and application development. We work closely with our clients to understand their unique challenges and deliver technology that creates lasting value.</p>
+      <p class="reveal" data-i18n="about_p2">Our approach is straightforward: listen carefully, advise honestly, and build reliably. Whether you need strategic IT guidance or a team to build your next product, we bring focused expertise to every engagement.</p>
+      <p class="reveal" data-i18n="about_p3">Based in Sweden, we serve clients across industries — from startups finding their footing to established companies modernising their systems.</p>
+      <ul class="meta-list reveal">
         <li><b data-i18n="meta_company">Company</b> <span>Regma IT</span></li>
         <li><b data-i18n="meta_country">Country</b> <span data-i18n="meta_country_val">Sweden</span></li>
         <li><b data-i18n="meta_industry">Industry</b> <span data-i18n="meta_industry_val">SNI 62020 — Data consulting activities</span></li>
@@ -85,5 +94,6 @@
 
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
+<script src="animations.js"></script>
 </body>
 </html>
