@@ -142,8 +142,10 @@ function handleLogin(e) {
 
   localStorage.setItem('regma_user', JSON.stringify({ name: user.name, email: user.email }));
 
-  const redirect = new URLSearchParams(window.location.search).get('redirect');
-  window.location.href = redirect ? redirect + '.html' : 'career.html';
+  const params2 = new URLSearchParams(window.location.search);
+  const redirect2 = params2.get('redirect');
+  const role2 = params2.get('role');
+  window.location.href = redirect2 ? redirect2 + '.html' + (role2 ? '?role=' + encodeURIComponent(role2) : '') : 'portal.html';
 }
 
 function handleSignup(e) {
@@ -174,16 +176,21 @@ function handleSignup(e) {
   success.style.display = 'block';
 
   setTimeout(() => {
-    const redirect = new URLSearchParams(window.location.search).get('redirect');
-    window.location.href = redirect ? redirect + '.html' : 'career.html';
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    const role = params.get('role');
+    const dest = redirect ? redirect + '.html' + (role ? '?role=' + encodeURIComponent(role) : '') : 'portal.html';
+    window.location.href = dest;
   }, 1000);
 }
 
 // If already logged in, redirect
 const user = localStorage.getItem('regma_user');
 if (user) {
-  const redirect = new URLSearchParams(window.location.search).get('redirect');
-  window.location.href = redirect ? redirect + '.html' : 'career.html';
+  const params2 = new URLSearchParams(window.location.search);
+  const redirect2 = params2.get('redirect');
+  const role2 = params2.get('role');
+  window.location.href = redirect2 ? redirect2 + '.html' + (role2 ? '?role=' + encodeURIComponent(role2) : '') : 'portal.html';
 }
 </script>
 </body>

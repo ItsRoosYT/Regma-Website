@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apply — Regma IT AB</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="career.html">Careers</a></li>
+      <li><a href="portal.html" class="active">My Portal</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <button class="btn-contact" onclick="localStorage.removeItem('regma_user');location.href='index.html'">Sign out</button>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-drawer">
+  <a href="index.html">Home</a>
+  <a href="career.html">Careers</a>
+  <a href="portal.html">My Portal</a>
+</div>
+
+<main>
+  <div class="section" style="max-width:820px">
+
+    <a href="career.html" class="apply-back">← Back to positions</a>
+
+    <div class="apply-header">
+      <h1>Apply for <em id="apply-role">Position</em></h1>
+      <p>Fill in your details below. You can either upload your CV or describe your experience directly — pick whichever works for you.</p>
+    </div>
+
+    <!-- APPLICANT INFO (auto-filled from account) -->
+    <div class="apply-section">
+      <h3 class="apply-section-title">Your details</h3>
+      <div class="apply-row-2">
+        <div class="form-row">
+          <label>Full name</label>
+          <input type="text" id="app-name" disabled />
+        </div>
+        <div class="form-row">
+          <label>Email</label>
+          <input type="email" id="app-email" disabled />
+        </div>
+      </div>
+      <p class="apply-hint">These are from your account. <a href="portal.html">Go to portal</a> to manage.</p>
+    </div>
+
+    <!-- APPLICATION TYPE TABS -->
+    <div class="apply-section">
+      <h3 class="apply-section-title">How would you like to apply?</h3>
+      <div class="apply-type-tabs">
+        <button class="apply-type active" id="type-cv" onclick="switchType('cv')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div>
+            <strong>Upload CV</strong>
+            <span>Attach your resume and add an optional cover note</span>
+          </div>
+        </button>
+        <button class="apply-type" id="type-manual" onclick="switchType('manual')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+          <div>
+            <strong>Write it out</strong>
+            <span>Describe your experience, skills, and motivation directly</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- CV FORM -->
+    <form class="apply-section" id="form-cv" onsubmit="submitApp(event,'cv')">
+      <h3 class="apply-section-title">Resume &amp; cover note</h3>
+
+      <div class="form-row">
+        <label>Upload your CV</label>
+        <div class="file-drop" id="file-drop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;color:var(--teal)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p><strong>Drag &amp; drop your file here</strong></p>
+          <p class="file-drop-sub">or click to browse · PDF, DOC, DOCX (max 10 MB)</p>
+          <input type="file" id="cv-file" accept=".pdf,.doc,.docx" style="display:none" />
+          <div class="file-selected" id="file-selected" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>Cover note (optional)</label>
+        <textarea id="cv-note" rows="5" placeholder="Tell us why you're interested in this role and what you'd bring to Regma IT…"></textarea>
+      </div>
+
+      <div class="auth-success" id="cv-success"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:12px" id="cv-submit">Submit application</button>
+    </form>
+
+    <!-- MANUAL FORM -->
+    <form class="apply-section" id="form-manual" style="display:none" onsubmit="submitApp(event,'manual')">
+      <h3 class="apply-section-title">Your experience &amp; motivation</h3>
+
+      <div class="form-row">
+        <label>Professional experience</label>
+        <textarea id="man-exp" rows="4" placeholder="Summarise your relevant experience — roles, years, industries, and what you've accomplished." required></textarea>
+      </div>
+
+      <div class="form-row">
+        <label>Key skills</label>
+        <input type="text" id="man-skills" placeholder="E.g. Python, cloud architecture, agile, stakeholder management" required />
+        <p class="apply-hint">Comma-separated. List the skills most relevant to this role.</p>
+      </div>
+
+      <div class="form-row">
+        <label>Why are you interested in this role?</label>
+        <textarea id="man-why" rows="4" placeholder="What excites you about this position at Regma IT? What would you bring to the team?" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <label>Link to portfolio or LinkedIn (optional)</label>
+        <input type="url" id="man-link" placeholder="https://" />
+      </div>
+
+      <div class="auth-success" id="man-success"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:12px" id="man-submit">Submit application</button>
+    </form>
+
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 Regma IT AB · Angered, Gothenburg</p>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="career.html">Careers</a></li>
+    <li><a href="portal.html">Portal</a></li>
+  </ul>
+</footer>
+
+<div class="watermark">Roosevelt MDL</div>
+<script src="nav.js"></script>
+<script>
+// Auth gate
+const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
+if (!user) {
+  const role = new URLSearchParams(location.search).get('role') || '';
+  localStorage.setItem('regma_apply_role', role);
+  location.href = 'auth.html?redirect=apply&role=' + encodeURIComponent(role);
+}
+
+// Fill info
+const role = decodeURIComponent(new URLSearchParams(location.search).get('role') || 'Position');
+document.getElementById('apply-role').textContent = role;
+document.title = 'Apply: ' + role + ' — Regma IT AB';
+if (user) {
+  document.getElementById('app-name').value = user.name;
+  document.getElementById('app-email').value = user.email;
+}
+
+// Type switching
+function switchType(type) {
+  const isCv = type === 'cv';
+  document.getElementById('form-cv').style.display = isCv ? '' : 'none';
+  document.getElementById('form-manual').style.display = isCv ? 'none' : '';
+  document.getElementById('type-cv').classList.toggle('active', isCv);
+  document.getElementById('type-manual').classList.toggle('active', !isCv);
+}
+
+// File drop zone
+const drop = document.getElementById('file-drop');
+const fileInput = document.getElementById('cv-file');
+const fileSelected = document.getElementById('file-selected');
+
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+drop.addEventListener('drop', e => {
+  e.preventDefault();
+  drop.classList.remove('drag');
+  if (e.dataTransfer.files.length) {
+    fileInput.files = e.dataTransfer.files;
+    showFile(e.dataTransfer.files[0]);
+  }
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) showFile(fileInput.files[0]);
+});
+
+function showFile(f) {
+  fileSelected.innerHTML = '📄 <strong>' + esc(f.name) + '</strong> (' + (f.size/1024).toFixed(0) + ' KB)';
+  fileSelected.style.display = '';
+}
+
+// Submit
+function submitApp(e, type) {
+  e.preventDefault();
+  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
+  const app = {
+    id: Date.now().toString(36),
+    role: role,
+    name: user.name,
+    email: user.email,
+    type: type === 'cv' ? 'cv' : 'no-cv',
+    date: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  if (type === 'cv') {
+    const file = fileInput.files[0];
+    app.cvName = file ? file.name : 'No file attached';
+    app.cvSize = file ? (file.size/1024).toFixed(0) + ' KB' : '';
+    app.message = document.getElementById('cv-note').value;
+  } else {
+    app.experience = document.getElementById('man-exp').value;
+    app.skills = document.getElementById('man-skills').value;
+    app.why = document.getElementById('man-why').value;
+    app.link = document.getElementById('man-link').value;
+  }
+
+  apps.push(app);
+  localStorage.setItem('regma_applications', JSON.stringify(apps));
+
+  const sid = type === 'cv' ? 'cv-success' : 'man-success';
+  const el = document.getElementById(sid);
+  el.textContent = '✓ Application submitted! Redirecting to your portal…';
+  el.style.display = 'block';
+  document.getElementById(type === 'cv' ? 'cv-submit' : 'man-submit').disabled = true;
+
+  setTimeout(() => location.href = 'portal.html', 1800);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>

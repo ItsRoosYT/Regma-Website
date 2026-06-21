@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Portal — Regma IT AB</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="career.html">Careers</a></li>
+      <li><a href="portal.html" class="active">My Portal</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <button class="btn-contact" onclick="localStorage.removeItem('regma_user');location.href='index.html'">Sign out</button>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-drawer">
+  <a href="index.html">Home</a>
+  <a href="career.html">Careers</a>
+  <a href="portal.html">My Portal</a>
+</div>
+
+<main>
+  <!-- WELCOME -->
+  <div class="portal-hero">
+    <div class="portal-hero-inner">
+      <div class="portal-avatar" id="portal-avatar">R</div>
+      <div>
+        <h1>Welcome back, <em id="portal-name">User</em></h1>
+        <p id="portal-email" class="portal-email">user@email.com</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section" style="padding-top:32px;padding-bottom:0">
+    <div class="portal-stats" id="portal-stats"></div>
+  </div>
+
+  <!-- MY APPLICATIONS -->
+  <div class="section">
+    <div class="portal-section-header">
+      <h2>My Applications</h2>
+      <a href="career.html" class="btn" style="font-size:12.5px;padding:7px 16px">Browse positions</a>
+    </div>
+
+    <div id="my-apps"></div>
+    <div class="portal-empty" id="no-apps" style="display:none">
+      <div class="portal-empty-icon">📋</div>
+      <h3>No applications yet</h3>
+      <p>Browse our open positions and apply when you find the right fit.</p>
+      <a href="career.html" class="btn btn-primary" style="margin-top:16px">View open positions</a>
+    </div>
+  </div>
+
+  <!-- OPEN POSITIONS PREVIEW -->
+  <div class="section" style="padding-top:0">
+    <div class="portal-section-header">
+      <h2>Open Positions</h2>
+    </div>
+    <div class="portal-jobs" id="portal-jobs">
+      <a href="apply.html?role=Senior+IT+Consultant" class="portal-job-row">
+        <div>
+          <strong>Senior IT Consultant</strong>
+          <span>Consulting · Full-time · Gothenburg</span>
+        </div>
+        <span class="portal-job-arrow">→</span>
+      </a>
+      <a href="apply.html?role=Systems+Architect" class="portal-job-row">
+        <div>
+          <strong>Systems Architect</strong>
+          <span>Engineering · Full-time · Gothenburg</span>
+        </div>
+        <span class="portal-job-arrow">→</span>
+      </a>
+      <a href="apply.html?role=Junior+Developer" class="portal-job-row">
+        <div>
+          <strong>Junior Developer</strong>
+          <span>Engineering · Full-time · Gothenburg / Hybrid</span>
+        </div>
+        <span class="portal-job-arrow">→</span>
+      </a>
+      <a href="apply.html?role=UX%2FUI+Designer" class="portal-job-row">
+        <div>
+          <strong>UX/UI Designer</strong>
+          <span>Design · Part-time · Remote / Sweden</span>
+        </div>
+        <span class="portal-job-arrow">→</span>
+      </a>
+      <a href="apply.html?role=Project+Manager" class="portal-job-row">
+        <div>
+          <strong>Project Manager</strong>
+          <span>Operations · Full-time · Gothenburg</span>
+        </div>
+        <span class="portal-job-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 Regma IT AB · Angered, Gothenburg</p>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="career.html">Careers</a></li>
+    <li><a href="portal.html">Portal</a></li>
+  </ul>
+</footer>
+
+<div class="watermark">Roosevelt MDL</div>
+<script src="nav.js"></script>
+<script>
+const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
+if (!user) { window.location.href = 'auth.html?redirect=portal'; }
+
+const ADMIN_EMAIL = 'rooseveltdjomo81@gmail.com';
+
+if (user) {
+  document.getElementById('portal-name').textContent = user.name.split(' ')[0];
+  document.getElementById('portal-email').textContent = user.email;
+  document.getElementById('portal-avatar').textContent = user.name.charAt(0).toUpperCase();
+
+  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
+  const myApps = apps.filter(a => a.email === user.email);
+
+  // Stats
+  document.getElementById('portal-stats').innerHTML = `
+    <div class="admin-stat-card"><div class="a-val">${myApps.length}</div><div class="a-lbl">Applications sent</div></div>
+    <div class="admin-stat-card"><div class="a-val">${myApps.filter(a=>a.status==='pending').length}</div><div class="a-lbl">Pending review</div></div>
+    <div class="admin-stat-card"><div class="a-val">${myApps.filter(a=>a.status==='reviewed').length}</div><div class="a-lbl">Reviewed</div></div>
+    <div class="admin-stat-card"><div class="a-val">5</div><div class="a-lbl">Open positions</div></div>
+  `;
+
+  // My Applications
+  const container = document.getElementById('my-apps');
+  if (myApps.length === 0) {
+    document.getElementById('no-apps').style.display = '';
+  } else {
+    container.innerHTML = myApps.map(app => {
+      const date = new Date(app.date).toLocaleDateString('en-SE', { year: 'numeric', month: 'short', day: 'numeric' });
+      const statusClass = app.status || 'pending';
+      return `
+        <div class="app-card" style="margin-bottom:10px">
+          <div class="app-card-header">
+            <h3>${esc(app.role)}</h3>
+            <span class="app-status ${statusClass}">${statusClass}</span>
+          </div>
+          <div class="app-meta">
+            <span>📅 Applied ${date}</span>
+            <span>📎 ${app.type === 'cv' ? 'With CV (' + esc(app.cvName) + ')' : 'Without CV'}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Admin shortcut
+  if (user.email === ADMIN_EMAIL) {
+    const link = document.createElement('a');
+    link.href = 'admin.html';
+    link.className = 'btn';
+    link.style.cssText = 'border-color:var(--teal);color:var(--teal);font-size:12.5px;padding:7px 16px';
+    link.textContent = '🔒 Admin Dashboard';
+    document.querySelector('.portal-section-header').appendChild(link);
+  }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
