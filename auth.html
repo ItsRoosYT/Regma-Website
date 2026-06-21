@@ -55,7 +55,10 @@
         </div>
         <div class="form-row">
           <label for="login-pass">Password</label>
-          <input type="password" id="login-pass" placeholder="••••••••" required minlength="6" />
+          <div class="pw-wrap">
+            <input type="password" id="login-pass" placeholder="••••••••" required minlength="6" />
+            <button type="button" class="pw-toggle" onclick="togglePw('login-pass',this)">Show</button>
+          </div>
         </div>
         <div class="auth-error" id="login-error"></div>
         <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
@@ -73,11 +76,17 @@
         </div>
         <div class="form-row">
           <label for="signup-pass">Password</label>
-          <input type="password" id="signup-pass" placeholder="Min. 6 characters" required minlength="6" />
+          <div class="pw-wrap">
+            <input type="password" id="signup-pass" placeholder="Min. 6 characters" required minlength="6" />
+            <button type="button" class="pw-toggle" onclick="togglePw('signup-pass',this)">Show</button>
+          </div>
         </div>
         <div class="form-row">
           <label for="signup-pass2">Confirm password</label>
-          <input type="password" id="signup-pass2" placeholder="••••••••" required minlength="6" />
+          <div class="pw-wrap">
+            <input type="password" id="signup-pass2" placeholder="••••••••" required minlength="6" />
+            <button type="button" class="pw-toggle" onclick="togglePw('signup-pass2',this)">Show</button>
+          </div>
         </div>
         <div class="auth-error" id="signup-error"></div>
         <div class="auth-success" id="signup-success"></div>
@@ -107,8 +116,16 @@
 
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
+<script src="components.js"></script>
 <script src="i18n.js"></script>
 <script>
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Hide' : 'Show';
+}
+
 function switchTab(tab) {
   const isLogin = tab === 'login';
   document.getElementById('form-login').style.display = isLogin ? '' : 'none';
