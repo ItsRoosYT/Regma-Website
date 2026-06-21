@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Regma IT AB</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="career.html">Careers</a></li>
+      <li><a href="admin.html" class="active">Admin</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <button class="btn-contact" onclick="logout()">Sign out</button>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-drawer">
+  <a href="index.html">Home</a>
+  <a href="career.html">Careers</a>
+  <a href="admin.html">Admin</a>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1>Admin <em>Dashboard</em></h1>
+    <p>Review job applications and manage candidates.</p>
+  </div>
+</div>
+
+<main>
+  <div class="section">
+    <div class="admin-stats" id="admin-stats"></div>
+    <h2 class="section-title" style="text-align:left;font-size:18px;margin-bottom:20px;">Applications</h2>
+    <div class="app-list" id="app-list"></div>
+    <div class="admin-empty" id="admin-empty" style="display:none">No applications yet. When candidates apply on the Careers page, their submissions will appear here.</div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 Regma IT AB · Angered, Gothenburg</p>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="career.html">Careers</a></li>
+  </ul>
+</footer>
+
+<div class="watermark">Roosevelt MDL</div>
+<script src="nav.js"></script>
+<script>
+const ADMIN_EMAIL = 'rooseveltdjomo81@gmail.com';
+
+// Auth gate
+const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
+if (!user || user.email !== ADMIN_EMAIL) {
+  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;font-family:Inter,sans-serif;color:#f0f0f2;background:#0d0d10"><h2>Access denied</h2><p style="color:#72728a">This page is restricted to administrators.</p><a href="auth.html" style="color:#1D9E75">Sign in as admin</a></div>';
+} else {
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
+  const accounts = JSON.parse(localStorage.getItem('regma_accounts') || '[]');
+
+  // Stats
+  const total = apps.length;
+  const pending = apps.filter(a => a.status === 'pending').length;
+  const reviewed = apps.filter(a => a.status === 'reviewed').length;
+  const totalUsers = accounts.filter(a => a.email !== ADMIN_EMAIL).length;
+
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="admin-stat-card"><div class="a-val">${total}</div><div class="a-lbl">Total applications</div></div>
+    <div class="admin-stat-card"><div class="a-val">${pending}</div><div class="a-lbl">Pending review</div></div>
+    <div class="admin-stat-card"><div class="a-val">${reviewed}</div><div class="a-lbl">Reviewed</div></div>
+    <div class="admin-stat-card"><div class="a-val">${totalUsers}</div><div class="a-lbl">Registered users</div></div>
+  `;
+
+  // Applications
+  const list = document.getElementById('app-list');
+  if (apps.length === 0) {
+    document.getElementById('admin-empty').style.display = '';
+    return;
+  }
+
+  list.innerHTML = apps.map((app, i) => {
+    const date = new Date(app.date).toLocaleDateString('en-SE', { year: 'numeric', month: 'short', day: 'numeric' });
+    const statusClass = app.status || 'pending';
+
+    let content = '';
+    if (app.type === 'cv') {
+      content = `
+        <p><strong>CV:</strong> ${app.cvName} (${app.cvSize})</p>
+        ${app.message ? `<p><strong>Message:</strong> ${escHtml(app.message)}</p>` : ''}
+      `;
+    } else {
+      content = `
+        <p><strong>Experience:</strong> ${escHtml(app.experience || '')}</p>
+        <p><strong>Skills:</strong> ${escHtml(app.skills || '')}</p>
+        <p><strong>Why this role:</strong> ${escHtml(app.why || '')}</p>
+      `;
+    }
+
+    return `
+      <div class="app-card">
+        <div class="app-card-header">
+          <h3>${escHtml(app.role)}</h3>
+          <span class="app-status ${statusClass}">${statusClass}</span>
+        </div>
+        <div class="app-meta">
+          <span>👤 ${escHtml(app.name)}</span>
+          <span>📧 ${escHtml(app.email)}</span>
+          <span>📅 ${date}</span>
+          <span>📎 ${app.type === 'cv' ? 'With CV' : 'Without CV'}</span>
+        </div>
+        <div class="app-content">${content}</div>
+        <div class="app-actions">
+          <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="setStatus(${i},'reviewed')">Mark reviewed</button>
+          <button class="btn" style="border-color:#f87171;color:#f87171" onclick="setStatus(${i},'rejected')">Reject</button>
+          <button class="btn" onclick="setStatus(${i},'pending')">Reset</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setStatus(index, status) {
+  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
+  if (apps[index]) {
+    apps[index].status = status;
+    localStorage.setItem('regma_applications', JSON.stringify(apps));
+    renderDashboard();
+  }
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function logout() {
+  localStorage.removeItem('regma_user');
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>

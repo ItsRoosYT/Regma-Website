@@ -307,11 +307,78 @@
   </ul>
 </footer>
 
+<!-- APPLICATION MODAL -->
+<div class="modal-overlay" id="apply-modal" style="display:none">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h2>Apply for <em id="modal-role"></em></h2>
+    <p class="modal-sub">Choose how you'd like to apply.</p>
+
+    <!-- CV/No-CV choice -->
+    <div class="apply-choice" id="apply-choice">
+      <button class="choice-card" onclick="showForm('cv')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:var(--teal)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <strong>With CV</strong>
+        <span>Upload your resume and add a message</span>
+      </button>
+      <button class="choice-card" onclick="showForm('no-cv')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:var(--teal)"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+        <strong>Without CV</strong>
+        <span>Describe your experience and skills directly</span>
+      </button>
+    </div>
+
+    <!-- WITH CV FORM -->
+    <form class="auth-form" id="form-cv" style="display:none" onsubmit="submitApplication(event,'cv')">
+      <div class="form-row">
+        <label>Upload CV (PDF, DOC, DOCX)</label>
+        <input type="file" id="cv-file" accept=".pdf,.doc,.docx" required style="padding:8px;background:var(--bg);font-size:13px" />
+      </div>
+      <div class="form-row">
+        <label>Message (optional)</label>
+        <textarea id="cv-message" placeholder="Anything you'd like us to know…" rows="4"></textarea>
+      </div>
+      <div class="auth-success" id="cv-success"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Submit application</button>
+    </form>
+
+    <!-- WITHOUT CV FORM -->
+    <form class="auth-form" id="form-no-cv" style="display:none" onsubmit="submitApplication(event,'no-cv')">
+      <div class="form-row">
+        <label>Brief summary of your experience</label>
+        <textarea id="nocv-experience" placeholder="E.g. 3 years in IT consulting, worked with Azure and AWS…" rows="3" required></textarea>
+      </div>
+      <div class="form-row">
+        <label>Key skills</label>
+        <input type="text" id="nocv-skills" placeholder="E.g. Python, cloud architecture, project management" required />
+      </div>
+      <div class="form-row">
+        <label>Why are you interested in this role?</label>
+        <textarea id="nocv-why" placeholder="Tell us what excites you about this position…" rows="3" required></textarea>
+      </div>
+      <div class="auth-success" id="nocv-success"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Submit application</button>
+    </form>
+  </div>
+</div>
+
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
 <script src="i18n.js"></script>
 <script src="animations.js"></script>
 <script>
+// Pre-register admin account
+(function() {
+  const accounts = JSON.parse(localStorage.getItem('regma_accounts') || '[]');
+  if (!accounts.some(a => a.email === 'rooseveltdjomo81@gmail.com')) {
+    accounts.push({ name: 'Roosevelt (Admin)', email: 'rooseveltdjomo81@gmail.com', password: 'Admin2026!', role: 'admin' });
+    localStorage.setItem('regma_accounts', JSON.stringify(accounts));
+  }
+  // Ensure existing admin entry has role
+  const admin = accounts.find(a => a.email === 'rooseveltdjomo81@gmail.com');
+  if (admin && !admin.role) { admin.role = 'admin'; localStorage.setItem('regma_accounts', JSON.stringify(accounts)); }
+})();
+
 // Filters
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -325,16 +392,88 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   });
 });
 
-// Apply gate
+// Current role being applied to
+let currentRole = '';
+
 function handleApply(role) {
-  // Check if user is logged in (Supabase session)
   const session = localStorage.getItem('regma_user');
   if (!session) {
     localStorage.setItem('regma_apply_role', role);
     window.location.href = 'auth.html?redirect=career';
     return;
   }
-  alert('Application submitted for: ' + role + '\n\nWe\'ll review your profile and get back to you.');
+  currentRole = role;
+  document.getElementById('modal-role').textContent = role;
+  document.getElementById('apply-choice').style.display = '';
+  document.getElementById('form-cv').style.display = 'none';
+  document.getElementById('form-no-cv').style.display = 'none';
+  document.getElementById('apply-modal').style.display = '';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('apply-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function showForm(type) {
+  document.getElementById('apply-choice').style.display = 'none';
+  document.getElementById('form-cv').style.display = type === 'cv' ? '' : 'none';
+  document.getElementById('form-no-cv').style.display = type === 'no-cv' ? '' : 'none';
+}
+
+function submitApplication(e, type) {
+  e.preventDefault();
+  const user = JSON.parse(localStorage.getItem('regma_user'));
+  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
+
+  const app = {
+    id: Date.now().toString(36),
+    role: currentRole,
+    name: user.name,
+    email: user.email,
+    type: type,
+    date: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  if (type === 'cv') {
+    const file = document.getElementById('cv-file').files[0];
+    app.cvName = file ? file.name : '';
+    app.cvSize = file ? (file.size / 1024).toFixed(0) + ' KB' : '';
+    app.message = document.getElementById('cv-message').value;
+  } else {
+    app.experience = document.getElementById('nocv-experience').value;
+    app.skills = document.getElementById('nocv-skills').value;
+    app.why = document.getElementById('nocv-why').value;
+  }
+
+  apps.push(app);
+  localStorage.setItem('regma_applications', JSON.stringify(apps));
+
+  const successId = type === 'cv' ? 'cv-success' : 'nocv-success';
+  const el = document.getElementById(successId);
+  el.textContent = 'Application submitted! We\'ll review it and get back to you.';
+  el.style.display = 'block';
+  e.target.querySelector('button[type="submit"]').disabled = true;
+
+  setTimeout(() => closeModal(), 2000);
+}
+
+// If redirected after login with a pending role
+const pendingRole = localStorage.getItem('regma_apply_role');
+if (pendingRole && localStorage.getItem('regma_user')) {
+  localStorage.removeItem('regma_apply_role');
+  setTimeout(() => handleApply(pendingRole), 500);
+}
+
+// Show admin link if admin is logged in
+const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
+if (user && user.email === 'rooseveltdjomo81@gmail.com') {
+  const link = document.createElement('div');
+  link.style.cssText = 'text-align:center;margin-top:32px;';
+  link.innerHTML = '<a href="admin.html" class="btn" style="border-color:var(--teal);color:var(--teal)">🔒 Admin Dashboard</a>';
+  document.querySelector('.jobs-header').appendChild(link);
 }
 </script>
 </body>

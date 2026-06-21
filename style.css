@@ -954,6 +954,110 @@ nav             { animation: fadeIn  .4s .05s ease both; }
 .auth-switch a { color: var(--teal); font-weight: 600; cursor: pointer; }
 .auth-switch a:hover { text-decoration: underline; }
 
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 36px 32px;
+  max-width: 480px; width: 100%;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,.5);
+}
+.modal-close {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; color: var(--muted);
+  font-size: 22px; cursor: pointer; line-height: 1;
+  transition: color .15s;
+}
+.modal-close:hover { color: var(--text); }
+.modal h2 { font-size: 20px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 4px; }
+.modal h2 em { color: var(--teal); font-style: normal; }
+.modal-sub { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; }
+
+.apply-choice {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.choice-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 16px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; text-align: center;
+  cursor: pointer; font-family: inherit;
+  transition: border-color .15s, background .15s;
+  color: var(--text);
+}
+.choice-card:hover {
+  border-color: var(--teal);
+  background: var(--teal-dim);
+}
+.choice-card strong { font-size: 14px; font-weight: 700; }
+.choice-card span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ── ADMIN DASHBOARD ── */
+.admin-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 36px;
+}
+.admin-stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 16px; text-align: center;
+}
+.admin-stat-card .a-val {
+  font-size: 28px; font-weight: 800; color: var(--teal);
+  letter-spacing: -.02em;
+}
+.admin-stat-card .a-lbl {
+  font-size: 11.5px; color: var(--muted); margin-top: 4px;
+}
+
+.app-list { display: flex; flex-direction: column; gap: 10px; }
+.app-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 20px;
+  transition: border-color .2s;
+}
+.app-card:hover { border-color: rgba(29,158,117,.25); }
+.app-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+}
+.app-card-header h3 { font-size: 14px; font-weight: 700; }
+.app-status {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.app-status.pending { background: rgba(234,179,8,.1); color: #eab308; }
+.app-status.reviewed { background: var(--teal-dim); color: var(--teal); }
+.app-status.rejected { background: rgba(239,68,68,.08); color: #f87171; }
+
+.app-meta {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  font-size: 12.5px; color: var(--muted); margin-bottom: 12px;
+}
+.app-content p {
+  font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 6px;
+}
+.app-content strong { color: var(--text); font-weight: 600; }
+.app-actions {
+  display: flex; gap: 8px; margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.app-actions button { font-size: 12.5px; padding: 6px 14px; }
+.admin-empty {
+  text-align: center; padding: 48px; color: var(--muted); font-size: 14px;
+}
+
 /* ── FOOTER ── */
 footer {
   margin-top: auto;
