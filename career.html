@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Careers — Regma IT AB</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="announce">
+  <em>Now accepting new clients</em> &nbsp;·&nbsp; IT consulting &amp; tech strategy across Sweden
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+      <li><a href="about.html" data-i18n="nav_about">About</a></li>
+      <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+      <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+      <li><a href="career.html" class="active" data-i18n="nav_careers">Careers</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <div class="lang-wrap">
+      <button id="lang-toggle" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span id="lang-current">EN</span>
+      </button>
+      <div id="lang-dropdown">
+        <button data-lang="en"><span class="lang-code">EN</span> English</button>
+        <button data-lang="sv"><span class="lang-code">SV</span> Svenska</button>
+        <button data-lang="no"><span class="lang-code">NO</span> Norsk</button>
+        <button data-lang="de"><span class="lang-code">DE</span> Deutsch</button>
+        <button data-lang="fr"><span class="lang-code">FR</span> Français</button>
+        <button data-lang="es"><span class="lang-code">ES</span> Español</button>
+      </div>
+    </div>
+    <a href="contact.html" class="btn-contact" data-i18n="nav_cta">Contact us</a>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-drawer">
+  <a href="index.html" data-i18n="nav_home">Home</a>
+  <a href="about.html" data-i18n="nav_about">About</a>
+  <a href="services.html" data-i18n="nav_services">Services</a>
+  <a href="career.html" data-i18n="nav_careers">Careers</a>
+  <a href="contact.html" data-i18n="nav_cta">Contact us</a>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1>Join <em>Regma IT</em></h1>
+    <p>We're building a team of sharp, independent thinkers who want to help Swedish businesses make better technology decisions.</p>
+  </div>
+</div>
+
+<main>
+  <div class="section">
+
+    <div class="jobs-header">
+      <h2>Open positions</h2>
+      <p>Browse current openings and apply when you find the right fit.</p>
+    </div>
+
+    <div class="jobs-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="engineering">Engineering</button>
+      <button class="filter-btn" data-filter="consulting">Consulting</button>
+      <button class="filter-btn" data-filter="design">Design</button>
+      <button class="filter-btn" data-filter="operations">Operations</button>
+    </div>
+
+    <div class="job-list" id="job-list">
+
+      <!-- Senior IT Consultant -->
+      <div class="job-card" data-dept="consulting">
+        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
+          <div class="job-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="job-meta">
+            <h3>Senior IT Consultant</h3>
+            <div class="job-tags">
+              <span class="job-tag teal">Consulting</span>
+              <span class="job-tag">Full-time</span>
+              <span class="job-tag">Gothenburg</span>
+            </div>
+          </div>
+          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="job-details">
+          <p>Lead client engagements from discovery to delivery. You'll work directly with business leaders to align their IT strategy with growth goals — acting as a trusted external advisor and, when needed, an outsourced CTO.</p>
+          <div class="job-section-title">Responsibilities</div>
+          <ul>
+            <li>Run discovery sessions with clients to map business needs to technology solutions</li>
+            <li>Design IT strategies covering infrastructure, vendors, and digital workflows</li>
+            <li>Present recommendations to C-level stakeholders with clarity and conviction</li>
+            <li>Manage ongoing advisory relationships with 3–5 concurrent clients</li>
+          </ul>
+          <div class="job-section-title">Requirements</div>
+          <ul>
+            <li>5+ years in IT consulting, solutions architecture, or technical leadership</li>
+            <li>Strong understanding of cloud platforms (Azure, AWS, or GCP)</li>
+            <li>Excellent communication in Swedish and English</li>
+            <li>Based in or willing to relocate to the Gothenburg area</li>
+          </ul>
+          <div class="job-section-title">Nice to have</div>
+          <ul>
+            <li>Experience with GDPR compliance frameworks</li>
+            <li>Previous CTO or Head of Engineering role</li>
+          </ul>
+          <div class="job-apply-bar">
+            <p>Posted 3 days ago · Applications open</p>
+            <button class="btn btn-primary" onclick="handleApply('Senior IT Consultant')">Apply now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Systems Architect -->
+      <div class="job-card" data-dept="engineering">
+        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
+          <div class="job-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <div class="job-meta">
+            <h3>Systems Architect</h3>
+            <div class="job-tags">
+              <span class="job-tag teal">Engineering</span>
+              <span class="job-tag">Full-time</span>
+              <span class="job-tag">Gothenburg</span>
+            </div>
+          </div>
+          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="job-details">
+          <p>Design and implement scalable IT systems for our clients. You'll evaluate existing infrastructure, choose the right tech stacks, and oversee deployments that businesses depend on every day.</p>
+          <div class="job-section-title">Responsibilities</div>
+          <ul>
+            <li>Assess client infrastructure and recommend improvements or migrations</li>
+            <li>Design system architectures that balance performance, cost, and maintainability</li>
+            <li>Lead technical implementations including hardware, software, and cloud setups</li>
+            <li>Write clear technical documentation for client handoff</li>
+          </ul>
+          <div class="job-section-title">Requirements</div>
+          <ul>
+            <li>4+ years in systems architecture, DevOps, or infrastructure engineering</li>
+            <li>Hands-on experience with Linux, networking, and cloud-native services</li>
+            <li>Ability to explain technical decisions to non-technical stakeholders</li>
+            <li>Fluent in Swedish; English proficiency required</li>
+          </ul>
+          <div class="job-section-title">Nice to have</div>
+          <ul>
+            <li>Certifications in AWS, Azure, or GCP</li>
+            <li>Experience with containerisation (Docker, Kubernetes)</li>
+          </ul>
+          <div class="job-apply-bar">
+            <p>Posted 1 week ago · Applications open</p>
+            <button class="btn btn-primary" onclick="handleApply('Systems Architect')">Apply now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Junior Developer -->
+      <div class="job-card" data-dept="engineering">
+        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
+          <div class="job-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <div class="job-meta">
+            <h3>Junior Developer</h3>
+            <div class="job-tags">
+              <span class="job-tag teal">Engineering</span>
+              <span class="job-tag">Full-time</span>
+              <span class="job-tag">Gothenburg / Hybrid</span>
+            </div>
+          </div>
+          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="job-details">
+          <p>Join our engineering team and build real solutions from day one. You'll work alongside senior architects and consultants, contributing to client projects while learning professional software development practices.</p>
+          <div class="job-section-title">Responsibilities</div>
+          <ul>
+            <li>Build and maintain web applications and internal tools for client projects</li>
+            <li>Write clean, tested code with guidance from senior team members</li>
+            <li>Participate in code reviews and sprint planning</li>
+            <li>Help document systems and create technical specifications</li>
+          </ul>
+          <div class="job-section-title">Requirements</div>
+          <ul>
+            <li>0–2 years of professional development experience (internships count)</li>
+            <li>Solid fundamentals in at least one language (JavaScript, Python, Java, or C#)</li>
+            <li>Familiarity with Git, REST APIs, and basic web technologies</li>
+            <li>Eager to learn and comfortable asking questions</li>
+          </ul>
+          <div class="job-section-title">Nice to have</div>
+          <ul>
+            <li>Portfolio or GitHub with personal/school projects</li>
+            <li>Interest in cloud infrastructure or DevOps</li>
+          </ul>
+          <div class="job-apply-bar">
+            <p>Posted 5 days ago · Applications open</p>
+            <button class="btn btn-primary" onclick="handleApply('Junior Developer')">Apply now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- UX/UI Designer -->
+      <div class="job-card" data-dept="design">
+        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
+          <div class="job-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <div class="job-meta">
+            <h3>UX/UI Designer</h3>
+            <div class="job-tags">
+              <span class="job-tag teal">Design</span>
+              <span class="job-tag">Part-time</span>
+              <span class="job-tag">Remote / Sweden</span>
+            </div>
+          </div>
+          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="job-details">
+          <p>Shape how our clients' products look and feel. You'll lead the design process for web and mobile applications — from user research and wireframes through polished handoff to the development team.</p>
+          <div class="job-section-title">Responsibilities</div>
+          <ul>
+            <li>Create wireframes, prototypes, and high-fidelity mockups in Figma</li>
+            <li>Conduct user interviews and translate insights into design decisions</li>
+            <li>Collaborate closely with developers to ensure pixel-perfect implementation</li>
+            <li>Establish and maintain design systems for client projects</li>
+          </ul>
+          <div class="job-section-title">Requirements</div>
+          <ul>
+            <li>2+ years of UX/UI design experience with a strong portfolio</li>
+            <li>Expert-level Figma skills</li>
+            <li>Understanding of accessibility standards and responsive design</li>
+            <li>Clear communicator who can defend design decisions with data</li>
+          </ul>
+          <div class="job-apply-bar">
+            <p>Posted 2 weeks ago · Applications open</p>
+            <button class="btn btn-primary" onclick="handleApply('UX/UI Designer')">Apply now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project Manager -->
+      <div class="job-card" data-dept="operations">
+        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
+          <div class="job-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="job-meta">
+            <h3>Project Manager</h3>
+            <div class="job-tags">
+              <span class="job-tag teal">Operations</span>
+              <span class="job-tag">Full-time</span>
+              <span class="job-tag">Gothenburg</span>
+            </div>
+          </div>
+          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="job-details">
+          <p>Keep our consulting projects running on time and on budget. You'll be the connective tissue between clients, consultants, and developers — making sure everyone knows what's happening and when.</p>
+          <div class="job-section-title">Responsibilities</div>
+          <ul>
+            <li>Plan and manage 3–6 concurrent client projects</li>
+            <li>Run standups, retrospectives, and client check-ins</li>
+            <li>Track budgets, timelines, and resource allocation</li>
+            <li>Identify risks early and communicate them clearly to stakeholders</li>
+          </ul>
+          <div class="job-section-title">Requirements</div>
+          <ul>
+            <li>3+ years of project management in IT or tech consulting</li>
+            <li>Comfortable with agile methodologies (Scrum/Kanban)</li>
+            <li>Strong organisational skills and attention to detail</li>
+            <li>Fluent in Swedish and English</li>
+          </ul>
+          <div class="job-apply-bar">
+            <p>Posted 4 days ago · Applications open</p>
+            <button class="btn btn-primary" onclick="handleApply('Project Manager')">Apply now</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <p data-i18n="footer">© 2026 Regma IT AB · Angered, Gothenburg</p>
+  <ul class="footer-links">
+    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+    <li><a href="about.html" data-i18n="nav_about">About</a></li>
+    <li><a href="services.html" data-i18n="nav_services">Services</a></li>
+    <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+    <li><a href="career.html" data-i18n="nav_careers">Careers</a></li>
+  </ul>
+</footer>
+
+<div class="watermark">Roosevelt MDL</div>
+<script src="nav.js"></script>
+<script src="i18n.js"></script>
+<script src="animations.js"></script>
+<script>
+// Filters
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.job-card').forEach(card => {
+      card.style.display = (f === 'all' || card.dataset.dept === f) ? '' : 'none';
+      card.classList.remove('expanded');
+    });
+  });
+});
+
+// Apply gate
+function handleApply(role) {
+  // Check if user is logged in (Supabase session)
+  const session = localStorage.getItem('regma_user');
+  if (!session) {
+    localStorage.setItem('regma_apply_role', role);
+    window.location.href = 'auth.html?redirect=career';
+    return;
+  }
+  alert('Application submitted for: ' + role + '\n\nWe\'ll review your profile and get back to you.');
+}
+</script>
+</body>
+</html>
