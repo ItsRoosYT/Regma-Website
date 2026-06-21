@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Portal — Regma IT AB</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -65,6 +66,42 @@
     </div>
   </div>
 
+  <!-- PROFILE -->
+  <div class="section" style="padding-top:0">
+    <div class="portal-section-header">
+      <h2>My Profile</h2>
+    </div>
+    <div class="profile-card">
+      <h3>Personal information</h3>
+      <form id="profile-form" onsubmit="saveProfile(event)">
+        <div class="profile-row">
+          <div class="form-row">
+            <label for="p-name">Full name</label>
+            <input type="text" id="p-name" required />
+          </div>
+          <div class="form-row">
+            <label for="p-email">Email</label>
+            <input type="email" id="p-email" disabled />
+          </div>
+        </div>
+        <div class="profile-row">
+          <div class="form-row">
+            <label for="p-phone">Phone (optional)</label>
+            <input type="tel" id="p-phone" placeholder="+46 70 000 0000" />
+          </div>
+          <div class="form-row">
+            <label for="p-linkedin">LinkedIn (optional)</label>
+            <input type="url" id="p-linkedin" placeholder="https://linkedin.com/in/…" />
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button type="submit" class="btn btn-primary" style="font-size:12.5px;padding:8px 18px">Save changes</button>
+          <span id="profile-saved" style="display:none;font-size:12.5px;color:var(--teal);align-self:center">✓ Saved</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- OPEN POSITIONS PREVIEW -->
   <div class="section" style="padding-top:0">
     <div class="portal-section-header">
@@ -121,6 +158,7 @@
 
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
+<script src="components.js"></script>
 <script>
 const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
 if (!user) { window.location.href = 'auth.html?redirect=portal'; }
@@ -176,6 +214,33 @@ if (user) {
     document.querySelector('.portal-section-header').appendChild(link);
   }
 }
+
+  // Profile form
+  const profile = JSON.parse(localStorage.getItem('regma_profile_' + user.email) || '{}');
+  document.getElementById('p-name').value = profile.name || user.name;
+  document.getElementById('p-email').value = user.email;
+  document.getElementById('p-phone').value = profile.phone || '';
+  document.getElementById('p-linkedin').value = profile.linkedin || '';
+}
+
+window.saveProfile = function(e) {
+  e.preventDefault();
+  const user = JSON.parse(localStorage.getItem('regma_user'));
+  const name = document.getElementById('p-name').value;
+  const profile = {
+    name: name,
+    phone: document.getElementById('p-phone').value,
+    linkedin: document.getElementById('p-linkedin').value
+  };
+  localStorage.setItem('regma_profile_' + user.email, JSON.stringify(profile));
+  user.name = name;
+  localStorage.setItem('regma_user', JSON.stringify(user));
+  document.getElementById('portal-name').textContent = name.split(' ')[0];
+  document.getElementById('portal-avatar').textContent = name.charAt(0).toUpperCase();
+  const saved = document.getElementById('profile-saved');
+  saved.style.display = 'inline';
+  setTimeout(() => saved.style.display = 'none', 2500);
+};
 
 function esc(s) {
   const d = document.createElement('div');
