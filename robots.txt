@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /portal.html
+Disallow: /apply.html
+Disallow: /auth.html
+
+Sitemap: https://regma.vercel.app/sitemap.xml

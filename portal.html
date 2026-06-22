@@ -188,17 +188,28 @@ if (user) {
   } else {
     container.innerHTML = myApps.map(app => {
       const date = new Date(app.date).toLocaleDateString('en-SE', { year: 'numeric', month: 'short', day: 'numeric' });
-      const statusClass = app.status || 'pending';
+      const s = app.status || 'pending';
+
+      const stages = ['Applied', 'Under Review', 'Interview', 'Decision'];
+      const stageIndex = s === 'reviewed' ? 1 : s === 'interview' ? 2 : s === 'accepted' || s === 'rejected' ? 3 : 0;
+
+      const timeline = stages.map((name, i) => {
+        const cls = i < stageIndex ? 'done' : i === stageIndex ? 'active' : '';
+        const dot = i < stageIndex ? '✓' : i === stageIndex ? '●' : '';
+        return `<div class="app-stage ${cls}"><div class="app-stage-dot">${dot}</div>${name}</div>` + (i < stages.length - 1 ? '<div class="app-stage-line"></div>' : '');
+      }).join('');
+
       return `
         <div class="app-card" style="margin-bottom:10px">
           <div class="app-card-header">
             <h3>${esc(app.role)}</h3>
-            <span class="app-status ${statusClass}">${statusClass}</span>
+            <span class="app-status ${s}">${s}</span>
           </div>
           <div class="app-meta">
             <span>📅 Applied ${date}</span>
             <span>📎 ${app.type === 'cv' ? 'With CV (' + esc(app.cvName) + ')' : 'Without CV'}</span>
           </div>
+          <div class="app-timeline">${timeline}</div>
         </div>
       `;
     }).join('');

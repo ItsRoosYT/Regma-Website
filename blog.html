@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Regma IT AB</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="announce"><em>Now accepting new clients</em> · IT consulting &amp; tech strategy across Sweden</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="career.html">Careers</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <a href="contact.html" class="btn-contact">Contact us</a>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-drawer">
+  <a href="index.html">Home</a><a href="about.html">About</a><a href="services.html">Services</a><a href="career.html">Careers</a><a href="contact.html">Contact us</a>
+</div>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1>Blog &amp; <em>Insights</em></h1>
+    <p>Thoughts on IT strategy, consulting, and building better technology for Swedish businesses.</p>
+  </div>
+</div>
+
+<main>
+  <div class="section">
+
+    <!-- NEWSLETTER -->
+    <div class="newsletter-box reveal">
+      <div class="newsletter-text">
+        <h3>Stay in the loop</h3>
+        <p>Get our latest insights on IT strategy and consulting delivered to your inbox.</p>
+      </div>
+      <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+        <input type="email" id="nl-email" placeholder="your@email.com" required />
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+    </div>
+
+    <div class="blog-grid">
+
+      <article class="blog-card reveal">
+        <div class="blog-tag">Strategy</div>
+        <h2>Why your SME doesn't need a full-time CTO (yet)</h2>
+        <p>Most growing companies hit a point where they need senior tech leadership — but hiring a full-time CTO at 1.2M SEK/year rarely makes sense. Here's when an outsourced CTO model works better.</p>
+        <div class="blog-meta">
+          <span>June 15, 2026</span>
+          <span>5 min read</span>
+        </div>
+      </article>
+
+      <article class="blog-card reveal reveal-delay-1">
+        <div class="blog-tag">Infrastructure</div>
+        <h2>Cloud migration checklist for Swedish businesses</h2>
+        <p>Moving from on-premise to cloud sounds simple until you start. This checklist covers the 12 things most companies forget — from GDPR data residency to vendor lock-in traps.</p>
+        <div class="blog-meta">
+          <span>June 8, 2026</span>
+          <span>7 min read</span>
+        </div>
+      </article>
+
+      <article class="blog-card reveal reveal-delay-2">
+        <div class="blog-tag">Consulting</div>
+        <h2>What to expect from your first IT consulting engagement</h2>
+        <p>If you've never hired an IT consultant before, the process can feel opaque. We break down exactly what a typical engagement looks like — from discovery call to final deliverable.</p>
+        <div class="blog-meta">
+          <span>May 28, 2026</span>
+          <span>4 min read</span>
+        </div>
+      </article>
+
+      <article class="blog-card reveal reveal-delay-3">
+        <div class="blog-tag">Security</div>
+        <h2>GDPR compliance: the 5 things your IT setup is probably missing</h2>
+        <p>We audit dozens of Swedish companies each year. These are the five most common gaps we find — and the fixes are usually simpler than you think.</p>
+        <div class="blog-meta">
+          <span>May 14, 2026</span>
+          <span>6 min read</span>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 Regma IT AB · Angered, Gothenburg</p>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+  </ul>
+</footer>
+
+<div class="watermark">Roosevelt MDL</div>
+<script src="nav.js"></script>
+<script src="animations.js"></script>
+<script src="components.js"></script>
+<script>
+function subscribeNewsletter(e) {
+  e.preventDefault();
+  const email = document.getElementById('nl-email').value;
+  const subs = JSON.parse(localStorage.getItem('regma_newsletter') || '[]');
+  if (subs.includes(email)) { showToast('You\'re already subscribed!', 'info'); return; }
+  subs.push(email);
+  localStorage.setItem('regma_newsletter', JSON.stringify(subs));
+  showToast('Subscribed! We\'ll keep you posted.', 'success');
+  document.getElementById('nl-email').value = '';
+}
+</script>
+</body>
+</html>
