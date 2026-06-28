@@ -9,38 +9,51 @@
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
-  <div class="nav-center">
-    <ul class="nav-links">
-      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
-      <li><a href="about.html" data-i18n="nav_about">About</a></li>
-      <li><a href="services.html" data-i18n="nav_services">Services</a></li>
-      <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
-      <li><a href="career.html" data-i18n="nav_careers">Careers</a></li>
-    </ul>
-  </div>
-  <div class="nav-right">
-    <a href="contact.html" class="btn-contact" data-i18n="nav_cta">Contact us</a>
-  </div>
-  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
+<main class="auth-page">
 
-<div class="mobile-drawer">
-  <a href="index.html" data-i18n="nav_home">Home</a>
-  <a href="about.html" data-i18n="nav_about">About</a>
-  <a href="services.html" data-i18n="nav_services">Services</a>
-  <a href="career.html" data-i18n="nav_careers">Careers</a>
-  <a href="contact.html" data-i18n="nav_cta">Contact us</a>
-</div>
+  <!-- LEFT: BRAND PANEL -->
+  <div class="auth-brand">
+    <div class="auth-brand-inner">
+      <a href="index.html" class="nav-logo" style="font-size:22px">Regma <em>IT</em></a>
+      <div class="auth-brand-content">
+        <h1>Build your career<br>with <em>Regma IT</em></h1>
+        <p>Sign in to apply for positions, track your applications, and connect with our team.</p>
+        <div class="auth-brand-features">
+          <div class="auth-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Browse open positions
+          </div>
+          <div class="auth-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Apply with or without a CV
+          </div>
+          <div class="auth-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Track your application status
+          </div>
+          <div class="auth-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Personal portal dashboard
+          </div>
+        </div>
+      </div>
+      <div class="auth-brand-footer">
+        <p>© 2026 Regma IT AB · Angered, Gothenburg</p>
+      </div>
+    </div>
+    <div class="auth-brand-glow"></div>
+  </div>
 
-<main>
-  <div class="auth-wrap">
-    <div class="auth-card">
-      <h2>Welcome to <em>Regma IT</em></h2>
-      <p>Create an account or sign in to apply for open positions.</p>
+  <!-- RIGHT: AUTH FORM -->
+  <div class="auth-form-side">
+    <div class="auth-form-inner">
+
+      <div class="auth-mobile-logo">
+        <a href="index.html" class="nav-logo" style="font-size:18px">Regma <em>IT</em></a>
+      </div>
+
+      <h2>Welcome back</h2>
+      <p class="auth-subtitle">Sign in to your account or create a new one to get started.</p>
 
       <div class="auth-tabs">
         <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign in</button>
@@ -50,18 +63,18 @@
       <!-- LOGIN FORM -->
       <form class="auth-form" id="form-login" onsubmit="handleLogin(event)">
         <div class="form-row">
-          <label for="login-email">Email</label>
-          <input type="email" id="login-email" placeholder="your@email.com" required />
+          <label for="login-email">Email address</label>
+          <input type="email" id="login-email" placeholder="you@company.com" required />
         </div>
         <div class="form-row">
           <label for="login-pass">Password</label>
           <div class="pw-wrap">
-            <input type="password" id="login-pass" placeholder="••••••••" required minlength="6" />
+            <input type="password" id="login-pass" placeholder="Enter your password" required minlength="6" />
             <button type="button" class="pw-toggle" onclick="togglePw('login-pass',this)">Show</button>
           </div>
         </div>
         <div class="auth-error" id="login-error"></div>
-        <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
+        <button type="submit" class="btn btn-primary auth-submit">Sign in</button>
       </form>
 
       <!-- SIGNUP FORM -->
@@ -71,26 +84,28 @@
           <input type="text" id="signup-name" placeholder="Your full name" required />
         </div>
         <div class="form-row">
-          <label for="signup-email">Email</label>
-          <input type="email" id="signup-email" placeholder="your@email.com" required />
+          <label for="signup-email">Email address</label>
+          <input type="email" id="signup-email" placeholder="you@company.com" required />
         </div>
-        <div class="form-row">
-          <label for="signup-pass">Password</label>
-          <div class="pw-wrap">
-            <input type="password" id="signup-pass" placeholder="Min. 6 characters" required minlength="6" />
-            <button type="button" class="pw-toggle" onclick="togglePw('signup-pass',this)">Show</button>
+        <div class="form-row-2">
+          <div class="form-row">
+            <label for="signup-pass">Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="signup-pass" placeholder="Min. 6 characters" required minlength="6" />
+              <button type="button" class="pw-toggle" onclick="togglePw('signup-pass',this)">Show</button>
+            </div>
           </div>
-        </div>
-        <div class="form-row">
-          <label for="signup-pass2">Confirm password</label>
-          <div class="pw-wrap">
-            <input type="password" id="signup-pass2" placeholder="••••••••" required minlength="6" />
-            <button type="button" class="pw-toggle" onclick="togglePw('signup-pass2',this)">Show</button>
+          <div class="form-row">
+            <label for="signup-pass2">Confirm</label>
+            <div class="pw-wrap">
+              <input type="password" id="signup-pass2" placeholder="Repeat password" required minlength="6" />
+              <button type="button" class="pw-toggle" onclick="togglePw('signup-pass2',this)">Show</button>
+            </div>
           </div>
         </div>
         <div class="auth-error" id="signup-error"></div>
         <div class="auth-success" id="signup-success"></div>
-        <button type="submit" class="btn btn-primary" style="width:100%">Create account</button>
+        <button type="submit" class="btn btn-primary auth-submit">Create account</button>
       </form>
 
       <div class="auth-switch" id="switch-login">
@@ -99,25 +114,18 @@
       <div class="auth-switch" id="switch-signup" style="display:none">
         Already have an account? <a onclick="switchTab('login')">Sign in</a>
       </div>
+
+      <div class="auth-legal">
+        By signing in you agree to our <a href="privacy.html">Privacy Policy</a>.
+      </div>
+
     </div>
   </div>
-</main>
 
-<footer>
-  <p data-i18n="footer">© 2026 Regma IT AB · Angered, Gothenburg</p>
-  <ul class="footer-links">
-    <li><a href="index.html" data-i18n="nav_home">Home</a></li>
-    <li><a href="about.html" data-i18n="nav_about">About</a></li>
-    <li><a href="services.html" data-i18n="nav_services">Services</a></li>
-    <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
-    <li><a href="career.html" data-i18n="nav_careers">Careers</a></li>
-  </ul>
-</footer>
+</main>
 
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
-<script src="components.js"></script>
-<script src="i18n.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
@@ -137,6 +145,10 @@ function switchTab(tab) {
   document.getElementById('tab-login').classList.toggle('active', isLogin);
   document.getElementById('tab-signup').classList.toggle('active', !isLogin);
   document.querySelectorAll('.auth-error, .auth-success').forEach(el => el.style.display = 'none');
+  document.querySelector('.auth-form-inner h2').textContent = isLogin ? 'Welcome back' : 'Create your account';
+  document.querySelector('.auth-subtitle').textContent = isLogin
+    ? 'Sign in to your account or create a new one to get started.'
+    : 'Join Regma IT to apply for positions and track your applications.';
 }
 
 function showError(id, msg) {
@@ -157,55 +169,42 @@ async function handleLogin(e) {
   const btn = e.target.querySelector('button[type="submit"]');
   btn.classList.add('loading');
 
-  const email = document.getElementById('login-email').value;
-  const pass = document.getElementById('login-pass').value;
-
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  const { error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value,
+    password: document.getElementById('login-pass').value
+  });
 
   btn.classList.remove('loading');
-  if (error) {
-    showError('login-error', error.message);
-    return;
-  }
+  if (error) { showError('login-error', error.message); return; }
   window.location.href = getRedirectDest();
 }
 
 async function handleSignup(e) {
   e.preventDefault();
-  const btn = e.target.querySelector('button[type="submit"]');
-
-  const name = document.getElementById('signup-name').value;
-  const email = document.getElementById('signup-email').value;
   const pass = document.getElementById('signup-pass').value;
-  const pass2 = document.getElementById('signup-pass2').value;
-
-  if (pass !== pass2) {
+  if (pass !== document.getElementById('signup-pass2').value) {
     showError('signup-error', 'Passwords do not match.');
     return;
   }
 
+  const btn = e.target.querySelector('button[type="submit"]');
   btn.classList.add('loading');
 
   const { error } = await sb.auth.signUp({
-    email,
+    email: document.getElementById('signup-email').value,
     password: pass,
-    options: { data: { name } }
+    options: { data: { name: document.getElementById('signup-name').value } }
   });
 
   btn.classList.remove('loading');
-  if (error) {
-    showError('signup-error', error.message);
-    return;
-  }
+  if (error) { showError('signup-error', error.message); return; }
 
-  const success = document.getElementById('signup-success');
-  success.textContent = 'Account created! Redirecting…';
-  success.style.display = 'block';
-
+  const el = document.getElementById('signup-success');
+  el.textContent = 'Account created! Redirecting…';
+  el.style.display = 'block';
   setTimeout(() => { window.location.href = getRedirectDest(); }, 1200);
 }
 
-// If already logged in, redirect
 (async () => {
   const session = await getSession();
   if (session) window.location.href = getRedirectDest();
