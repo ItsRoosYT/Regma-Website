@@ -17,7 +17,7 @@
       <li><a href="admin.html" class="active">Admin</a></li>
     </ul>
   </div>
-  <div class="nav-right">
+  <div class="nav-right" data-no-user-menu>
     <button class="btn-contact" onclick="logout()">Sign out</button>
   </div>
   <button class="nav-burger" aria-label="Menu" aria-expanded="false">
@@ -63,6 +63,7 @@
 
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
+<script src="components.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
@@ -148,11 +149,13 @@ async function renderDashboard() {
 
 async function setStatus(id, status) {
   await sb.from('applications').update({ status }).eq('id', id);
+  if (window.showToast) showToast('Application marked as ' + status + '.', 'success');
   await renderDashboard();
 }
 
 async function saveNote(id, text) {
   await sb.from('applications').update({ admin_note: text }).eq('id', id);
+  if (window.showToast) showToast('Note saved.', 'success', 1500);
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }

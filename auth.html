@@ -67,13 +67,17 @@
           <input type="email" id="login-email" placeholder="you@company.com" required />
         </div>
         <div class="form-row">
-          <label for="login-pass">Password</label>
+          <div class="auth-label-row">
+            <label for="login-pass">Password</label>
+            <a class="auth-forgot" onclick="forgotPassword()">Forgot password?</a>
+          </div>
           <div class="pw-wrap">
             <input type="password" id="login-pass" placeholder="Enter your password" required minlength="6" />
             <button type="button" class="pw-toggle" onclick="togglePw('login-pass',this)">Show</button>
           </div>
         </div>
         <div class="auth-error" id="login-error"></div>
+        <div class="auth-success" id="login-success"></div>
         <button type="submit" class="btn btn-primary auth-submit">Sign in</button>
       </form>
 
@@ -162,6 +166,17 @@ function getRedirectDest() {
   const r = p.get('redirect');
   const role = p.get('role');
   return r ? r + '.html' + (role ? '?role=' + encodeURIComponent(role) : '') : 'portal.html';
+}
+
+async function forgotPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showError('login-error', 'Enter your email above first, then click "Forgot password?".'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/portal.html' });
+  if (error) { showError('login-error', error.message); return; }
+  document.getElementById('login-error').style.display = 'none';
+  const ok = document.getElementById('login-success');
+  ok.textContent = 'Password reset link sent to ' + email + '. Check your inbox.';
+  ok.style.display = 'block';
 }
 
 async function handleLogin(e) {

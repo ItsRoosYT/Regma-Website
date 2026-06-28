@@ -90,26 +90,97 @@ window.showToast = showToast;
   navRight.insertBefore(btn, navRight.firstChild);
 })();
 
-// ── NAV USER STATE ──
+// ── GLOBAL SIGN OUT ──
+async function regmaSignOut(e) {
+  if (e) e.preventDefault();
+  if (typeof sb === 'undefined') { location.href = 'index.html'; return; }
+  if (window.showToast) showToast('Signing you out…', 'info', 1200);
+  await sb.auth.signOut();
+  setTimeout(() => { location.href = 'index.html'; }, 600);
+}
+window.regmaSignOut = regmaSignOut;
+
+// Wait for the Supabase client to be initialised (it loads after this file)
+function waitForSb(timeout = 3000) {
+  return new Promise((resolve) => {
+    if (typeof sb !== 'undefined') return resolve(true);
+    const start = Date.now();
+    const t = setInterval(() => {
+      if (typeof sb !== 'undefined') { clearInterval(t); resolve(true); }
+      else if (Date.now() - start > timeout) { clearInterval(t); resolve(false); }
+    }, 50);
+  });
+}
+
+// ── NAV USER STATE (dropdown menu) ──
 (async function() {
   const navRight = document.querySelector('.nav-right');
   if (!navRight) return;
-  if (typeof sb === 'undefined') return;
+  if (navRight.dataset.noUserMenu !== undefined) return; // app pages use explicit Sign out
+  if (!(await waitForSb())) return; // no Supabase on this page
 
   const { data: { user } } = await sb.auth.getUser();
-  if (user) {
-    const name = user.user_metadata?.name || user.email.split('@')[0];
-    const initial = name.charAt(0).toUpperCase();
-    const el = document.createElement('div');
-    el.className = 'nav-user';
-    el.innerHTML = `
-      <a href="portal.html" style="display:flex;align-items:center;gap:6px;text-decoration:none">
-        <span class="nav-user-avatar">${initial}</span>
-        <span style="color:var(--muted);font-size:12px">${name.split(' ')[0]}</span>
+  if (!user) return;
+
+  const ADMIN = 'rooseveltdjomo81@gmail.com';
+  const name = user.user_metadata?.name || user.email.split('@')[0];
+  const initial = name.charAt(0).toUpperCase();
+  const isAdminUser = user.email === ADMIN;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'nav-user-wrap';
+  wrap.innerHTML = `
+    <button class="nav-user-btn" id="nav-user-btn" aria-haspopup="true" aria-expanded="false">
+      <span class="nav-user-avatar">${initial}</span>
+      <span class="nav-user-name">${name.split(' ')[0]}</span>
+      <svg class="nav-user-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="nav-user-menu" id="nav-user-menu">
+      <div class="nav-user-head">
+        <span class="nav-user-avatar lg">${initial}</span>
+        <div class="nav-user-meta">
+          <strong>${name}</strong>
+          <span>${user.email}</span>
+        </div>
+      </div>
+      <a href="portal.html" class="nav-user-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        My Portal
       </a>
-    `;
-    navRight.insertBefore(el, navRight.firstChild);
-  }
+      <a href="career.html" class="nav-user-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Open Positions
+      </a>
+      ${isAdminUser ? `<a href="admin.html" class="nav-user-item admin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Admin Dashboard
+      </a>` : ''}
+      <div class="nav-user-divider"></div>
+      <a href="#" class="nav-user-item danger" onclick="regmaSignOut(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </a>
+    </div>
+  `;
+  navRight.insertBefore(wrap, navRight.firstChild);
+
+  const btn = wrap.querySelector('#nav-user-btn');
+  const menu = wrap.querySelector('#nav-user-menu');
+  btn.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    const open = menu.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  });
+  document.addEventListener('click', () => {
+    menu.classList.remove('open');
+    btn.classList.remove('open');
+    btn.setAttribute('aria-expanded', false);
+  });
+
+  // Hide redundant "Contact us" CTA when signed in to reduce clutter
+  const cta = navRight.querySelector('.btn-contact');
+  if (cta && cta.textContent.trim().toLowerCase().includes('contact')) cta.style.display = 'none';
 })();
 
 // ── DISMISSIBLE ANNOUNCEMENT BAR ──

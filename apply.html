@@ -18,8 +18,8 @@
       <li><a href="portal.html" class="active">My Portal</a></li>
     </ul>
   </div>
-  <div class="nav-right">
-    <button class="btn-contact" onclick="localStorage.removeItem('regma_user');location.href='index.html'">Sign out</button>
+  <div class="nav-right" data-no-user-menu>
+    <button class="btn-contact" onclick="regmaSignOut(event)">Sign out</button>
   </div>
   <button class="nav-burger" aria-label="Menu" aria-expanded="false">
     <span></span><span></span><span></span>
