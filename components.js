@@ -91,19 +91,21 @@ window.showToast = showToast;
 })();
 
 // ── NAV USER STATE ──
-(function() {
-  const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
+(async function() {
   const navRight = document.querySelector('.nav-right');
   if (!navRight) return;
+  if (typeof sb === 'undefined') return;
 
+  const { data: { user } } = await sb.auth.getUser();
   if (user) {
+    const name = user.user_metadata?.name || user.email.split('@')[0];
+    const initial = name.charAt(0).toUpperCase();
     const el = document.createElement('div');
     el.className = 'nav-user';
-    const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
     el.innerHTML = `
       <a href="portal.html" style="display:flex;align-items:center;gap:6px;text-decoration:none">
         <span class="nav-user-avatar">${initial}</span>
-        <span style="color:var(--muted);font-size:12px">${user.name.split(' ')[0]}</span>
+        <span style="color:var(--muted);font-size:12px">${name.split(' ')[0]}</span>
       </a>
     `;
     navRight.insertBefore(el, navRight.firstChild);

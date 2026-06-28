@@ -323,6 +323,8 @@
 <script src="i18n.js"></script>
 <script src="animations.js"></script>
 <script src="components.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
 // Search
 document.getElementById('job-search').addEventListener('input', function() {
@@ -335,17 +337,6 @@ document.getElementById('job-search').addEventListener('input', function() {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
 });
-
-// Pre-register admin account
-(function() {
-  const accounts = JSON.parse(localStorage.getItem('regma_accounts') || '[]');
-  if (!accounts.some(a => a.email === 'rooseveltdjomo81@gmail.com')) {
-    accounts.push({ name: 'Roosevelt (Admin)', email: 'rooseveltdjomo81@gmail.com', password: 'Admin2026!', role: 'admin' });
-    localStorage.setItem('regma_accounts', JSON.stringify(accounts));
-  }
-  const admin = accounts.find(a => a.email === 'rooseveltdjomo81@gmail.com');
-  if (admin && !admin.role) { admin.role = 'admin'; localStorage.setItem('regma_accounts', JSON.stringify(accounts)); }
-})();
 
 // Filters
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -361,10 +352,9 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 // Apply — redirect to full apply page
-function handleApply(role) {
-  const session = localStorage.getItem('regma_user');
-  if (!session) {
-    localStorage.setItem('regma_apply_role', role);
+async function handleApply(role) {
+  const user = await getUser();
+  if (!user) {
     window.location.href = 'auth.html?redirect=apply&role=' + encodeURIComponent(role);
     return;
   }
@@ -372,16 +362,18 @@ function handleApply(role) {
 }
 
 // Show portal/admin links if logged in
-const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
-if (user) {
-  const bar = document.createElement('div');
-  bar.style.cssText = 'text-align:center;margin-top:32px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;';
-  bar.innerHTML = '<a href="portal.html" class="btn" style="border-color:var(--teal);color:var(--teal)">My Portal</a>';
-  if (user.email === 'rooseveltdjomo81@gmail.com') {
-    bar.innerHTML += '<a href="admin.html" class="btn" style="border-color:var(--teal);color:var(--teal)">🔒 Admin Dashboard</a>';
+(async () => {
+  const user = await getUser();
+  if (user) {
+    const bar = document.createElement('div');
+    bar.style.cssText = 'text-align:center;margin-top:32px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;';
+    bar.innerHTML = '<a href="portal.html" class="btn" style="border-color:var(--teal);color:var(--teal)">My Portal</a>';
+    if (isAdmin(user)) {
+      bar.innerHTML += '<a href="admin.html" class="btn" style="border-color:var(--teal);color:var(--teal)">🔒 Admin Dashboard</a>';
+    }
+    document.querySelector('.jobs-header').appendChild(bar);
   }
-  document.querySelector('.jobs-header').appendChild(bar);
-}
+})();
 </script>
 </body>
 </html>

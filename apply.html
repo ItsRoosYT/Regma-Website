@@ -147,25 +147,24 @@
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
 <script src="components.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
-// Auth gate
-const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
-if (!user) {
-  const role = new URLSearchParams(location.search).get('role') || '';
-  localStorage.setItem('regma_apply_role', role);
-  location.href = 'auth.html?redirect=apply&role=' + encodeURIComponent(role);
-}
-
-// Fill info
+let currentUser = null;
 const role = decodeURIComponent(new URLSearchParams(location.search).get('role') || 'Position');
-document.getElementById('apply-role').textContent = role;
-document.title = 'Apply: ' + role + ' — Regma IT AB';
-if (user) {
-  document.getElementById('app-name').value = user.name;
-  document.getElementById('app-email').value = user.email;
-}
 
-// Type switching
+(async () => {
+  currentUser = await getUser();
+  if (!currentUser) {
+    location.href = 'auth.html?redirect=apply&role=' + encodeURIComponent(role);
+    return;
+  }
+  document.getElementById('apply-role').textContent = role;
+  document.title = 'Apply: ' + role + ' — Regma IT AB';
+  document.getElementById('app-name').value = currentUser.user_metadata?.name || currentUser.email;
+  document.getElementById('app-email').value = currentUser.email;
+})();
+
 function switchType(type) {
   const isCv = type === 'cv';
   document.getElementById('form-cv').style.display = isCv ? '' : 'none';
@@ -174,7 +173,6 @@ function switchType(type) {
   document.getElementById('type-manual').classList.toggle('active', !isCv);
 }
 
-// File drop zone
 const drop = document.getElementById('file-drop');
 const fileInput = document.getElementById('cv-file');
 const fileSelected = document.getElementById('file-selected');
@@ -183,57 +181,54 @@ drop.addEventListener('click', () => fileInput.click());
 drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
 drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
 drop.addEventListener('drop', e => {
-  e.preventDefault();
-  drop.classList.remove('drag');
-  if (e.dataTransfer.files.length) {
-    fileInput.files = e.dataTransfer.files;
-    showFile(e.dataTransfer.files[0]);
-  }
+  e.preventDefault(); drop.classList.remove('drag');
+  if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; showFile(e.dataTransfer.files[0]); }
 });
-fileInput.addEventListener('change', () => {
-  if (fileInput.files.length) showFile(fileInput.files[0]);
-});
+fileInput.addEventListener('change', () => { if (fileInput.files.length) showFile(fileInput.files[0]); });
 
 function showFile(f) {
   fileSelected.innerHTML = '📄 <strong>' + esc(f.name) + '</strong> (' + (f.size/1024).toFixed(0) + ' KB)';
   fileSelected.style.display = '';
 }
 
-// Submit
-function submitApp(e, type) {
+async function submitApp(e, type) {
   e.preventDefault();
-  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
-  const app = {
-    id: Date.now().toString(36),
-    role: role,
-    name: user.name,
-    email: user.email,
-    type: type === 'cv' ? 'cv' : 'no-cv',
-    date: new Date().toISOString(),
-    status: 'pending'
+  const btnId = type === 'cv' ? 'cv-submit' : 'man-submit';
+  document.getElementById(btnId).classList.add('loading');
+
+  const row = {
+    user_id: currentUser.id,
+    role,
+    name: currentUser.user_metadata?.name || currentUser.email,
+    email: currentUser.email,
+    type: type === 'cv' ? 'cv' : 'no-cv'
   };
 
   if (type === 'cv') {
     const file = fileInput.files[0];
-    app.cvName = file ? file.name : 'No file attached';
-    app.cvSize = file ? (file.size/1024).toFixed(0) + ' KB' : '';
-    app.message = document.getElementById('cv-note').value;
+    row.cv_name = file ? file.name : 'No file attached';
+    row.cv_size = file ? (file.size/1024).toFixed(0) + ' KB' : '';
+    row.message = document.getElementById('cv-note').value;
   } else {
-    app.experience = document.getElementById('man-exp').value;
-    app.skills = document.getElementById('man-skills').value;
-    app.why = document.getElementById('man-why').value;
-    app.link = document.getElementById('man-link').value;
+    row.experience = document.getElementById('man-exp').value;
+    row.skills = document.getElementById('man-skills').value;
+    row.why = document.getElementById('man-why').value;
+    row.link = document.getElementById('man-link').value;
   }
 
-  apps.push(app);
-  localStorage.setItem('regma_applications', JSON.stringify(apps));
+  const { error } = await sb.from('applications').insert(row);
+  document.getElementById(btnId).classList.remove('loading');
+
+  if (error) {
+    if (window.showToast) showToast('Error submitting. Please try again.', 'error');
+    console.error(error);
+    return;
+  }
 
   const sid = type === 'cv' ? 'cv-success' : 'man-success';
-  const el = document.getElementById(sid);
-  el.textContent = '✓ Application submitted! Redirecting to your portal…';
-  el.style.display = 'block';
-  document.getElementById(type === 'cv' ? 'cv-submit' : 'man-submit').disabled = true;
-
+  document.getElementById(sid).textContent = '✓ Application submitted! Redirecting to your portal…';
+  document.getElementById(sid).style.display = 'block';
+  document.getElementById(btnId).disabled = true;
   setTimeout(() => location.href = 'portal.html', 1800);
 }
 

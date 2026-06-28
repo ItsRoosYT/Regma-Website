@@ -118,6 +118,8 @@
 <script src="nav.js"></script>
 <script src="components.js"></script>
 <script src="i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
 function togglePw(id, btn) {
   const input = document.getElementById(id);
@@ -143,31 +145,35 @@ function showError(id, msg) {
   el.style.display = 'block';
 }
 
-function handleLogin(e) {
+function getRedirectDest() {
+  const p = new URLSearchParams(window.location.search);
+  const r = p.get('redirect');
+  const role = p.get('role');
+  return r ? r + '.html' + (role ? '?role=' + encodeURIComponent(role) : '') : 'portal.html';
+}
+
+async function handleLogin(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.classList.add('loading');
+
   const email = document.getElementById('login-email').value;
   const pass = document.getElementById('login-pass').value;
 
-  // TODO: Replace with Supabase auth
-  // For now, check localStorage mock accounts
-  const accounts = JSON.parse(localStorage.getItem('regma_accounts') || '[]');
-  const user = accounts.find(a => a.email === email && a.password === pass);
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
 
-  if (!user) {
-    showError('login-error', 'Invalid email or password. Please try again.');
+  btn.classList.remove('loading');
+  if (error) {
+    showError('login-error', error.message);
     return;
   }
-
-  localStorage.setItem('regma_user', JSON.stringify({ name: user.name, email: user.email }));
-
-  const params2 = new URLSearchParams(window.location.search);
-  const redirect2 = params2.get('redirect');
-  const role2 = params2.get('role');
-  window.location.href = redirect2 ? redirect2 + '.html' + (role2 ? '?role=' + encodeURIComponent(role2) : '') : 'portal.html';
+  window.location.href = getRedirectDest();
 }
 
-function handleSignup(e) {
+async function handleSignup(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+
   const name = document.getElementById('signup-name').value;
   const email = document.getElementById('signup-email').value;
   const pass = document.getElementById('signup-pass').value;
@@ -178,38 +184,32 @@ function handleSignup(e) {
     return;
   }
 
-  // TODO: Replace with Supabase auth
-  const accounts = JSON.parse(localStorage.getItem('regma_accounts') || '[]');
-  if (accounts.some(a => a.email === email)) {
-    showError('signup-error', 'An account with this email already exists.');
+  btn.classList.add('loading');
+
+  const { error } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: { data: { name } }
+  });
+
+  btn.classList.remove('loading');
+  if (error) {
+    showError('signup-error', error.message);
     return;
   }
-
-  accounts.push({ name, email, password: pass });
-  localStorage.setItem('regma_accounts', JSON.stringify(accounts));
-  localStorage.setItem('regma_user', JSON.stringify({ name, email }));
 
   const success = document.getElementById('signup-success');
   success.textContent = 'Account created! Redirecting…';
   success.style.display = 'block';
 
-  setTimeout(() => {
-    const params = new URLSearchParams(window.location.search);
-    const redirect = params.get('redirect');
-    const role = params.get('role');
-    const dest = redirect ? redirect + '.html' + (role ? '?role=' + encodeURIComponent(role) : '') : 'portal.html';
-    window.location.href = dest;
-  }, 1000);
+  setTimeout(() => { window.location.href = getRedirectDest(); }, 1200);
 }
 
 // If already logged in, redirect
-const user = localStorage.getItem('regma_user');
-if (user) {
-  const params2 = new URLSearchParams(window.location.search);
-  const redirect2 = params2.get('redirect');
-  const role2 = params2.get('role');
-  window.location.href = redirect2 ? redirect2 + '.html' + (role2 ? '?role=' + encodeURIComponent(role2) : '') : 'portal.html';
-}
+(async () => {
+  const session = await getSession();
+  if (session) window.location.href = getRedirectDest();
+})();
 </script>
 </body>
 </html>

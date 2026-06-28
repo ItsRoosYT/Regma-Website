@@ -159,105 +159,86 @@
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
 <script src="components.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
-const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
-if (!user) { window.location.href = 'auth.html?redirect=portal'; }
+(async () => {
+  const user = await getUser();
+  if (!user) { location.href = 'auth.html?redirect=portal'; return; }
 
-const ADMIN_EMAIL = 'rooseveltdjomo81@gmail.com';
-
-if (user) {
-  document.getElementById('portal-name').textContent = user.name.split(' ')[0];
+  const name = user.user_metadata?.name || user.email.split('@')[0];
+  document.getElementById('portal-name').textContent = name.split(' ')[0];
   document.getElementById('portal-email').textContent = user.email;
-  document.getElementById('portal-avatar').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('portal-avatar').textContent = name.charAt(0).toUpperCase();
 
-  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
-  const myApps = apps.filter(a => a.email === user.email);
+  // Load applications from Supabase
+  const { data: myApps } = await sb.from('applications').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+  const apps = myApps || [];
 
-  // Stats
   document.getElementById('portal-stats').innerHTML = `
-    <div class="admin-stat-card"><div class="a-val">${myApps.length}</div><div class="a-lbl">Applications sent</div></div>
-    <div class="admin-stat-card"><div class="a-val">${myApps.filter(a=>a.status==='pending').length}</div><div class="a-lbl">Pending review</div></div>
-    <div class="admin-stat-card"><div class="a-val">${myApps.filter(a=>a.status==='reviewed').length}</div><div class="a-lbl">Reviewed</div></div>
+    <div class="admin-stat-card"><div class="a-val">${apps.length}</div><div class="a-lbl">Applications sent</div></div>
+    <div class="admin-stat-card"><div class="a-val">${apps.filter(a=>a.status==='pending').length}</div><div class="a-lbl">Pending review</div></div>
+    <div class="admin-stat-card"><div class="a-val">${apps.filter(a=>a.status==='reviewed').length}</div><div class="a-lbl">Reviewed</div></div>
     <div class="admin-stat-card"><div class="a-val">5</div><div class="a-lbl">Open positions</div></div>
   `;
 
-  // My Applications
   const container = document.getElementById('my-apps');
-  if (myApps.length === 0) {
+  if (apps.length === 0) {
     document.getElementById('no-apps').style.display = '';
   } else {
-    container.innerHTML = myApps.map(app => {
-      const date = new Date(app.date).toLocaleDateString('en-SE', { year: 'numeric', month: 'short', day: 'numeric' });
+    container.innerHTML = apps.map(app => {
+      const date = new Date(app.created_at).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
       const s = app.status || 'pending';
-
-      const stages = ['Applied', 'Under Review', 'Interview', 'Decision'];
-      const stageIndex = s === 'reviewed' ? 1 : s === 'interview' ? 2 : s === 'accepted' || s === 'rejected' ? 3 : 0;
-
-      const timeline = stages.map((name, i) => {
-        const cls = i < stageIndex ? 'done' : i === stageIndex ? 'active' : '';
-        const dot = i < stageIndex ? '✓' : i === stageIndex ? '●' : '';
-        return `<div class="app-stage ${cls}"><div class="app-stage-dot">${dot}</div>${name}</div>` + (i < stages.length - 1 ? '<div class="app-stage-line"></div>' : '');
+      const stages = ['Applied','Under Review','Interview','Decision'];
+      const si = s==='reviewed'?1:s==='interview'?2:(s==='accepted'||s==='rejected')?3:0;
+      const timeline = stages.map((nm,i) => {
+        const cls = i<si?'done':i===si?'active':'';
+        const dot = i<si?'✓':i===si?'●':'';
+        return `<div class="app-stage ${cls}"><div class="app-stage-dot">${dot}</div>${nm}</div>`+(i<stages.length-1?'<div class="app-stage-line"></div>':'');
       }).join('');
-
-      return `
-        <div class="app-card" style="margin-bottom:10px">
-          <div class="app-card-header">
-            <h3>${esc(app.role)}</h3>
-            <span class="app-status ${s}">${s}</span>
-          </div>
-          <div class="app-meta">
-            <span>📅 Applied ${date}</span>
-            <span>📎 ${app.type === 'cv' ? 'With CV (' + esc(app.cvName) + ')' : 'Without CV'}</span>
-          </div>
-          <div class="app-timeline">${timeline}</div>
-        </div>
-      `;
+      return `<div class="app-card" style="margin-bottom:10px">
+        <div class="app-card-header"><h3>${esc(app.role)}</h3><span class="app-status ${s}">${s}</span></div>
+        <div class="app-meta"><span>📅 Applied ${date}</span><span>📎 ${app.type==='cv'?'With CV ('+esc(app.cv_name||'')+')':'Without CV'}</span></div>
+        <div class="app-timeline">${timeline}</div>
+      </div>`;
     }).join('');
   }
 
-  // Admin shortcut
-  if (user.email === ADMIN_EMAIL) {
+  if (isAdmin(user)) {
     const link = document.createElement('a');
-    link.href = 'admin.html';
-    link.className = 'btn';
+    link.href = 'admin.html'; link.className = 'btn';
     link.style.cssText = 'border-color:var(--teal);color:var(--teal);font-size:12.5px;padding:7px 16px';
     link.textContent = '🔒 Admin Dashboard';
     document.querySelector('.portal-section-header').appendChild(link);
   }
-}
 
-  // Profile form
-  const profile = JSON.parse(localStorage.getItem('regma_profile_' + user.email) || '{}');
-  document.getElementById('p-name').value = profile.name || user.name;
+  // Profile
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  document.getElementById('p-name').value = profile?.name || name;
   document.getElementById('p-email').value = user.email;
-  document.getElementById('p-phone').value = profile.phone || '';
-  document.getElementById('p-linkedin').value = profile.linkedin || '';
-}
+  document.getElementById('p-phone').value = profile?.phone || '';
+  document.getElementById('p-linkedin').value = profile?.linkedin || '';
+})();
 
-window.saveProfile = function(e) {
+window.saveProfile = async function(e) {
   e.preventDefault();
-  const user = JSON.parse(localStorage.getItem('regma_user'));
-  const name = document.getElementById('p-name').value;
-  const profile = {
-    name: name,
+  const user = await getUser();
+  const row = {
+    id: user.id,
+    name: document.getElementById('p-name').value,
     phone: document.getElementById('p-phone').value,
-    linkedin: document.getElementById('p-linkedin').value
+    linkedin: document.getElementById('p-linkedin').value,
+    updated_at: new Date().toISOString()
   };
-  localStorage.setItem('regma_profile_' + user.email, JSON.stringify(profile));
-  user.name = name;
-  localStorage.setItem('regma_user', JSON.stringify(user));
-  document.getElementById('portal-name').textContent = name.split(' ')[0];
-  document.getElementById('portal-avatar').textContent = name.charAt(0).toUpperCase();
+  await sb.from('profiles').upsert(row);
+  document.getElementById('portal-name').textContent = row.name.split(' ')[0];
+  document.getElementById('portal-avatar').textContent = row.name.charAt(0).toUpperCase();
   const saved = document.getElementById('profile-saved');
   saved.style.display = 'inline';
   setTimeout(() => saved.style.display = 'none', 2500);
 };
 
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 </script>
 </body>
 </html>

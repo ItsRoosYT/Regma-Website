@@ -63,144 +63,103 @@
 
 <div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
-const ADMIN_EMAIL = 'rooseveltdjomo81@gmail.com';
+let allApps = [];
 
-// Auth gate
-const user = JSON.parse(localStorage.getItem('regma_user') || 'null');
-if (!user || user.email !== ADMIN_EMAIL) {
-  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;font-family:Inter,sans-serif;color:#f0f0f2;background:#0d0d10"><h2>Access denied</h2><p style="color:#72728a">This page is restricted to administrators.</p><a href="auth.html" style="color:#1D9E75">Sign in as admin</a></div>';
-} else {
-  renderDashboard();
-}
+(async () => {
+  const user = await getUser();
+  if (!user || !isAdmin(user)) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;font-family:Inter,sans-serif;color:#f0f0f2;background:#0d0d10"><h2>Access denied</h2><p style="color:#72728a">This page is restricted to administrators.</p><a href="auth.html" style="color:#1D9E75">Sign in as admin</a></div>';
+    return;
+  }
+  await renderDashboard();
+})();
 
-function renderDashboard() {
-  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
-  const accounts = JSON.parse(localStorage.getItem('regma_accounts') || '[]');
+async function renderDashboard() {
+  const { data: apps } = await sb.from('applications').select('*').order('created_at', { ascending: false });
+  const { data: contacts } = await sb.from('contact_submissions').select('*').order('created_at', { ascending: false });
+  const { data: newsletter } = await sb.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
 
-  // Stats
-  const total = apps.length;
-  const pending = apps.filter(a => a.status === 'pending').length;
-  const reviewed = apps.filter(a => a.status === 'reviewed').length;
-  const totalUsers = accounts.filter(a => a.email !== ADMIN_EMAIL).length;
+  allApps = apps || [];
+  const cl = contacts || [];
+  const nl = newsletter || [];
 
-  const newsletter = JSON.parse(localStorage.getItem('regma_newsletter') || '[]');
-  const contacts = JSON.parse(localStorage.getItem('regma_contacts') || '[]');
+  const total = allApps.length;
+  const pending = allApps.filter(a => a.status === 'pending').length;
+  const reviewed = allApps.filter(a => a.status === 'reviewed').length;
 
   document.getElementById('admin-stats').innerHTML = `
     <div class="admin-stat-card"><div class="a-val">${total}</div><div class="a-lbl">Total applications</div></div>
     <div class="admin-stat-card"><div class="a-val">${pending}</div><div class="a-lbl">Pending review</div></div>
     <div class="admin-stat-card"><div class="a-val">${reviewed}</div><div class="a-lbl">Reviewed</div></div>
-    <div class="admin-stat-card"><div class="a-val">${totalUsers}</div><div class="a-lbl">Registered users</div></div>
-    <div class="admin-stat-card"><div class="a-val">${newsletter.length}</div><div class="a-lbl">Newsletter subs</div></div>
-    <div class="admin-stat-card"><div class="a-val">${contacts.length}</div><div class="a-lbl">Contact messages</div></div>
+    <div class="admin-stat-card"><div class="a-val">${nl.length}</div><div class="a-lbl">Newsletter subs</div></div>
+    <div class="admin-stat-card"><div class="a-val">${cl.length}</div><div class="a-lbl">Contact messages</div></div>
   `;
 
-  // Applications
   const list = document.getElementById('app-list');
-  if (apps.length === 0) {
+  if (allApps.length === 0) {
     document.getElementById('admin-empty').style.display = '';
-    return;
-  }
-
-  list.innerHTML = apps.map((app, i) => {
-    const date = new Date(app.date).toLocaleDateString('en-SE', { year: 'numeric', month: 'short', day: 'numeric' });
-    const statusClass = app.status || 'pending';
-
-    let content = '';
-    if (app.type === 'cv') {
-      content = `
-        <p><strong>CV:</strong> ${app.cvName} (${app.cvSize})</p>
-        ${app.message ? `<p><strong>Message:</strong> ${escHtml(app.message)}</p>` : ''}
-      `;
-    } else {
-      content = `
-        <p><strong>Experience:</strong> ${escHtml(app.experience || '')}</p>
-        <p><strong>Skills:</strong> ${escHtml(app.skills || '')}</p>
-        <p><strong>Why this role:</strong> ${escHtml(app.why || '')}</p>
-      `;
-    }
-
-    return `
-      <div class="app-card">
-        <div class="app-card-header">
-          <h3>${escHtml(app.role)}</h3>
-          <span class="app-status ${statusClass}">${statusClass}</span>
-        </div>
-        <div class="app-meta">
-          <span>👤 ${escHtml(app.name)}</span>
-          <span>📧 ${escHtml(app.email)}</span>
-          <span>📅 ${date}</span>
-          <span>📎 ${app.type === 'cv' ? 'With CV' : 'Without CV'}</span>
-        </div>
-        <div class="app-content">${content}</div>
-        <div style="margin-top:12px">
-          <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Admin notes</label>
-          <textarea style="width:100%;min-height:50px" placeholder="Internal notes about this applicant…" oninput="saveNote(${i},this.value)">${escHtml(app.adminNote||'')}</textarea>
-        </div>
-        <div class="app-actions">
-          <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="setStatus(${i},'reviewed')">Mark reviewed</button>
-          <button class="btn" style="border-color:#f87171;color:#f87171" onclick="setStatus(${i},'rejected')">Reject</button>
-          <button class="btn" onclick="setStatus(${i},'pending')">Reset</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function setStatus(index, status) {
-  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
-  if (apps[index]) {
-    apps[index].status = status;
-    localStorage.setItem('regma_applications', JSON.stringify(apps));
-    renderDashboard();
-  }
-}
-
-// Contact messages section
-const contactList = document.getElementById('contact-list');
-if (contactList) {
-  if (contacts.length === 0) {
-    contactList.innerHTML = '<div class="admin-empty">No contact messages yet.</div>';
   } else {
-    contactList.innerHTML = contacts.map((c, i) => {
-      const d = new Date(c.date).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
-      return `<div class="app-card" style="margin-bottom:8px">
-        <div class="app-card-header"><h3>${escHtml(c.name)}</h3><span style="font-size:12px;color:var(--muted)">${d}</span></div>
-        <div class="app-meta"><span>📧 ${escHtml(c.email)}</span></div>
-        <div class="app-content"><p>${escHtml(c.message)}</p></div>
+    list.innerHTML = allApps.map((app, i) => {
+      const date = new Date(app.created_at).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
+      const sc = app.status || 'pending';
+      let content = '';
+      if (app.type === 'cv') {
+        content = `<p><strong>CV:</strong> ${esc(app.cv_name||'')} (${esc(app.cv_size||'')})</p>${app.message?`<p><strong>Message:</strong> ${esc(app.message)}</p>`:''}`;
+      } else {
+        content = `<p><strong>Experience:</strong> ${esc(app.experience||'')}</p><p><strong>Skills:</strong> ${esc(app.skills||'')}</p><p><strong>Why:</strong> ${esc(app.why||'')}</p>`;
+      }
+      return `<div class="app-card">
+        <div class="app-card-header"><h3>${esc(app.role)}</h3><span class="app-status ${sc}">${sc}</span></div>
+        <div class="app-meta"><span>👤 ${esc(app.name)}</span><span>📧 ${esc(app.email)}</span><span>📅 ${date}</span><span>📎 ${app.type==='cv'?'With CV':'Without CV'}</span></div>
+        <div class="app-content">${content}</div>
+        <div style="margin-top:12px"><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Admin notes</label>
+        <textarea style="width:100%;min-height:50px" placeholder="Internal notes…" onblur="saveNote('${app.id}',this.value)">${esc(app.admin_note||'')}</textarea></div>
+        <div class="app-actions">
+          <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="setStatus('${app.id}','reviewed')">Mark reviewed</button>
+          <button class="btn" style="border-color:#f87171;color:#f87171" onclick="setStatus('${app.id}','rejected')">Reject</button>
+          <button class="btn" onclick="setStatus('${app.id}','pending')">Reset</button>
+        </div>
       </div>`;
     }).join('');
   }
-}
 
-// Newsletter section
-const nlList = document.getElementById('nl-list');
-if (nlList) {
-  if (newsletter.length === 0) {
+  // Contacts
+  const contactList = document.getElementById('contact-list');
+  if (cl.length === 0) {
+    contactList.innerHTML = '<div class="admin-empty">No contact messages yet.</div>';
+  } else {
+    contactList.innerHTML = cl.map(c => {
+      const d = new Date(c.created_at).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
+      return `<div class="app-card" style="margin-bottom:8px"><div class="app-card-header"><h3>${esc(c.name)}</h3><span style="font-size:12px;color:var(--muted)">${d}</span></div><div class="app-meta"><span>📧 ${esc(c.email)}</span></div><div class="app-content"><p>${esc(c.message)}</p></div></div>`;
+    }).join('');
+  }
+
+  // Newsletter
+  const nlList = document.getElementById('nl-list');
+  if (nl.length === 0) {
     nlList.innerHTML = '<div class="admin-empty">No subscribers yet.</div>';
   } else {
-    nlList.innerHTML = newsletter.map(email => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted)">${escHtml(email)}</div>`).join('');
+    nlList.innerHTML = nl.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted)">${esc(s.email)}</div>`).join('');
   }
 }
 
-function saveNote(index, text) {
-  const apps = JSON.parse(localStorage.getItem('regma_applications') || '[]');
-  if (apps[index]) {
-    apps[index].adminNote = text;
-    localStorage.setItem('regma_applications', JSON.stringify(apps));
-  }
+async function setStatus(id, status) {
+  await sb.from('applications').update({ status }).eq('id', id);
+  await renderDashboard();
 }
 
-function escHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
+async function saveNote(id, text) {
+  await sb.from('applications').update({ admin_note: text }).eq('id', id);
 }
 
-function logout() {
-  localStorage.removeItem('regma_user');
-  window.location.href = 'index.html';
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+async function logout() {
+  await sb.auth.signOut();
+  location.href = 'index.html';
 }
 </script>
 </body>
