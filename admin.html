@@ -72,6 +72,20 @@
 <script src="supabase-client.js"></script>
 <script>
 let allApps = [];
+let nlCount = 0, clCount = 0;
+
+function updateStats() {
+  const total = allApps.length;
+  const pending = allApps.filter(a => (a.status || 'pending') === 'pending').length;
+  const reviewed = allApps.filter(a => a.status === 'reviewed').length;
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="admin-stat-card"><div class="a-val">${total}</div><div class="a-lbl">Total applications</div></div>
+    <div class="admin-stat-card"><div class="a-val">${pending}</div><div class="a-lbl">Pending review</div></div>
+    <div class="admin-stat-card"><div class="a-val">${reviewed}</div><div class="a-lbl">Reviewed</div></div>
+    <div class="admin-stat-card"><div class="a-val">${nlCount}</div><div class="a-lbl">Newsletter subs</div></div>
+    <div class="admin-stat-card"><div class="a-val">${clCount}</div><div class="a-lbl">Contact messages</div></div>
+  `;
+}
 
 (async () => {
   const user = await getUser();
@@ -90,19 +104,10 @@ async function renderDashboard() {
   allApps = apps || [];
   const cl = contacts || [];
   const nl = newsletter || [];
+  nlCount = nl.length;
+  clCount = cl.length;
 
-  const total = allApps.length;
-  const pending = allApps.filter(a => a.status === 'pending').length;
-  const reviewed = allApps.filter(a => a.status === 'reviewed').length;
-
-  document.getElementById('admin-stats').innerHTML = `
-    <div class="admin-stat-card"><div class="a-val">${total}</div><div class="a-lbl">Total applications</div></div>
-    <div class="admin-stat-card"><div class="a-val">${pending}</div><div class="a-lbl">Pending review</div></div>
-    <div class="admin-stat-card"><div class="a-val">${reviewed}</div><div class="a-lbl">Reviewed</div></div>
-    <div class="admin-stat-card"><div class="a-val">${nl.length}</div><div class="a-lbl">Newsletter subs</div></div>
-    <div class="admin-stat-card"><div class="a-val">${cl.length}</div><div class="a-lbl">Contact messages</div></div>
-  `;
-
+  updateStats();
   renderApps();
 
   // Contacts
@@ -201,16 +206,38 @@ async function viewCV(path) {
 }
 
 async function setStatus(id, status) {
-  await sb.from('applications').update({ status }).eq('id', id);
-  if (window.showToast) showToast('Application marked as ' + status + '.', 'success');
-  await renderDashboard();
-  // keep current filter after refresh
-  const active = document.querySelector('#status-filters .filter-btn.active');
-  if (active) { currentFilter = active.dataset.status; renderApps(); }
+  const app = allApps.find(a => a.id === id);
+  if (!app) return;
+  const prev = app.status;
+  if (prev === status) { if (window.showToast) showToast('Already ' + status + '.', 'info', 1500); return; }
+
+  // Optimistic: update UI instantly
+  app.status = status;
+  updateStats();
+  renderApps();
+
+  const { data, error } = await sb.from('applications').update({ status }).eq('id', id).select();
+  if (error || !data || data.length === 0) {
+    // Revert on failure
+    app.status = prev;
+    updateStats();
+    renderApps();
+    const msg = error ? error.message : 'No rows updated — your admin database permission (RLS) may be blocking writes.';
+    if (window.showToast) showToast('Could not update: ' + msg, 'error', 6000);
+    console.error('setStatus failed', error);
+    return;
+  }
+  if (window.showToast) showToast('Marked as ' + status + '.', 'success');
 }
 
 async function saveNote(id, text) {
-  await sb.from('applications').update({ admin_note: text }).eq('id', id);
+  const app = allApps.find(a => a.id === id);
+  if (app) app.admin_note = text;
+  const { data, error } = await sb.from('applications').update({ admin_note: text }).eq('id', id).select();
+  if (error || !data || data.length === 0) {
+    if (window.showToast) showToast('Note not saved: ' + (error ? error.message : 'permission denied (RLS)'), 'error', 6000);
+    return;
+  }
   if (window.showToast) showToast('Note saved.', 'success', 1500);
 }
 
