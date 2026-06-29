@@ -219,22 +219,6 @@ nav {
 .dev-notice-close:hover { opacity: 1; }
 
 /* ── WATERMARK ── */
-.watermark {
-  position: fixed;
-  bottom: -20px;
-  right: -10px;
-  font-size: clamp(60px, 10vw, 120px);
-  font-weight: 800;
-  letter-spacing: -.04em;
-  color: var(--text);
-  opacity: .025;
-  pointer-events: none;
-  user-select: none;
-  white-space: nowrap;
-  z-index: 0;
-  line-height: 1;
-}
-
 /* ── HERO ── */
 .hero-wrap {
   padding: 72px 32px 64px;
@@ -1330,6 +1314,13 @@ nav             { animation: fadeIn  .4s .05s ease both; }
   border-top: 1px solid var(--border);
 }
 .app-actions button { font-size: 12.5px; padding: 6px 14px; }
+.app-contact-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-top: 14px;
+}
+.app-contact-actions .btn { font-size: 12.5px; padding: 6px 14px; }
+.app-meta a { text-decoration: none; }
+.app-meta a:hover { text-decoration: underline; }
 .admin-empty {
   text-align: center; padding: 48px; color: var(--muted); font-size: 14px;
 }

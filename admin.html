@@ -41,7 +41,13 @@
 <main>
   <div class="section">
     <div class="admin-stats" id="admin-stats"></div>
-    <h2 class="section-title" style="text-align:left;font-size:18px;margin-bottom:20px;">Applications</h2>
+    <h2 class="section-title" style="text-align:left;font-size:18px;margin-bottom:14px;">Applications</h2>
+    <div class="jobs-filters" id="status-filters" style="justify-content:flex-start;margin-bottom:20px">
+      <button class="filter-btn active" data-status="all" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" data-status="pending" onclick="setFilter('pending',this)">Pending</button>
+      <button class="filter-btn" data-status="reviewed" onclick="setFilter('reviewed',this)">Reviewed</button>
+      <button class="filter-btn" data-status="rejected" onclick="setFilter('rejected',this)">Rejected</button>
+    </div>
     <div class="app-list" id="app-list"></div>
     <div class="admin-empty" id="admin-empty" style="display:none">No applications yet. When candidates apply on the Careers page, their submissions will appear here.</div>
 
@@ -60,8 +66,6 @@
     <li><a href="career.html">Careers</a></li>
   </ul>
 </footer>
-
-<div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
 <script src="components.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -99,33 +103,7 @@ async function renderDashboard() {
     <div class="admin-stat-card"><div class="a-val">${cl.length}</div><div class="a-lbl">Contact messages</div></div>
   `;
 
-  const list = document.getElementById('app-list');
-  if (allApps.length === 0) {
-    document.getElementById('admin-empty').style.display = '';
-  } else {
-    list.innerHTML = allApps.map((app, i) => {
-      const date = new Date(app.created_at).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
-      const sc = app.status || 'pending';
-      let content = '';
-      if (app.type === 'cv') {
-        content = `<p><strong>CV:</strong> ${esc(app.cv_name||'')} (${esc(app.cv_size||'')})</p>${app.message?`<p><strong>Message:</strong> ${esc(app.message)}</p>`:''}`;
-      } else {
-        content = `<p><strong>Experience:</strong> ${esc(app.experience||'')}</p><p><strong>Skills:</strong> ${esc(app.skills||'')}</p><p><strong>Why:</strong> ${esc(app.why||'')}</p>`;
-      }
-      return `<div class="app-card">
-        <div class="app-card-header"><h3>${esc(app.role)}</h3><span class="app-status ${sc}">${sc}</span></div>
-        <div class="app-meta"><span>👤 ${esc(app.name)}</span><span>📧 ${esc(app.email)}</span><span>📅 ${date}</span><span>📎 ${app.type==='cv'?'With CV':'Without CV'}</span></div>
-        <div class="app-content">${content}</div>
-        <div style="margin-top:12px"><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Admin notes</label>
-        <textarea style="width:100%;min-height:50px" placeholder="Internal notes…" onblur="saveNote('${app.id}',this.value)">${esc(app.admin_note||'')}</textarea></div>
-        <div class="app-actions">
-          <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="setStatus('${app.id}','reviewed')">Mark reviewed</button>
-          <button class="btn" style="border-color:#f87171;color:#f87171" onclick="setStatus('${app.id}','rejected')">Reject</button>
-          <button class="btn" onclick="setStatus('${app.id}','pending')">Reset</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  renderApps();
 
   // Contacts
   const contactList = document.getElementById('contact-list');
@@ -147,10 +125,88 @@ async function renderDashboard() {
   }
 }
 
+let currentFilter = 'all';
+
+function renderApps() {
+  const list = document.getElementById('app-list');
+  const empty = document.getElementById('admin-empty');
+  const apps = currentFilter === 'all' ? allApps : allApps.filter(a => (a.status || 'pending') === currentFilter);
+
+  if (apps.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    empty.textContent = allApps.length === 0
+      ? 'No applications yet. When candidates apply on the Careers page, their submissions will appear here.'
+      : 'No ' + currentFilter + ' applications.';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = apps.map((app) => {
+    const date = new Date(app.created_at).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
+    const sc = app.status || 'pending';
+    let content = '';
+    if (app.type === 'cv') {
+      content = `${app.cv_path
+        ? `<p><strong>CV:</strong> ${esc(app.cv_name||'document')} (${esc(app.cv_size||'')}) &nbsp; <a href="#" onclick="viewCV('${esc(app.cv_path)}');return false;" style="color:var(--teal);font-weight:600">⬇ View / download</a></p>`
+        : `<p><strong>CV:</strong> ${esc(app.cv_name||'')} (no file stored)</p>`}
+        ${app.message?`<p><strong>Message:</strong> ${esc(app.message)}</p>`:''}`;
+    } else {
+      content = `<p><strong>Experience:</strong> ${esc(app.experience||'')}</p><p><strong>Skills:</strong> ${esc(app.skills||'')}</p><p><strong>Why:</strong> ${esc(app.why||'')}</p>${app.link?`<p><strong>Link:</strong> <a href="${esc(app.link)}" target="_blank" rel="noopener" style="color:var(--teal)">${esc(app.link)}</a></p>`:''}`;
+    }
+
+    const phone = app.phone
+      ? `<a href="tel:${esc(app.phone)}" style="color:var(--teal)">📞 ${esc(app.phone)}</a>`
+      : '<span style="opacity:.6">📞 no phone</span>';
+
+    return `<div class="app-card">
+      <div class="app-card-header"><h3>${esc(app.role)}</h3><span class="app-status ${sc}">${sc}</span></div>
+      <div class="app-meta">
+        <span>👤 ${esc(app.name)}</span>
+        <a href="mailto:${esc(app.email)}" style="color:var(--teal)">📧 ${esc(app.email)}</a>
+        ${phone}
+        <span>📅 ${date}</span>
+        <span>📎 ${app.type==='cv'?'With CV':'Without CV'}</span>
+      </div>
+      <div class="app-content">${content}</div>
+      <div class="app-contact-actions">
+        <a class="btn" style="border-color:var(--teal);color:var(--teal)" href="mailto:${esc(app.email)}?subject=${encodeURIComponent('Your application — ' + (app.role||''))}">✉ Email applicant</a>
+        ${app.phone?`<a class="btn" href="tel:${esc(app.phone)}">📞 Call applicant</a>`:''}
+      </div>
+      <div style="margin-top:12px"><label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Admin notes</label>
+      <textarea style="width:100%;min-height:50px" placeholder="Internal notes…" onblur="saveNote('${app.id}',this.value)">${esc(app.admin_note||'')}</textarea></div>
+      <div class="app-actions">
+        <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="setStatus('${app.id}','reviewed')">Mark reviewed</button>
+        <button class="btn" style="border-color:#f87171;color:#f87171" onclick="setStatus('${app.id}','rejected')">Reject</button>
+        <button class="btn" onclick="setStatus('${app.id}','pending')">Reset to pending</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(status, btn) {
+  currentFilter = status;
+  document.querySelectorAll('#status-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderApps();
+}
+
+async function viewCV(path) {
+  const { data, error } = await sb.storage.from('cvs').createSignedUrl(path, 120);
+  if (error || !data) {
+    if (window.showToast) showToast('Could not open CV: ' + (error?.message || 'unknown error'), 'error');
+    return;
+  }
+  window.open(data.signedUrl, '_blank', 'noopener');
+}
+
 async function setStatus(id, status) {
   await sb.from('applications').update({ status }).eq('id', id);
   if (window.showToast) showToast('Application marked as ' + status + '.', 'success');
   await renderDashboard();
+  // keep current filter after refresh
+  const active = document.querySelector('#status-filters .filter-btn.active');
+  if (active) { currentFilter = active.dataset.status; renderApps(); }
 }
 
 async function saveNote(id, text) {

@@ -55,7 +55,11 @@
           <input type="email" id="app-email" disabled />
         </div>
       </div>
-      <p class="apply-hint">These are from your account. <a href="portal.html">Go to portal</a> to manage.</p>
+      <div class="form-row" style="margin-top:14px">
+        <label for="app-phone">Phone number <span style="color:var(--teal)">*</span></label>
+        <input type="tel" id="app-phone" placeholder="+46 70 000 0000" required />
+        <p class="apply-hint">So we can reach you about your application. Email and phone are both required.</p>
+      </div>
     </div>
 
     <!-- APPLICATION TYPE TABS -->
@@ -143,8 +147,6 @@
     <li><a href="portal.html">Portal</a></li>
   </ul>
 </footer>
-
-<div class="watermark">Roosevelt MDL</div>
 <script src="nav.js"></script>
 <script src="components.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -163,6 +165,9 @@ const role = decodeURIComponent(new URLSearchParams(location.search).get('role')
   document.title = 'Apply: ' + role + ' — Regma IT AB';
   document.getElementById('app-name').value = currentUser.user_metadata?.name || currentUser.email;
   document.getElementById('app-email').value = currentUser.email;
+  // Prefill phone from saved profile if available
+  const { data: profile } = await sb.from('profiles').select('phone').eq('id', currentUser.id).single();
+  if (profile?.phone) document.getElementById('app-phone').value = profile.phone;
 })();
 
 function switchType(type) {
@@ -193,21 +198,47 @@ function showFile(f) {
 
 async function submitApp(e, type) {
   e.preventDefault();
+
+  // Phone is shared across both application types and required
+  const phone = document.getElementById('app-phone').value.trim();
+  if (!phone) {
+    if (window.showToast) showToast('Please add a phone number so we can reach you.', 'error');
+    document.getElementById('app-phone').focus();
+    return;
+  }
+
   const btnId = type === 'cv' ? 'cv-submit' : 'man-submit';
-  document.getElementById(btnId).classList.add('loading');
+  const btn = document.getElementById(btnId);
+  btn.classList.add('loading');
 
   const row = {
     user_id: currentUser.id,
     role,
     name: currentUser.user_metadata?.name || currentUser.email,
     email: currentUser.email,
+    phone,
     type: type === 'cv' ? 'cv' : 'no-cv'
   };
 
   if (type === 'cv') {
     const file = fileInput.files[0];
-    row.cv_name = file ? file.name : 'No file attached';
-    row.cv_size = file ? (file.size/1024).toFixed(0) + ' KB' : '';
+    if (!file) {
+      btn.classList.remove('loading');
+      if (window.showToast) showToast('Please attach your CV file.', 'error');
+      return;
+    }
+    // Upload the actual file to Supabase Storage (private bucket)
+    const path = currentUser.id + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const { error: upErr } = await sb.storage.from('cvs').upload(path, file, { upsert: false });
+    if (upErr) {
+      btn.classList.remove('loading');
+      if (window.showToast) showToast('Could not upload CV: ' + upErr.message, 'error');
+      console.error(upErr);
+      return;
+    }
+    row.cv_name = file.name;
+    row.cv_size = (file.size/1024).toFixed(0) + ' KB';
+    row.cv_path = path;
     row.message = document.getElementById('cv-note').value;
   } else {
     row.experience = document.getElementById('man-exp').value;
@@ -216,8 +247,11 @@ async function submitApp(e, type) {
     row.link = document.getElementById('man-link').value;
   }
 
+  // Save phone to profile too so it's remembered next time
+  await sb.from('profiles').upsert({ id: currentUser.id, phone, updated_at: new Date().toISOString() });
+
   const { error } = await sb.from('applications').insert(row);
-  document.getElementById(btnId).classList.remove('loading');
+  btn.classList.remove('loading');
 
   if (error) {
     if (window.showToast) showToast('Error submitting. Please try again.', 'error');
@@ -228,7 +262,7 @@ async function submitApp(e, type) {
   const sid = type === 'cv' ? 'cv-success' : 'man-success';
   document.getElementById(sid).textContent = '✓ Application submitted! Redirecting to your portal…';
   document.getElementById(sid).style.display = 'block';
-  document.getElementById(btnId).disabled = true;
+  btn.disabled = true;
   setTimeout(() => location.href = 'portal.html', 1800);
 }
 
