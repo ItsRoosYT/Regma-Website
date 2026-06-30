@@ -63,7 +63,7 @@
     <h1>Build your career with <em>Regma IT</em></h1>
     <p>We're building a team of sharp, independent thinkers who want to help Swedish businesses make better technology decisions. Explore our open roles below.</p>
     <div class="careers-hero-stats">
-      <div><strong>5</strong><span>Open positions</span></div>
+      <div><strong id="stat-open">—</strong><span>Open positions</span></div>
       <div><strong>Gothenburg</strong><span>+ hybrid roles</span></div>
       <div><strong>AB</strong><span>Swedish company</span></div>
     </div>
@@ -83,232 +83,12 @@
       <input type="text" id="job-search" placeholder="Search positions…" />
     </div>
 
-    <div class="jobs-filters">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="engineering">Engineering</button>
-      <button class="filter-btn" data-filter="consulting">Consulting</button>
-      <button class="filter-btn" data-filter="design">Design</button>
-      <button class="filter-btn" data-filter="operations">Operations</button>
-    </div>
+    <div class="jobs-filters" id="jobs-filters"></div>
 
     <div class="job-list" id="job-list">
-
-      <!-- Senior IT Consultant -->
-      <div class="job-card" data-dept="consulting">
-        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
-          <div class="job-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          </div>
-          <div class="job-meta">
-            <h3>Senior IT Consultant</h3>
-            <div class="job-tags">
-              <span class="job-tag teal">Consulting</span>
-              <span class="job-tag">Full-time</span>
-              <span class="job-tag">Gothenburg</span>
-            </div>
-          </div>
-          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="job-details">
-          <p>Lead client engagements from discovery to delivery. You'll work directly with business leaders to align their IT strategy with growth goals — acting as a trusted external advisor and, when needed, an outsourced CTO.</p>
-          <div class="job-section-title">Responsibilities</div>
-          <ul>
-            <li>Run discovery sessions with clients to map business needs to technology solutions</li>
-            <li>Design IT strategies covering infrastructure, vendors, and digital workflows</li>
-            <li>Present recommendations to C-level stakeholders with clarity and conviction</li>
-            <li>Manage ongoing advisory relationships with 3–5 concurrent clients</li>
-          </ul>
-          <div class="job-section-title">Requirements</div>
-          <ul>
-            <li>5+ years in IT consulting, solutions architecture, or technical leadership</li>
-            <li>Strong understanding of cloud platforms (Azure, AWS, or GCP)</li>
-            <li>Excellent communication in Swedish and English</li>
-            <li>Based in or willing to relocate to the Gothenburg area</li>
-          </ul>
-          <div class="job-section-title">Nice to have</div>
-          <ul>
-            <li>Experience with GDPR compliance frameworks</li>
-            <li>Previous CTO or Head of Engineering role</li>
-          </ul>
-          <div class="job-apply-bar">
-            <div class="salary-badge">💰 45 000 – 65 000 SEK/month</div>
-            <p>Posted 3 days ago · Applications open</p>
-            <button class="btn btn-primary" onclick="handleApply('Senior IT Consultant')">Apply now</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Systems Architect -->
-      <div class="job-card" data-dept="engineering">
-        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
-          <div class="job-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          </div>
-          <div class="job-meta">
-            <h3>Systems Architect</h3>
-            <div class="job-tags">
-              <span class="job-tag teal">Engineering</span>
-              <span class="job-tag">Full-time</span>
-              <span class="job-tag">Gothenburg</span>
-            </div>
-          </div>
-          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="job-details">
-          <p>Design and implement scalable IT systems for our clients. You'll evaluate existing infrastructure, choose the right tech stacks, and oversee deployments that businesses depend on every day.</p>
-          <div class="job-section-title">Responsibilities</div>
-          <ul>
-            <li>Assess client infrastructure and recommend improvements or migrations</li>
-            <li>Design system architectures that balance performance, cost, and maintainability</li>
-            <li>Lead technical implementations including hardware, software, and cloud setups</li>
-            <li>Write clear technical documentation for client handoff</li>
-          </ul>
-          <div class="job-section-title">Requirements</div>
-          <ul>
-            <li>4+ years in systems architecture, DevOps, or infrastructure engineering</li>
-            <li>Hands-on experience with Linux, networking, and cloud-native services</li>
-            <li>Ability to explain technical decisions to non-technical stakeholders</li>
-            <li>Fluent in Swedish; English proficiency required</li>
-          </ul>
-          <div class="job-section-title">Nice to have</div>
-          <ul>
-            <li>Certifications in AWS, Azure, or GCP</li>
-            <li>Experience with containerisation (Docker, Kubernetes)</li>
-          </ul>
-          <div class="job-apply-bar">
-            <div class="salary-badge">💰 42 000 – 58 000 SEK/month</div>
-            <p>Posted 1 week ago · Applications open</p>
-            <button class="btn btn-primary" onclick="handleApply('Systems Architect')">Apply now</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Junior Developer -->
-      <div class="job-card" data-dept="engineering">
-        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
-          <div class="job-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          </div>
-          <div class="job-meta">
-            <h3>Junior Developer</h3>
-            <div class="job-tags">
-              <span class="job-tag teal">Engineering</span>
-              <span class="job-tag">Full-time</span>
-              <span class="job-tag">Gothenburg / Hybrid</span>
-            </div>
-          </div>
-          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="job-details">
-          <p>Join our engineering team and build real solutions from day one. You'll work alongside senior architects and consultants, contributing to client projects while learning professional software development practices.</p>
-          <div class="job-section-title">Responsibilities</div>
-          <ul>
-            <li>Build and maintain web applications and internal tools for client projects</li>
-            <li>Write clean, tested code with guidance from senior team members</li>
-            <li>Participate in code reviews and sprint planning</li>
-            <li>Help document systems and create technical specifications</li>
-          </ul>
-          <div class="job-section-title">Requirements</div>
-          <ul>
-            <li>0–2 years of professional development experience (internships count)</li>
-            <li>Solid fundamentals in at least one language (JavaScript, Python, Java, or C#)</li>
-            <li>Familiarity with Git, REST APIs, and basic web technologies</li>
-            <li>Eager to learn and comfortable asking questions</li>
-          </ul>
-          <div class="job-section-title">Nice to have</div>
-          <ul>
-            <li>Portfolio or GitHub with personal/school projects</li>
-            <li>Interest in cloud infrastructure or DevOps</li>
-          </ul>
-          <div class="job-apply-bar">
-            <div class="salary-badge">💰 28 000 – 35 000 SEK/month</div>
-            <p>Posted 5 days ago · Applications open</p>
-            <button class="btn btn-primary" onclick="handleApply('Junior Developer')">Apply now</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- UX/UI Designer -->
-      <div class="job-card" data-dept="design">
-        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
-          <div class="job-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-          </div>
-          <div class="job-meta">
-            <h3>UX/UI Designer</h3>
-            <div class="job-tags">
-              <span class="job-tag teal">Design</span>
-              <span class="job-tag">Part-time</span>
-              <span class="job-tag">Remote / Sweden</span>
-            </div>
-          </div>
-          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="job-details">
-          <p>Shape how our clients' products look and feel. You'll lead the design process for web and mobile applications — from user research and wireframes through polished handoff to the development team.</p>
-          <div class="job-section-title">Responsibilities</div>
-          <ul>
-            <li>Create wireframes, prototypes, and high-fidelity mockups in Figma</li>
-            <li>Conduct user interviews and translate insights into design decisions</li>
-            <li>Collaborate closely with developers to ensure pixel-perfect implementation</li>
-            <li>Establish and maintain design systems for client projects</li>
-          </ul>
-          <div class="job-section-title">Requirements</div>
-          <ul>
-            <li>2+ years of UX/UI design experience with a strong portfolio</li>
-            <li>Expert-level Figma skills</li>
-            <li>Understanding of accessibility standards and responsive design</li>
-            <li>Clear communicator who can defend design decisions with data</li>
-          </ul>
-          <div class="job-apply-bar">
-            <div class="salary-badge">💰 22 000 – 30 000 SEK/month (part-time)</div>
-            <p>Posted 2 weeks ago · Applications open</p>
-            <button class="btn btn-primary" onclick="handleApply('UX/UI Designer')">Apply now</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Project Manager -->
-      <div class="job-card" data-dept="operations">
-        <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
-          <div class="job-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <div class="job-meta">
-            <h3>Project Manager</h3>
-            <div class="job-tags">
-              <span class="job-tag teal">Operations</span>
-              <span class="job-tag">Full-time</span>
-              <span class="job-tag">Gothenburg</span>
-            </div>
-          </div>
-          <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="job-details">
-          <p>Keep our consulting projects running on time and on budget. You'll be the connective tissue between clients, consultants, and developers — making sure everyone knows what's happening and when.</p>
-          <div class="job-section-title">Responsibilities</div>
-          <ul>
-            <li>Plan and manage 3–6 concurrent client projects</li>
-            <li>Run standups, retrospectives, and client check-ins</li>
-            <li>Track budgets, timelines, and resource allocation</li>
-            <li>Identify risks early and communicate them clearly to stakeholders</li>
-          </ul>
-          <div class="job-section-title">Requirements</div>
-          <ul>
-            <li>3+ years of project management in IT or tech consulting</li>
-            <li>Comfortable with agile methodologies (Scrum/Kanban)</li>
-            <li>Strong organisational skills and attention to detail</li>
-            <li>Fluent in Swedish and English</li>
-          </ul>
-          <div class="job-apply-bar">
-            <div class="salary-badge">💰 38 000 – 50 000 SEK/month</div>
-            <p>Posted 4 days ago · Applications open</p>
-            <button class="btn btn-primary" onclick="handleApply('Project Manager')">Apply now</button>
-          </div>
-        </div>
-      </div>
-
+      <div class="jobs-empty" id="jobs-loading">Loading open positions…</div>
     </div>
+    <div class="jobs-empty" id="jobs-empty" style="display:none">No open positions right now — check back soon!</div>
 
   </div>
 </main>
@@ -330,29 +110,110 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
+// Department -> icon SVG
+const DEPT_ICONS = {
+  consulting: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  engineering: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+  design: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>',
+  operations: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  default: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'
+};
+
+let allJobs = [];
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+function lines(s) { return (s || '').split('\n').map(x => x.trim()).filter(Boolean); }
+
+function listBlock(title, text) {
+  const items = lines(text);
+  if (!items.length) return '';
+  return `<div class="job-section-title">${esc(title)}</div><ul>${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`;
+}
+
+function timeAgo(iso) {
+  if (!iso) return '';
+  const days = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  if (days <= 0) return 'Posted today';
+  if (days === 1) return 'Posted 1 day ago';
+  if (days < 7) return 'Posted ' + days + ' days ago';
+  const weeks = Math.floor(days / 7);
+  return 'Posted ' + weeks + (weeks === 1 ? ' week ago' : ' weeks ago');
+}
+
+function renderJobs() {
+  const list = document.getElementById('job-list');
+  const empty = document.getElementById('jobs-empty');
+  document.getElementById('stat-open').textContent = allJobs.length;
+
+  if (allJobs.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = allJobs.map(job => {
+    const dept = (job.department || 'General');
+    const deptKey = dept.toLowerCase();
+    const icon = DEPT_ICONS[deptKey] || DEPT_ICONS.default;
+    const tags = [
+      `<span class="job-tag teal">${esc(dept)}</span>`,
+      job.type ? `<span class="job-tag">${esc(job.type)}</span>` : '',
+      job.location ? `<span class="job-tag">${esc(job.location)}</span>` : ''
+    ].join('');
+
+    return `<div class="job-card" data-dept="${esc(deptKey)}">
+      <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="job-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
+        <div class="job-meta">
+          <h3>${esc(job.title)}</h3>
+          <div class="job-tags">${tags}</div>
+        </div>
+        <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="job-details">
+        ${job.summary ? `<p>${esc(job.summary)}</p>` : ''}
+        ${listBlock('Responsibilities', job.responsibilities)}
+        ${listBlock('Requirements', job.requirements)}
+        ${listBlock('Nice to have', job.nice_to_have)}
+        <div class="job-apply-bar">
+          ${job.salary ? `<div class="salary-badge">💰 ${esc(job.salary)}</div>` : '<span></span>'}
+          <p>${timeAgo(job.created_at)} · Applications open</p>
+          <button class="btn btn-primary" onclick="handleApply('${esc(job.title).replace(/'/g, "&#39;")}')">Apply now</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildFilters() {
+  const depts = [...new Set(allJobs.map(j => (j.department || 'General')))];
+  const wrap = document.getElementById('jobs-filters');
+  wrap.innerHTML = `<button class="filter-btn active" data-filter="all">All</button>` +
+    depts.map(d => `<button class="filter-btn" data-filter="${esc(d.toLowerCase())}">${esc(d)}</button>`).join('');
+
+  wrap.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      wrap.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.job-card').forEach(card => {
+        card.style.display = (f === 'all' || card.dataset.dept === f) ? '' : 'none';
+        card.classList.remove('expanded');
+      });
+    });
+  });
+}
+
 // Search
 document.getElementById('job-search').addEventListener('input', function() {
   const q = this.value.toLowerCase();
   document.querySelectorAll('.job-card').forEach(card => {
-    const text = card.textContent.toLowerCase();
-    card.style.display = text.includes(q) ? '' : 'none';
+    card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
-  // Reset filter buttons
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
-});
-
-// Filters
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const f = btn.dataset.filter;
-    document.querySelectorAll('.job-card').forEach(card => {
-      card.style.display = (f === 'all' || card.dataset.dept === f) ? '' : 'none';
-      card.classList.remove('expanded');
-    });
-  });
+  const all = document.querySelector('.filter-btn[data-filter="all"]');
+  if (all) all.classList.add('active');
 });
 
 // Apply — redirect to full apply page
@@ -365,18 +226,35 @@ async function handleApply(role) {
   window.location.href = 'apply.html?role=' + encodeURIComponent(role);
 }
 
+// Load jobs from Supabase
+(async () => {
+  const { data, error } = await sb.from('jobs').select('*').eq('is_open', true).order('created_at', { ascending: false });
+  document.getElementById('jobs-loading')?.remove();
+  if (error) {
+    document.getElementById('job-list').innerHTML = '';
+    const empty = document.getElementById('jobs-empty');
+    empty.style.display = '';
+    empty.textContent = 'Could not load positions right now. Please try again later.';
+    console.error(error);
+    return;
+  }
+  allJobs = data || [];
+  buildFilters();
+  renderJobs();
+})();
+
 // Show portal/admin links if logged in
 (async () => {
   const user = await getUser();
-  if (user) {
-    const bar = document.createElement('div');
-    bar.style.cssText = 'text-align:center;margin-top:32px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;';
-    bar.innerHTML = '<a href="portal.html" class="btn" style="border-color:var(--teal);color:var(--teal)">My Portal</a>';
-    if (isAdmin(user)) {
-      bar.innerHTML += '<a href="admin.html" class="btn" style="border-color:var(--teal);color:var(--teal)">🔒 Admin Dashboard</a>';
-    }
-    document.querySelector('.jobs-header').appendChild(bar);
+  if (!user) return;
+  const admin = await loadAdmin();
+  const bar = document.createElement('div');
+  bar.style.cssText = 'text-align:center;margin-top:32px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;';
+  bar.innerHTML = '<a href="portal.html" class="btn" style="border-color:var(--teal);color:var(--teal)">My Portal</a>';
+  if (admin) {
+    bar.innerHTML += '<a href="admin.html" class="btn" style="border-color:var(--teal);color:var(--teal)">🔒 Admin Dashboard</a>';
   }
+  document.querySelector('.jobs-header').appendChild(bar);
 })();
 </script>
 </body>

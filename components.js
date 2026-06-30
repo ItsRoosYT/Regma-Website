@@ -122,10 +122,9 @@ function waitForSb(timeout = 3000) {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
 
-  const ADMIN = 'rooseveltdjomo81@gmail.com';
   const name = user.user_metadata?.name || user.email.split('@')[0];
   const initial = name.charAt(0).toUpperCase();
-  const isAdminUser = user.email === ADMIN;
+  const isAdminUser = typeof loadAdmin === 'function' ? !!(await loadAdmin()) : (user.email === 'rooseveltdjomo81@gmail.com');
 
   const wrap = document.createElement('div');
   wrap.className = 'nav-user-wrap';

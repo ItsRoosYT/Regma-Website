@@ -33,29 +33,101 @@
 
 <div class="page-header">
   <div class="page-header-inner">
-    <h1>Admin <em>Dashboard</em></h1>
-    <p>Review job applications and manage candidates.</p>
+    <h1>Admin <em>Dashboard</em> <span class="role-tag" id="admin-role-tag"></span></h1>
+    <p>Manage open positions, review applications, and run the site.</p>
   </div>
 </div>
 
 <main>
   <div class="section">
     <div class="admin-stats" id="admin-stats"></div>
-    <h2 class="section-title" style="text-align:left;font-size:18px;margin-bottom:14px;">Applications</h2>
-    <div class="jobs-filters" id="status-filters" style="justify-content:flex-start;margin-bottom:20px">
-      <button class="filter-btn active" data-status="all" onclick="setFilter('all',this)">All</button>
-      <button class="filter-btn" data-status="pending" onclick="setFilter('pending',this)">Pending</button>
-      <button class="filter-btn" data-status="reviewed" onclick="setFilter('reviewed',this)">Reviewed</button>
-      <button class="filter-btn" data-status="rejected" onclick="setFilter('rejected',this)">Rejected</button>
+
+    <!-- ───── MANAGE JOB POSITIONS ───── -->
+    <div id="jobs-section">
+      <div class="admin-section-head">
+        <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Job Positions</h2>
+        <button class="btn btn-primary" style="font-size:12.5px;padding:8px 16px" onclick="openJobForm()">＋ Add position</button>
+      </div>
+
+      <!-- Add / edit job form (hidden until used) -->
+      <div class="admin-card" id="job-form-card" style="display:none">
+        <h3 id="job-form-title">Add a position</h3>
+        <form id="job-form" onsubmit="saveJob(event)">
+          <input type="hidden" id="job-id" />
+          <div class="admin-grid-2">
+            <div class="form-row"><label>Title *</label><input type="text" id="job-title" required placeholder="e.g. Senior IT Consultant" /></div>
+            <div class="form-row"><label>Department *</label>
+              <input list="dept-list" id="job-department" required placeholder="Consulting" />
+              <datalist id="dept-list">
+                <option value="Consulting"></option><option value="Engineering"></option>
+                <option value="Design"></option><option value="Operations"></option><option value="General"></option>
+              </datalist>
+            </div>
+          </div>
+          <div class="admin-grid-2">
+            <div class="form-row"><label>Type</label><input type="text" id="job-type" placeholder="Full-time" value="Full-time" /></div>
+            <div class="form-row"><label>Location</label><input type="text" id="job-location" placeholder="Gothenburg" value="Gothenburg" /></div>
+          </div>
+          <div class="form-row"><label>Salary (optional)</label><input type="text" id="job-salary" placeholder="e.g. 45 000 – 65 000 SEK/month" /></div>
+          <div class="form-row"><label>Summary</label><textarea id="job-summary" rows="2" placeholder="One or two sentences describing the role."></textarea></div>
+          <div class="form-row"><label>Responsibilities <span class="hint">(one per line)</span></label><textarea id="job-responsibilities" rows="4" placeholder="Run client discovery sessions&#10;Design IT strategies&#10;…"></textarea></div>
+          <div class="form-row"><label>Requirements <span class="hint">(one per line)</span></label><textarea id="job-requirements" rows="4" placeholder="5+ years experience&#10;Fluent in Swedish & English&#10;…"></textarea></div>
+          <div class="form-row"><label>Nice to have <span class="hint">(one per line)</span></label><textarea id="job-nice" rows="3" placeholder="Cloud certifications&#10;…"></textarea></div>
+          <label class="admin-check"><input type="checkbox" id="job-open" checked /> Visible on the careers page (open for applications)</label>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" style="font-size:13px">Save position</button>
+            <button type="button" class="btn" style="font-size:13px" onclick="closeJobForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="jobs-admin-list" class="admin-list"></div>
     </div>
-    <div class="app-list" id="app-list"></div>
-    <div class="admin-empty" id="admin-empty" style="display:none">No applications yet. When candidates apply on the Careers page, their submissions will appear here.</div>
 
-    <h2 class="section-title" style="text-align:left;font-size:18px;margin:40px 0 20px">Contact Messages</h2>
-    <div id="contact-list"></div>
+    <!-- ───── APPLICATIONS ───── -->
+    <div id="apps-section">
+      <h2 class="section-title" style="text-align:left;font-size:18px;margin:44px 0 14px;">Applications</h2>
+      <div class="jobs-filters" id="status-filters" style="justify-content:flex-start;margin-bottom:20px">
+        <button class="filter-btn active" data-status="all" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" data-status="pending" onclick="setFilter('pending',this)">Pending</button>
+        <button class="filter-btn" data-status="reviewed" onclick="setFilter('reviewed',this)">Reviewed</button>
+        <button class="filter-btn" data-status="rejected" onclick="setFilter('rejected',this)">Rejected</button>
+      </div>
+      <div class="app-list" id="app-list"></div>
+      <div class="admin-empty" id="admin-empty" style="display:none">No applications yet. When candidates apply on the Careers page, their submissions will appear here.</div>
 
-    <h2 class="section-title" style="text-align:left;font-size:18px;margin:40px 0 20px">Newsletter Subscribers</h2>
-    <div id="nl-list" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 20px"></div>
+      <h2 class="section-title" style="text-align:left;font-size:18px;margin:40px 0 20px">Contact Messages</h2>
+      <div id="contact-list"></div>
+
+      <h2 class="section-title" style="text-align:left;font-size:18px;margin:40px 0 20px">Newsletter Subscribers</h2>
+      <div id="nl-list" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 20px"></div>
+    </div>
+
+    <!-- ───── MANAGE ADMINS (owner / managers only) ───── -->
+    <div id="admins-section" style="display:none">
+      <div class="admin-section-head">
+        <h2 class="section-title" style="text-align:left;font-size:18px;margin:44px 0 0">Team Access</h2>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin:6px 0 18px">Add people by email and choose what they can manage. They sign in normally — access is granted by email.</p>
+
+      <div class="admin-card">
+        <h3>Add an admin</h3>
+        <form id="admin-form" onsubmit="addAdmin(event)">
+          <div class="form-row"><label>Email *</label><input type="email" id="new-admin-email" required placeholder="person@email.com" /></div>
+          <div class="admin-perms">
+            <label class="admin-check"><input type="checkbox" id="perm-jobs" checked /> Manage job positions</label>
+            <label class="admin-check"><input type="checkbox" id="perm-apps" checked /> Manage applications</label>
+            <label class="admin-check"><input type="checkbox" id="perm-admins" /> Manage other admins</label>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn btn-primary" style="font-size:13px">Add admin</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="admins-admin-list" class="admin-list"></div>
+    </div>
+
   </div>
 </main>
 
@@ -87,13 +159,25 @@ function updateStats() {
   `;
 }
 
+let currentAdmin = null;
+
 (async () => {
   const user = await getUser();
-  if (!user || !isAdmin(user)) {
+  currentAdmin = await loadAdmin();
+  if (!user || !currentAdmin) {
     document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;font-family:Inter,sans-serif;color:#f0f0f2;background:#0d0d10"><h2>Access denied</h2><p style="color:#72728a">This page is restricted to administrators.</p><a href="auth.html" style="color:#1D9E75">Sign in as admin</a></div>';
     return;
   }
+  // Greet + role
+  document.getElementById('admin-role-tag').textContent = currentAdmin.role === 'owner' ? 'Owner' : 'Admin';
+  // Toggle sections by permission
+  if (!currentAdmin.can_manage_jobs) document.getElementById('jobs-section').style.display = 'none';
+  if (!currentAdmin.can_manage_applications) document.getElementById('apps-section').style.display = 'none';
+  if (currentAdmin.can_manage_admins) document.getElementById('admins-section').style.display = '';
+
   await renderDashboard();
+  await loadJobs();
+  if (currentAdmin.can_manage_admins) await loadAdmins();
 })();
 
 async function renderDashboard() {
@@ -241,7 +325,189 @@ async function saveNote(id, text) {
   if (window.showToast) showToast('Note saved.', 'success', 1500);
 }
 
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+/* ───────── JOB POSITIONS ───────── */
+let allAdminJobs = [];
+
+async function loadJobs() {
+  const { data, error } = await sb.from('jobs').select('*').order('created_at', { ascending: false });
+  if (error) { console.error(error); return; }
+  allAdminJobs = data || [];
+  renderAdminJobs();
+}
+
+function renderAdminJobs() {
+  const list = document.getElementById('jobs-admin-list');
+  if (allAdminJobs.length === 0) {
+    list.innerHTML = '<div class="admin-empty">No positions yet. Click “Add position” to create your first one.</div>';
+    return;
+  }
+  list.innerHTML = allAdminJobs.map(j => `
+    <div class="admin-row">
+      <div class="admin-row-main">
+        <strong>${esc(j.title)}</strong>
+        <span class="admin-row-sub">${esc(j.department || '')} · ${esc(j.type || '')} · ${esc(j.location || '')}${j.salary ? ' · ' + esc(j.salary) : ''}</span>
+      </div>
+      <span class="job-pill ${j.is_open ? 'open' : 'closed'}">${j.is_open ? 'Open' : 'Hidden'}</span>
+      <div class="admin-row-actions">
+        <button class="btn" onclick="toggleJobOpen('${j.id}')">${j.is_open ? 'Hide' : 'Show'}</button>
+        <button class="btn" onclick="editJob('${j.id}')">Edit</button>
+        <button class="btn" style="border-color:#f87171;color:#f87171" onclick="deleteJob('${j.id}','${esc(j.title).replace(/'/g,"&#39;")}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openJobForm() {
+  document.getElementById('job-form').reset();
+  document.getElementById('job-id').value = '';
+  document.getElementById('job-open').checked = true;
+  document.getElementById('job-form-title').textContent = 'Add a position';
+  document.getElementById('job-form-card').style.display = '';
+  document.getElementById('job-form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function closeJobForm() { document.getElementById('job-form-card').style.display = 'none'; }
+
+function editJob(id) {
+  const j = allAdminJobs.find(x => x.id === id);
+  if (!j) return;
+  document.getElementById('job-id').value = j.id;
+  document.getElementById('job-title').value = j.title || '';
+  document.getElementById('job-department').value = j.department || '';
+  document.getElementById('job-type').value = j.type || '';
+  document.getElementById('job-location').value = j.location || '';
+  document.getElementById('job-salary').value = j.salary || '';
+  document.getElementById('job-summary').value = j.summary || '';
+  document.getElementById('job-responsibilities').value = j.responsibilities || '';
+  document.getElementById('job-requirements').value = j.requirements || '';
+  document.getElementById('job-nice').value = j.nice_to_have || '';
+  document.getElementById('job-open').checked = !!j.is_open;
+  document.getElementById('job-form-title').textContent = 'Edit position';
+  document.getElementById('job-form-card').style.display = '';
+  document.getElementById('job-form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function saveJob(e) {
+  e.preventDefault();
+  const id = document.getElementById('job-id').value;
+  const row = {
+    title: document.getElementById('job-title').value.trim(),
+    department: document.getElementById('job-department').value.trim() || 'General',
+    type: document.getElementById('job-type').value.trim(),
+    location: document.getElementById('job-location').value.trim(),
+    salary: document.getElementById('job-salary').value.trim(),
+    summary: document.getElementById('job-summary').value.trim(),
+    responsibilities: document.getElementById('job-responsibilities').value,
+    requirements: document.getElementById('job-requirements').value,
+    nice_to_have: document.getElementById('job-nice').value,
+    is_open: document.getElementById('job-open').checked
+  };
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.classList.add('loading');
+  let error;
+  if (id) ({ error } = await sb.from('jobs').update(row).eq('id', id));
+  else ({ error } = await sb.from('jobs').insert(row));
+  btn.classList.remove('loading');
+  if (error) { showToast('Could not save: ' + error.message, 'error', 6000); return; }
+  showToast(id ? 'Position updated.' : 'Position added.', 'success');
+  closeJobForm();
+  await loadJobs();
+}
+
+async function toggleJobOpen(id) {
+  const j = allAdminJobs.find(x => x.id === id);
+  if (!j) return;
+  const { error } = await sb.from('jobs').update({ is_open: !j.is_open }).eq('id', id);
+  if (error) { showToast('Could not update: ' + error.message, 'error', 6000); return; }
+  showToast(j.is_open ? 'Position hidden.' : 'Position is now visible.', 'success');
+  await loadJobs();
+}
+
+async function deleteJob(id, title) {
+  if (!confirm('Delete the position “' + title + '”? This cannot be undone.')) return;
+  const { error } = await sb.from('jobs').delete().eq('id', id);
+  if (error) { showToast('Could not delete: ' + error.message, 'error', 6000); return; }
+  showToast('Position deleted.', 'success');
+  await loadJobs();
+}
+
+/* ───────── TEAM ACCESS (ADMINS) ───────── */
+let allAdmins = [];
+
+async function loadAdmins() {
+  const { data, error } = await sb.from('admins').select('*').order('created_at', { ascending: true });
+  if (error) { console.error(error); return; }
+  allAdmins = data || [];
+  renderAdmins();
+}
+
+function renderAdmins() {
+  const list = document.getElementById('admins-admin-list');
+  list.innerHTML = allAdmins.map(a => {
+    const isOwner = a.role === 'owner';
+    const perms = [
+      a.can_manage_jobs ? 'Jobs' : null,
+      a.can_manage_applications ? 'Applications' : null,
+      a.can_manage_admins ? 'Admins' : null
+    ].filter(Boolean).join(' · ') || 'No permissions';
+    return `<div class="admin-row">
+      <div class="admin-row-main">
+        <strong>${esc(a.email)} ${isOwner ? '<span class="job-pill open">Owner</span>' : ''}</strong>
+        <span class="admin-row-sub">${esc(perms)}</span>
+      </div>
+      <div class="admin-row-actions">
+        ${isOwner ? '<span style="font-size:12px;color:var(--muted)">Full access</span>' :
+          `<button class="btn" onclick="editAdminPerms('${esc(a.email)}')">Edit access</button>
+           <button class="btn" style="border-color:#f87171;color:#f87171" onclick="removeAdmin('${esc(a.email)}')">Remove</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addAdmin(e) {
+  e.preventDefault();
+  const email = document.getElementById('new-admin-email').value.trim().toLowerCase();
+  const row = {
+    email,
+    role: 'admin',
+    can_manage_jobs: document.getElementById('perm-jobs').checked,
+    can_manage_applications: document.getElementById('perm-apps').checked,
+    can_manage_admins: document.getElementById('perm-admins').checked
+  };
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.classList.add('loading');
+  const { error } = await sb.from('admins').upsert(row, { onConflict: 'email' });
+  btn.classList.remove('loading');
+  if (error) { showToast('Could not add admin: ' + error.message, 'error', 6000); return; }
+  showToast('Admin added: ' + email, 'success');
+  document.getElementById('admin-form').reset();
+  document.getElementById('perm-jobs').checked = true;
+  document.getElementById('perm-apps').checked = true;
+  await loadAdmins();
+}
+
+async function editAdminPerms(email) {
+  const a = allAdmins.find(x => x.email === email);
+  if (!a) return;
+  const jobs = confirm('Can ' + email + ' manage JOB POSITIONS?\n\nOK = yes, Cancel = no');
+  const apps = confirm('Can ' + email + ' manage APPLICATIONS?\n\nOK = yes, Cancel = no');
+  const admins = confirm('Can ' + email + ' manage OTHER ADMINS?\n\nOK = yes, Cancel = no');
+  const { error } = await sb.from('admins').update({
+    can_manage_jobs: jobs, can_manage_applications: apps, can_manage_admins: admins
+  }).eq('email', email);
+  if (error) { showToast('Could not update: ' + error.message, 'error', 6000); return; }
+  showToast('Access updated for ' + email, 'success');
+  await loadAdmins();
+}
+
+async function removeAdmin(email) {
+  if (!confirm('Remove admin access for ' + email + '?')) return;
+  const { error } = await sb.from('admins').delete().eq('email', email);
+  if (error) { showToast('Could not remove: ' + error.message, 'error', 6000); return; }
+  showToast('Removed ' + email, 'success');
+  await loadAdmins();
+}
 
 async function logout() {
   await sb.auth.signOut();
