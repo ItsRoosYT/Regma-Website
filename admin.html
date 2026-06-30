@@ -201,7 +201,12 @@ async function renderDashboard() {
   } else {
     contactList.innerHTML = cl.map(c => {
       const d = new Date(c.created_at).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
-      return `<div class="app-card" style="margin-bottom:8px"><div class="app-card-header"><h3>${esc(c.name)}</h3><span style="font-size:12px;color:var(--muted)">${d}</span></div><div class="app-meta"><span>📧 ${esc(c.email)}</span></div><div class="app-content"><p>${esc(c.message)}</p></div></div>`;
+      return `<div class="app-card" style="margin-bottom:8px">
+        <div class="app-card-header"><h3>${esc(c.name)}</h3><span style="font-size:12px;color:var(--muted)">${d}</span></div>
+        <div class="app-meta"><a href="mailto:${esc(c.email)}" style="color:var(--teal)">📧 ${esc(c.email)}</a></div>
+        <div class="app-content"><p>${esc(c.message)}</p></div>
+        <div class="app-actions"><a class="btn" style="border-color:var(--teal);color:var(--teal)" href="mailto:${esc(c.email)}">✉ Reply</a><button class="btn" style="border-color:#f87171;color:#f87171;margin-left:auto" onclick="deleteContact('${c.id}')">🗑 Delete</button></div>
+      </div>`;
     }).join('');
   }
 
@@ -210,7 +215,7 @@ async function renderDashboard() {
   if (nl.length === 0) {
     nlList.innerHTML = '<div class="admin-empty">No subscribers yet.</div>';
   } else {
-    nlList.innerHTML = nl.map(s => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted)">${esc(s.email)}</div>`).join('');
+    nlList.innerHTML = nl.map(s => `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted)"><a href="mailto:${esc(s.email)}" style="color:var(--muted)">${esc(s.email)}</a><button class="btn" style="font-size:11px;padding:3px 10px;border-color:#f87171;color:#f87171" onclick="deleteNewsletter('${s.id}')">Remove</button></div>`).join('');
   }
 }
 
@@ -268,6 +273,7 @@ function renderApps() {
         <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="setStatus('${app.id}','reviewed')">Mark reviewed</button>
         <button class="btn" style="border-color:#f87171;color:#f87171" onclick="setStatus('${app.id}','rejected')">Reject</button>
         <button class="btn" onclick="setStatus('${app.id}','pending')">Reset to pending</button>
+        <button class="btn" style="border-color:#f87171;color:#f87171;margin-left:auto" onclick="deleteApplication('${app.id}','${esc(app.name).replace(/'/g,"&#39;")}')">🗑 Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -326,6 +332,31 @@ async function saveNote(id, text) {
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+async function deleteApplication(id, name) {
+  if (!confirm('Permanently delete the application from ' + name + '? This cannot be undone.')) return;
+  const { error } = await sb.from('applications').delete().eq('id', id);
+  if (error) { showToast('Could not delete: ' + error.message, 'error', 6000); return; }
+  allApps = allApps.filter(a => a.id !== id);
+  updateStats(); renderApps();
+  showToast('Application deleted.', 'success');
+}
+
+async function deleteContact(id) {
+  if (!confirm('Delete this contact message?')) return;
+  const { error } = await sb.from('contact_submissions').delete().eq('id', id);
+  if (error) { showToast('Could not delete: ' + error.message, 'error', 6000); return; }
+  showToast('Message deleted.', 'success');
+  await renderDashboard();
+}
+
+async function deleteNewsletter(id) {
+  if (!confirm('Remove this subscriber?')) return;
+  const { error } = await sb.from('newsletter_subscribers').delete().eq('id', id);
+  if (error) { showToast('Could not remove: ' + error.message, 'error', 6000); return; }
+  showToast('Subscriber removed.', 'success');
+  await renderDashboard();
+}
 
 /* ───────── JOB POSITIONS ───────── */
 let allAdminJobs = [];
