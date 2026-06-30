@@ -5,4 +5,4 @@ Disallow: /portal.html
 Disallow: /apply.html
 Disallow: /auth.html
 
-Sitemap: https://regma.vercel.app/sitemap.xml
+Sitemap: https://regma.se/sitemap.xml
