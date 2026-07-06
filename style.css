@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1871,36 +1872,157 @@ textarea:valid:not(:placeholder-shown) {
 .theme-toggle:hover { border-color: var(--teal); color: var(--teal); }
 .theme-toggle svg { width: 14px; height: 14px; }
 
+/* ════════════════════════════════════════════════════════════
+   LIGHT THEME — "classic firm" look
+   Warm paper tones, forest green + brass, serif display headings
+   ════════════════════════════════════════════════════════════ */
 html.light {
-  --bg:        #faf9f6;
-  --bg2:       #f2f1ec;
-  --surface:   #ffffff;
-  --surface2:  #f4f3ef;
-  --border:    #e4e2db;
-  --border2:   #d4d2c9;
-  --teal:      #17845f;
-  --text:      #23232a;
-  --muted:     #63636f;
-  --teal-glow: rgba(23,132,95,.12);
-  --teal-dim:  rgba(23,132,95,.07);
+  --bg:        #f7f3ea;   /* warm paper */
+  --bg2:       #efe9dc;   /* aged paper */
+  --surface:   #fffdf7;   /* ivory card */
+  --surface2:  #f4efe3;
+  --border:    #e2dbc9;
+  --border2:   #cfc6ad;
+  --teal:      #1d5c45;   /* forest green */
+  --text:      #2a2620;   /* warm ink */
+  --muted:     #6f6a5c;
+  --teal-glow: rgba(29,92,69,.14);
+  --teal-dim:  rgba(29,92,69,.07);
+  --gold:      #b3862d;   /* brass accent */
+  --gold-dim:  rgba(179,134,45,.12);
 }
-html.light body { background: var(--bg); }
-html.light nav { background: rgba(250,249,246,.94); }
-/* keep the terminal a dark code window in light mode for contrast */
+html.light body {
+  background:
+    radial-gradient(ellipse 90% 50% at 50% -10%, rgba(179,134,45,.06), transparent),
+    var(--bg);
+}
+
+/* Serif display headings — the letterhead feel */
+html.light h1, html.light h2, html.light h3,
+html.light .hero-text h1, html.light .section-title,
+html.light .stat-val, html.light .careers-hero h1,
+html.light .jobs-header h2, html.light .cta-strip h2,
+html.light .apply-header h1, html.light .contact-info h2,
+html.light .auth-brand h1, html.light .auth-form-inner h2,
+html.light .portal-hero h1 {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+html.light .hero-text h1 em,
+html.light .careers-hero h1 em,
+html.light .cta-strip h2 em { font-style: italic; color: var(--teal); }
+
+/* Announce bar → deep green banner, like a ribbon */
+html.light .announce {
+  background: var(--teal);
+  border-bottom: 2px solid var(--gold);
+  color: #efe9dc;
+}
+html.light .announce em { color: #e8c87a; }
+html.light .announce-close { color: #efe9dc; }
+
+/* Nav — ivory with a brass hairline under it */
+html.light nav {
+  background: rgba(255,253,247,.95);
+  border-bottom: 1px solid var(--border2);
+  box-shadow: 0 1px 0 rgba(179,134,45,.25);
+}
+html.light .nav-logo em { color: var(--teal); }
+
+/* Section labels get classic rules: ── WHAT WE DO ── */
+html.light .section-label {
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+}
+html.light .section-label::before,
+html.light .section-label::after {
+  content: ''; height: 1px; width: 44px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+html.light .section-label::after {
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+/* Badge → brass-trimmed pill */
+html.light .badge {
+  border-color: var(--gold);
+  color: var(--teal);
+  background: var(--gold-dim);
+}
+html.light .badge-dot { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+
+/* Buttons — green fill, brass hover trim */
+html.light .btn-primary { box-shadow: 0 2px 0 rgba(29,92,69,.35); }
+html.light .btn-primary:hover { background: #256e54; border-color: #256e54; }
+html.light .btn:hover { border-color: var(--gold); color: var(--gold); box-shadow: 0 4px 16px var(--gold-dim); }
+html.light .btn-primary:hover { color: #fff; box-shadow: 0 4px 18px rgba(29,92,69,.3); }
+
+/* Cards — ivory with warm shadow; brass top rule on hover */
+html.light .card, html.light .job-card, html.light .admin-card,
+html.light .profile-card, html.light .app-card, html.light .team-card,
+html.light .blog-card, html.light .apply-section, html.light .auth-card {
+  box-shadow: 0 2px 10px rgba(90,75,40,.06);
+}
+html.light .card::before { background: linear-gradient(90deg, var(--gold), transparent); }
+html.light .card:hover, html.light .job-card:hover, html.light .team-card:hover,
+html.light .blog-card:hover { border-color: var(--gold); box-shadow: 0 10px 30px rgba(90,75,40,.14); }
+html.light .card-icon { background: var(--gold-dim); color: var(--teal); }
+
+/* Stats strip — serif numerals in brass on aged paper */
+html.light .stats { background: var(--bg2); border-top: 2px solid var(--border2); }
+html.light .stat { border-color: var(--border2); }
+html.light .stat-val { color: var(--gold); font-weight: 700; }
+html.light .stat:hover { background: var(--surface); }
+
+/* Process section — aged paper band */
+html.light .process-section { background: var(--bg2); }
+html.light .step-num {
+  font-family: 'Fraunces', Georgia, serif;
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--surface);
+}
+html.light .process-steps::before {
+  background: linear-gradient(90deg, var(--gold), var(--border2), var(--gold));
+}
+
+/* Hero glow → warm brass light */
+html.light .cta-strip::before { background: radial-gradient(ellipse 70% 60% at 50% 100%, rgba(179,134,45,.12), transparent); }
+html.light .page-header::before { background: radial-gradient(ellipse 60% 80% at 0% 50%, rgba(179,134,45,.08), transparent); }
+
+/* Terminal stays a dark code window (contrast + charm) */
 html.light .terminal {
-  background: #16161c;
-  border-color: #2a2a35;
-  box-shadow: 0 20px 60px rgba(40,40,30,.18);
+  background: #1d2a24;
+  border-color: #2d4038;
+  box-shadow: 0 20px 60px rgba(60,50,25,.25), 0 0 0 4px rgba(179,134,45,.15);
 }
-html.light .terminal-bar { background: #1c1c24; border-color: #2a2a35; }
-html.light .t-title { color: #8a8a99; }
-html.light .visual-badge { background: #ffffff; border-color: var(--border2); }
-html.light .nav-user-menu,
-html.light .cookie-bar,
-html.light .toast { box-shadow: 0 12px 32px rgba(40,40,30,.16); }
-html.light .cta-strip::before { background: radial-gradient(ellipse 70% 60% at 50% 100%, rgba(23,132,95,.08), transparent); }
-html.light .page-header::before { background: radial-gradient(ellipse 60% 80% at 0% 50%, rgba(23,132,95,.05), transparent); }
+html.light .terminal-bar { background: #24332c; border-color: #2d4038; }
+html.light .t-title { color: #7e9a8c; }
+html.light .visual-badge { background: var(--surface); border-color: var(--gold); }
+html.light .vb-val { color: var(--gold); font-family: 'Fraunces', Georgia, serif; }
+
+/* Footer — classic letterhead double rule */
+html.light footer {
+  border-top: 3px double var(--border2);
+  background: var(--bg2);
+}
+html.light .footer-links a:hover { color: var(--gold); }
+
+/* Misc surfaces */
+html.light .nav-user-menu, html.light .cookie-bar,
+html.light .toast, html.light #lang-dropdown { box-shadow: 0 12px 32px rgba(90,75,40,.18); }
 html.light #loader { background: var(--bg); }
+html.light .loader-bar-fill { background: var(--gold); }
+html.light .filter-btn.active, html.light .filter-btn:hover {
+  border-color: var(--gold); color: var(--teal); background: var(--gold-dim);
+}
+html.light .salary-badge { border-color: rgba(179,134,45,.4); color: var(--teal); background: var(--gold-dim); }
+html.light .careers-eyebrow { color: var(--gold); }
+html.light input:focus, html.light textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-dim);
+}
 
 /* nav account buttons */
 .nav-signin, .nav-admin-quick { display: inline-flex; align-items: center; white-space: nowrap; }
