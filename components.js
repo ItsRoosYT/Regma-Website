@@ -64,10 +64,10 @@ function showToast(msg, type = 'success', duration = 3000) {
 }
 window.showToast = showToast;
 
-// ── DARK/LIGHT MODE ──
+// ── LIGHT/DARK MODE (light is the default) ──
 (function() {
   const saved = localStorage.getItem('regma_theme');
-  if (saved === 'light') document.documentElement.classList.add('light');
+  if (saved !== 'dark') document.documentElement.classList.add('light');
 
   const navRight = document.querySelector('.nav-right');
   if (!navRight) return;
@@ -120,11 +120,29 @@ function waitForSb(timeout = 3000) {
   if (!(await waitForSb())) return; // no Supabase on this page
 
   const { data: { user } } = await sb.auth.getUser();
-  if (!user) return;
+
+  // Signed out → show a clear "Sign in" account button in the top bar
+  if (!user) {
+    const signIn = document.createElement('a');
+    signIn.href = 'auth.html';
+    signIn.className = 'btn-contact nav-signin';
+    signIn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:6px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Sign in';
+    navRight.insertBefore(signIn, navRight.firstChild);
+    return;
+  }
 
   const name = user.user_metadata?.name || user.email.split('@')[0];
   const initial = name.charAt(0).toUpperCase();
   const isAdminUser = typeof loadAdmin === 'function' ? !!(await loadAdmin()) : (user.email === 'rooseveltdjomo81@gmail.com');
+
+  // Admins get a one-click Admin button right in the top bar
+  if (isAdminUser) {
+    const adminBtn = document.createElement('a');
+    adminBtn.href = 'admin.html';
+    adminBtn.className = 'btn-contact nav-admin-quick';
+    adminBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;vertical-align:-2px;margin-right:6px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Admin';
+    navRight.insertBefore(adminBtn, navRight.firstChild);
+  }
 
   const wrap = document.createElement('div');
   wrap.className = 'nav-user-wrap';

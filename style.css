@@ -1872,19 +1872,40 @@ textarea:valid:not(:placeholder-shown) {
 .theme-toggle svg { width: 14px; height: 14px; }
 
 html.light {
-  --bg:        #f5f5f7;
-  --bg2:       #eeeef0;
+  --bg:        #faf9f6;
+  --bg2:       #f2f1ec;
   --surface:   #ffffff;
-  --surface2:  #f0f0f2;
-  --border:    #dddde0;
-  --border2:   #ccccce;
-  --text:      #1a1a1e;
-  --muted:     #6b6b7b;
-  --teal-glow: rgba(29,158,117,.12);
-  --teal-dim:  rgba(29,158,117,.06);
+  --surface2:  #f4f3ef;
+  --border:    #e4e2db;
+  --border2:   #d4d2c9;
+  --teal:      #17845f;
+  --text:      #23232a;
+  --muted:     #63636f;
+  --teal-glow: rgba(23,132,95,.12);
+  --teal-dim:  rgba(23,132,95,.07);
 }
-html.light nav { background: rgba(245,245,247,.92); }
-html.light .terminal { box-shadow: 0 20px 60px rgba(0,0,0,.12), 0 0 0 1px var(--border); }
+html.light body { background: var(--bg); }
+html.light nav { background: rgba(250,249,246,.94); }
+/* keep the terminal a dark code window in light mode for contrast */
+html.light .terminal {
+  background: #16161c;
+  border-color: #2a2a35;
+  box-shadow: 0 20px 60px rgba(40,40,30,.18);
+}
+html.light .terminal-bar { background: #1c1c24; border-color: #2a2a35; }
+html.light .t-title { color: #8a8a99; }
+html.light .visual-badge { background: #ffffff; border-color: var(--border2); }
+html.light .nav-user-menu,
+html.light .cookie-bar,
+html.light .toast { box-shadow: 0 12px 32px rgba(40,40,30,.16); }
+html.light .cta-strip::before { background: radial-gradient(ellipse 70% 60% at 50% 100%, rgba(23,132,95,.08), transparent); }
+html.light .page-header::before { background: radial-gradient(ellipse 60% 80% at 0% 50%, rgba(23,132,95,.05), transparent); }
+html.light #loader { background: var(--bg); }
+
+/* nav account buttons */
+.nav-signin, .nav-admin-quick { display: inline-flex; align-items: center; white-space: nowrap; }
+.nav-admin-quick { border-color: var(--teal); color: var(--teal); font-weight: 600; }
+.nav-admin-quick:hover { background: var(--teal-dim); }
 
 /* ── LEGAL ── */
 .legal-content h2 {
