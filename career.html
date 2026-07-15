@@ -87,15 +87,24 @@
 
     <div class="search-wrap">
       <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <input type="text" id="job-search" placeholder="Search positions…" />
+      <input type="text" id="job-search" placeholder="Search by title, discipline, or location…" />
     </div>
 
-    <div class="jobs-filters" id="jobs-filters"></div>
+    <div class="jobs-filter-group">
+      <span class="jobs-filter-label">Discipline</span>
+      <div class="jobs-filters" id="filters-dept"></div>
+    </div>
+    <div class="jobs-filter-group">
+      <span class="jobs-filter-label">Location</span>
+      <div class="jobs-filters" id="filters-loc"></div>
+    </div>
+
+    <div class="jobs-count" id="jobs-count"></div>
 
     <div class="job-list" id="job-list">
       <div class="jobs-empty" id="jobs-loading">Loading open positions…</div>
     </div>
-    <div class="jobs-empty" id="jobs-empty" style="display:none">No open positions right now — check back soon!</div>
+    <div class="jobs-empty" id="jobs-empty" style="display:none">No positions match your filters. <a href="#" onclick="resetFilters();return false;" style="color:var(--teal);font-weight:600">Clear filters</a></div>
 
   </div>
 </main>
@@ -147,29 +156,32 @@ function timeAgo(iso) {
   return 'Posted ' + weeks + (weeks === 1 ? ' week ago' : ' weeks ago');
 }
 
+// ── Filter state ──
+let activeDept = 'all', activeLoc = 'all', searchQuery = '';
+
 function renderJobs() {
   const list = document.getElementById('job-list');
-  const empty = document.getElementById('jobs-empty');
   document.getElementById('stat-open').textContent = allJobs.length;
 
   if (allJobs.length === 0) {
     list.innerHTML = '';
-    empty.style.display = '';
+    document.getElementById('jobs-empty').style.display = '';
+    document.getElementById('jobs-count').textContent = '';
     return;
   }
-  empty.style.display = 'none';
 
-  list.innerHTML = allJobs.map(job => {
+  list.innerHTML = allJobs.map((job, i) => {
     const dept = (job.department || 'General');
     const deptKey = dept.toLowerCase();
+    const locKey = (job.location || '').toLowerCase();
     const icon = DEPT_ICONS[deptKey] || DEPT_ICONS.default;
     const tags = [
       `<span class="job-tag teal">${esc(dept)}</span>`,
       job.type ? `<span class="job-tag">${esc(job.type)}</span>` : '',
-      job.location ? `<span class="job-tag">${esc(job.location)}</span>` : ''
+      job.location ? `<span class="job-tag">📍 ${esc(job.location)}</span>` : ''
     ].join('');
 
-    return `<div class="job-card" data-dept="${esc(deptKey)}">
+    return `<div class="job-card" data-dept="${esc(deptKey)}" data-loc="${esc(locKey)}" data-search="${esc((job.title + ' ' + dept + ' ' + (job.location||'') + ' ' + (job.summary||'')).toLowerCase())}">
       <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
         <div class="job-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
         <div class="job-meta">
@@ -191,36 +203,71 @@ function renderJobs() {
       </div>
     </div>`;
   }).join('');
+
+  applyFilters();
+}
+
+function applyFilters() {
+  let shown = 0;
+  document.querySelectorAll('.job-card').forEach(card => {
+    const matchDept = activeDept === 'all' || card.dataset.dept === activeDept;
+    const matchLoc  = activeLoc === 'all'  || card.dataset.loc === activeLoc;
+    const matchText = !searchQuery || card.dataset.search.includes(searchQuery);
+    const visible = matchDept && matchLoc && matchText;
+    card.style.display = visible ? '' : 'none';
+    if (!visible) card.classList.remove('expanded');
+    if (visible) shown++;
+  });
+  const count = document.getElementById('jobs-count');
+  const empty = document.getElementById('jobs-empty');
+  if (shown === 0) { empty.style.display = ''; count.textContent = ''; }
+  else {
+    empty.style.display = 'none';
+    count.textContent = shown === allJobs.length
+      ? `Showing all ${shown} positions`
+      : `Showing ${shown} of ${allJobs.length} positions`;
+  }
 }
 
 function buildFilters() {
-  const depts = [...new Set(allJobs.map(j => (j.department || 'General')))];
-  const wrap = document.getElementById('jobs-filters');
-  wrap.innerHTML = `<button class="filter-btn active" data-filter="all">All</button>` +
-    depts.map(d => `<button class="filter-btn" data-filter="${esc(d.toLowerCase())}">${esc(d)}</button>`).join('');
+  const depts = [...new Set(allJobs.map(j => (j.department || 'General')))].sort();
+  const locs  = [...new Set(allJobs.map(j => (j.location || '')).filter(Boolean))].sort();
 
-  wrap.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      wrap.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const f = btn.dataset.filter;
-      document.querySelectorAll('.job-card').forEach(card => {
-        card.style.display = (f === 'all' || card.dataset.dept === f) ? '' : 'none';
-        card.classList.remove('expanded');
-      });
-    });
-  });
+  const deptWrap = document.getElementById('filters-dept');
+  deptWrap.innerHTML = pill('all', 'All', true) +
+    depts.map(d => pill(d.toLowerCase(), d)).join('');
+  const locWrap = document.getElementById('filters-loc');
+  locWrap.innerHTML = pill('all', 'All', true) +
+    locs.map(l => pill(l.toLowerCase(), l)).join('');
+
+  deptWrap.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
+    deptWrap.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); activeDept = btn.dataset.filter; applyFilters();
+  }));
+  locWrap.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
+    locWrap.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); activeLoc = btn.dataset.filter; applyFilters();
+  }));
 }
+
+function pill(value, label, active) {
+  return `<button class="filter-btn${active ? ' active' : ''}" data-filter="${esc(value)}">${esc(label)}</button>`;
+}
+
+function resetFilters() {
+  activeDept = 'all'; activeLoc = 'all'; searchQuery = '';
+  document.getElementById('job-search').value = '';
+  document.querySelectorAll('.jobs-filters').forEach(w => {
+    w.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+  });
+  applyFilters();
+}
+window.resetFilters = resetFilters;
 
 // Search
 document.getElementById('job-search').addEventListener('input', function() {
-  const q = this.value.toLowerCase();
-  document.querySelectorAll('.job-card').forEach(card => {
-    card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  const all = document.querySelector('.filter-btn[data-filter="all"]');
-  if (all) all.classList.add('active');
+  searchQuery = this.value.toLowerCase().trim();
+  applyFilters();
 });
 
 // Apply — redirect to full apply page
