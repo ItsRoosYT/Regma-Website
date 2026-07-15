@@ -9,9 +9,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-// Once regma.se is verified in Resend, send from your own domain.
-// Until then you can use "onboarding@resend.dev" (only delivers to your own address).
-const FROM = "Regma IT AB <noreply@regma.se>";
+// TESTING: "onboarding@resend.dev" works right away but ONLY delivers to your
+// own Resend account email (rooseveltdjomo81@gmail.com).
+// PRODUCTION: after verifying regma.se in Resend, change this to:
+//   const FROM = "Regma IT AB <noreply@regma.se>";
+const FROM = "Regma IT AB <onboarding@resend.dev>";
 
 serve(async (req) => {
   try {
