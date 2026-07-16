@@ -125,7 +125,6 @@
 <script src="components.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
-<script src="jobs-data.js"></script>
 <script>
 // Department -> icon SVG
 const DEPT_ICONS = {
@@ -188,6 +187,7 @@ function renderJobs() {
         <div class="job-meta">
           <h3>${esc(job.title)}</h3>
           <div class="job-tags">${tags}</div>
+          ${job.summary ? `<p class="job-teaser">${esc(job.summary)}</p>` : ''}
         </div>
         <svg class="job-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
@@ -281,24 +281,19 @@ async function handleApply(role) {
   window.location.href = 'apply.html?role=' + encodeURIComponent(role);
 }
 
-// Load jobs: built-in Regma positions + any added in the admin dashboard.
-// Admin (database) jobs take precedence over a built-in one with the same title.
+// Load jobs from the database (managed entirely via the admin dashboard)
 (async () => {
-  let dbJobs = [];
-  try {
-    const { data } = await sb.from('jobs').select('*').eq('is_open', true).order('created_at', { ascending: false });
-    dbJobs = data || [];
-  } catch (e) { /* offline / table missing — fall back to built-ins */ }
-
-  const seed = (typeof SEED_JOBS !== 'undefined') ? SEED_JOBS : [];
-  const byTitle = new Map();
-  // Built-ins first…
-  seed.forEach(j => byTitle.set(j.title.toLowerCase(), j));
-  // …then DB jobs override / add
-  dbJobs.forEach(j => byTitle.set((j.title || '').toLowerCase(), j));
-
-  allJobs = [...byTitle.values()];
+  const { data, error } = await sb.from('jobs').select('*').eq('is_open', true).order('created_at', { ascending: false });
   document.getElementById('jobs-loading')?.remove();
+  if (error) {
+    document.getElementById('job-list').innerHTML = '';
+    const empty = document.getElementById('jobs-empty');
+    empty.style.display = '';
+    empty.textContent = 'Could not load positions right now. Please try again later.';
+    console.error(error);
+    return;
+  }
+  allJobs = data || [];
   buildFilters();
   renderJobs();
 })();

@@ -46,7 +46,10 @@
     <div id="jobs-section">
       <div class="admin-section-head">
         <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Job Positions</h2>
-        <button class="btn btn-primary" style="font-size:12.5px;padding:8px 16px" onclick="openJobForm()">＋ Add position</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="import-pack-btn" style="font-size:12.5px;padding:8px 16px;border-color:var(--teal);color:var(--teal)" onclick="importJobPack()">⇪ Import job pack (49)</button>
+          <button class="btn btn-primary" style="font-size:12.5px;padding:8px 16px" onclick="openJobForm()">＋ Add position</button>
+        </div>
       </div>
 
       <!-- Add / edit job form (hidden until used) -->
@@ -142,6 +145,7 @@
 <script src="components.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="seed-jobs.js"></script>
 <script>
 let allApps = [];
 let nlCount = 0, clCount = 0;
@@ -452,6 +456,34 @@ async function toggleJobOpen(id) {
   const { error } = await sb.from('jobs').update({ is_open: !j.is_open }).eq('id', id);
   if (error) { showToast('Could not update: ' + error.message, 'error', 6000); return; }
   showToast(j.is_open ? 'Position hidden.' : 'Position is now visible.', 'success');
+  await loadJobs();
+}
+
+async function importJobPack() {
+  if (typeof REGMA_JOB_PACK === 'undefined' || !REGMA_JOB_PACK.length) {
+    showToast('Job pack not found.', 'error'); return;
+  }
+  // Skip positions that already exist (by title), so re-importing never duplicates
+  const existing = new Set(allAdminJobs.map(j => (j.title || '').toLowerCase()));
+  const toInsert = REGMA_JOB_PACK.filter(j => !existing.has(j.title.toLowerCase()));
+
+  if (toInsert.length === 0) {
+    showToast('All 49 positions from the pack are already imported.', 'info');
+    return;
+  }
+  if (!confirm('Import ' + toInsert.length + ' positions into your job list?\n\nThey will appear on the careers page immediately, and you can edit, hide or delete each one like any other position.')) return;
+
+  const btn = document.getElementById('import-pack-btn');
+  btn.classList.add('loading');
+  const { error } = await sb.from('jobs').insert(toInsert);
+  btn.classList.remove('loading');
+
+  if (error) {
+    showToast('Import failed: ' + error.message, 'error', 7000);
+    console.error(error);
+    return;
+  }
+  showToast(toInsert.length + ' positions imported.', 'success');
   await loadJobs();
 }
 
