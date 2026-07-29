@@ -90,6 +90,18 @@
         </form>
       </div>
 
+      <div class="bulk-bar" id="bulk-bar" style="display:none">
+        <span id="bulk-count"></span>
+        <div class="bulk-actions">
+          <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="bulkSet({verified_opening:true})">✓ Mark as confirmed vacancy</button>
+          <button class="btn" onclick="bulkSet({verified_opening:false})">Unmark</button>
+          <button class="btn" onclick="bulkSet({is_open:false})">Hide</button>
+          <button class="btn" onclick="bulkSet({is_open:true})">Show</button>
+          <button class="btn" style="border-color:#f87171;color:#f87171" onclick="bulkDelete()">Delete</button>
+          <button class="btn" onclick="clearSelection()">Clear</button>
+        </div>
+      </div>
+
       <div id="jobs-admin-list" class="admin-list"></div>
     </div>
 
@@ -164,10 +176,20 @@
         <li>Open <a href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Annonsera i Platsbanken</a> and sign in with your employer account (free).</li>
         <li>Create a new ad and copy each field below across.</li>
       </ol>
+      <div class="af-lang-row">
+        <span class="jobs-filter-label" style="width:auto;text-align:left">Ad language</span>
+        <div class="jobs-filters" id="af-lang" style="margin:0">
+          <button class="filter-btn" data-lang="sv" onclick="setAFLang('sv')">Svenska</button>
+          <button class="filter-btn" data-lang="en" onclick="setAFLang('en')">English</button>
+        </div>
+      </div>
+      <p class="af-lang-hint">Headings and boilerplate follow this choice — the role's own text is used as written. English ads are common for IT roles in Sweden.</p>
+
       <div id="af-fields"></div>
       <div class="admin-form-actions">
         <button class="btn btn-primary" onclick="copyAllAF()">Copy full ad text</button>
         <a class="btn" href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Open Platsbanken ↗</a>
+        <button class="btn" id="af-mark-posted" style="margin-left:auto;border-color:var(--teal);color:var(--teal)" onclick="markPostedToAF()">Mark as posted to Platsbanken</button>
       </div>
     </div>
   </div>
@@ -419,12 +441,14 @@ function renderAdminJobs() {
   }
   list.innerHTML = allAdminJobs.map(j => `
     <div class="admin-row">
+      <input type="checkbox" class="job-select" value="${j.id}" onchange="updateBulkBar()" aria-label="Select ${esc(j.title)}" />
       <div class="admin-row-main">
         <strong>${esc(j.title)}</strong>
-        <span class="admin-row-sub">${esc(j.department || '')} · ${esc(j.type || '')} · ${esc(j.location || '')}${j.salary ? ' · ' + esc(j.salary) : ''}</span>
+        <span class="admin-row-sub">${esc(j.department || '')} · ${esc(j.type || '')} · ${esc(j.location || '')}${j.salary ? ' · ' + esc(j.salary) : ''}${j.posted_to_af_at ? ' · posted ' + new Date(j.posted_to_af_at).toLocaleDateString('sv-SE') : ''}</span>
       </div>
       <span class="job-pill ${j.is_open ? 'open' : 'closed'}">${j.is_open ? 'Open' : 'Hidden'}</span>
       ${j.verified_opening ? '<span class="job-pill verified" title="Confirmed Regma vacancy — cleared for external publishing">✓ Verified</span>' : ''}
+      ${j.posted_to_af ? '<span class="job-pill posted" title="Already posted to Platsbanken">↗ Platsbanken</span>' : ''}
       <div class="admin-row-actions">
         <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="exportToAF('${j.id}')">↗ Platsbanken</button>
         <button class="btn" onclick="toggleJobOpen('${j.id}')">${j.is_open ? 'Hide' : 'Show'}</button>
@@ -433,6 +457,42 @@ function renderAdminJobs() {
       </div>
     </div>
   `).join('');
+  updateBulkBar();
+}
+
+/* ───────── BULK ACTIONS ───────── */
+function selectedJobIds() {
+  return [...document.querySelectorAll('.job-select:checked')].map(c => c.value);
+}
+function updateBulkBar() {
+  const n = selectedJobIds().length;
+  const bar = document.getElementById('bulk-bar');
+  bar.style.display = n ? '' : 'none';
+  document.getElementById('bulk-count').textContent =
+    n + (n === 1 ? ' position selected' : ' positions selected');
+}
+function clearSelection() {
+  document.querySelectorAll('.job-select').forEach(c => c.checked = false);
+  updateBulkBar();
+}
+async function bulkSet(patch) {
+  const ids = selectedJobIds();
+  if (!ids.length) return;
+  if (patch.verified_opening === true &&
+      !confirm('Mark ' + ids.length + ' position(s) as confirmed Regma vacancies?\n\nOnly do this for roles you are genuinely recruiting for — these become publishable to Platsbanken, where real jobseekers apply.')) return;
+  const { error } = await sb.from('jobs').update(patch).in('id', ids);
+  if (error) { showToast('Could not update: ' + error.message, 'error', 6000); return; }
+  showToast(ids.length + ' position(s) updated.', 'success');
+  await loadJobs();
+}
+async function bulkDelete() {
+  const ids = selectedJobIds();
+  if (!ids.length) return;
+  if (!confirm('Permanently delete ' + ids.length + ' position(s)? This cannot be undone.')) return;
+  const { error } = await sb.from('jobs').delete().in('id', ids);
+  if (error) { showToast('Could not delete: ' + error.message, 'error', 6000); return; }
+  showToast(ids.length + ' position(s) deleted.', 'success');
+  await loadJobs();
 }
 
 function openJobForm() {
@@ -532,19 +592,32 @@ function bullets(t) {
   return (t || '').split('\n').map(s => s.trim()).filter(Boolean).map(s => '• ' + s).join('\n');
 }
 
-function buildAdText(j) {
-  const parts = [];
-  parts.push(j.summary || '');
-  parts.push('');
-  parts.push('OM REGMA IT AB');
-  parts.push('Regma IT AB är ett svenskt IT-konsultbolag i Angered, Göteborg. Vi arbetar med IT-konsultation, systemarkitektur och teknisk strategi.');
-  if (j.responsibilities) { parts.push(''); parts.push('ARBETSUPPGIFTER'); parts.push(bullets(j.responsibilities)); }
-  if (j.requirements)     { parts.push(''); parts.push('KVALIFIKATIONER');  parts.push(bullets(j.requirements)); }
-  if (j.nice_to_have)     { parts.push(''); parts.push('MERITERANDE');      parts.push(bullets(j.nice_to_have)); }
-  parts.push('');
-  parts.push('ANSÖKAN');
-  parts.push('Ansök via ' + location.origin.replace(/^http:/, 'https:') + '/career.html'
-    + (j.contact_email ? ' eller kontakta ' + (j.contact_name ? j.contact_name + ', ' : '') + j.contact_email + '.' : '.'));
+// Ad copy in either language. Headings and boilerplate switch; the role's own
+// text is used as written, so pick the language the job was written in.
+const AD_TEXT = {
+  sv: {
+    about: 'OM REGMA IT AB',
+    aboutBody: 'Regma IT AB är ett svenskt IT-konsultbolag med säte i Angered, Göteborg. Vi arbetar med IT-konsultation, systemarkitektur och teknisk strategi för företag i Sverige.',
+    resp: 'ARBETSUPPGIFTER', req: 'KVALIFIKATIONER', nice: 'MERITERANDE', apply: 'ANSÖKAN',
+    applyBody: (url, c) => 'Ansök via ' + url + (c ? ' eller kontakta ' + c + '.' : '.')
+  },
+  en: {
+    about: 'ABOUT REGMA IT AB',
+    aboutBody: 'Regma IT AB is a Swedish IT consultancy based in Angered, Gothenburg. We work with IT consulting, systems architecture and technology strategy for companies across Sweden.',
+    resp: 'RESPONSIBILITIES', req: 'REQUIREMENTS', nice: 'NICE TO HAVE', apply: 'HOW TO APPLY',
+    applyBody: (url, c) => 'Apply at ' + url + (c ? ' or contact ' + c + '.' : '.')
+  }
+};
+
+function buildAdText(j, lang) {
+  const t = AD_TEXT[lang] || AD_TEXT.en;
+  const url = location.origin.replace(/^http:/, 'https:') + '/career.html';
+  const contact = [j.contact_name, j.contact_email].filter(Boolean).join(', ');
+  const parts = [j.summary || '', '', t.about, t.aboutBody];
+  if (j.responsibilities) parts.push('', t.resp, bullets(j.responsibilities));
+  if (j.requirements)     parts.push('', t.req,  bullets(j.requirements));
+  if (j.nice_to_have)     parts.push('', t.nice, bullets(j.nice_to_have));
+  parts.push('', t.apply, t.applyBody(url, contact));
   return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
@@ -560,9 +633,41 @@ function afField(label, value, hint) {
   </div>`;
 }
 
+let afCurrentJobId = null;
+let afLang = localStorage.getItem('regma_af_lang') || 'sv';
+
+function renderAFFields() {
+  const j = allAdminJobs.find(x => x.id === afCurrentJobId);
+  if (!j) return;
+  afCurrentText = buildAdText(j, afLang);
+  const deadline = j.application_deadline ? new Date(j.application_deadline).toLocaleDateString('sv-SE') : '';
+  const sv = afLang === 'sv';
+  document.getElementById('af-fields').innerHTML = [
+    afField(sv ? 'Rubrik' : 'Job title', j.title),
+    afField(sv ? 'Yrkesområde' : 'Occupation area', j.department || '', 'pick the closest match in their list'),
+    afField(sv ? 'Anställningsform' : 'Employment type', j.type || (sv ? 'Tillsvidare' : 'Permanent')),
+    afField(sv ? 'Ort' : 'Location', j.location || 'Göteborg'),
+    afField(sv ? 'Antal platser' : 'Number of positions', '1'),
+    afField(sv ? 'Lön' : 'Salary', j.salary || (sv ? 'Enligt överenskommelse' : 'By agreement')),
+    deadline ? afField(sv ? 'Sista ansökningsdag' : 'Application deadline', deadline) : '',
+    (j.contact_name || j.contact_email)
+      ? afField(sv ? 'Kontakt' : 'Contact', [j.contact_name, j.contact_email].filter(Boolean).join(' — ')) : '',
+    afField(sv ? 'Annonstext' : 'Ad description', afCurrentText, 'paste into the description box')
+  ].join('');
+  document.querySelectorAll('#af-lang .filter-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === afLang));
+}
+
+function setAFLang(lang) {
+  afLang = lang;
+  localStorage.setItem('regma_af_lang', lang);
+  renderAFFields();
+}
+
 function exportToAF(id) {
   const j = allAdminJobs.find(x => x.id === id);
   if (!j) return;
+  afCurrentJobId = id;
   document.getElementById('af-role').textContent = j.title;
   const blocked = document.getElementById('af-blocked');
   const ready = document.getElementById('af-ready');
@@ -572,25 +677,31 @@ function exportToAF(id) {
     document.getElementById('af-edit-btn').onclick = () => { closeAF(); editJob(id); };
   } else {
     blocked.style.display = 'none'; ready.style.display = '';
-    afCurrentText = buildAdText(j);
-    const deadline = j.application_deadline
-      ? new Date(j.application_deadline).toLocaleDateString('sv-SE')
-      : '';
-    document.getElementById('af-fields').innerHTML = [
-      afField('Rubrik / Job title', j.title),
-      afField('Yrkesområde / Occupation area', j.department || '', 'pick the closest match in their list'),
-      afField('Anställningsform / Employment type', j.type || 'Tillsvidare'),
-      afField('Ort / Location', j.location || 'Göteborg'),
-      afField('Antal platser / Positions', '1'),
-      j.salary ? afField('Lön / Salary', j.salary) : afField('Lön / Salary', 'Enligt överenskommelse'),
-      deadline ? afField('Sista ansökningsdag / Deadline', deadline) : '',
-      j.contact_name || j.contact_email
-        ? afField('Kontakt / Contact', [j.contact_name, j.contact_email].filter(Boolean).join(' — ')) : '',
-      afField('Annonstext / Ad description', afCurrentText, 'full text — paste into the description box')
-    ].join('');
+    renderAFFields();
+    // "Mark as posted" reflects current state
+    const mark = document.getElementById('af-mark-posted');
+    mark.textContent = j.posted_to_af ? '✓ Marked as posted' : 'Mark as posted to Platsbanken';
+    mark.disabled = !!j.posted_to_af;
   }
   document.getElementById('af-modal').style.display = '';
   document.body.style.overflow = 'hidden';
+}
+
+async function markPostedToAF() {
+  const j = allAdminJobs.find(x => x.id === afCurrentJobId);
+  if (!j) return;
+  const { error } = await sb.from('jobs')
+    .update({ posted_to_af: true, posted_to_af_at: new Date().toISOString() })
+    .eq('id', j.id);
+  if (error) {
+    showToast(/column|schema/i.test(error.message)
+      ? 'Needs a one-time database update to track posted ads.'
+      : 'Could not save: ' + error.message, 'error', 6000);
+    return;
+  }
+  showToast('Marked as posted to Platsbanken.', 'success');
+  closeAF();
+  await loadJobs();
 }
 
 function closeAF() {
