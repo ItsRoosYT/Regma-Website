@@ -76,7 +76,13 @@
           <div class="form-row"><label>Responsibilities <span class="hint">(one per line)</span></label><textarea id="job-responsibilities" rows="4" placeholder="Run client discovery sessions&#10;Design IT strategies&#10;…"></textarea></div>
           <div class="form-row"><label>Requirements <span class="hint">(one per line)</span></label><textarea id="job-requirements" rows="4" placeholder="5+ years experience&#10;Fluent in Swedish & English&#10;…"></textarea></div>
           <div class="form-row"><label>Nice to have <span class="hint">(one per line)</span></label><textarea id="job-nice" rows="3" placeholder="Cloud certifications&#10;…"></textarea></div>
+          <div class="form-row"><label>Application deadline <span class="hint">(for Platsbanken — optional)</span></label><input type="date" id="job-deadline" /></div>
+          <div class="admin-grid-2">
+            <div class="form-row"><label>Contact person <span class="hint">(optional)</span></label><input type="text" id="job-contact-name" placeholder="Name" /></div>
+            <div class="form-row"><label>Contact email <span class="hint">(optional)</span></label><input type="email" id="job-contact-email" placeholder="name@regma.se" /></div>
+          </div>
           <label class="admin-check"><input type="checkbox" id="job-open" checked /> Visible on the careers page (open for applications)</label>
+          <label class="admin-check"><input type="checkbox" id="job-verified" /> <span><strong>Confirmed Regma vacancy</strong> — we are genuinely recruiting for this role and may advertise it externally (required for Platsbanken export)</span></label>
           <div class="admin-form-actions">
             <button type="submit" class="btn btn-primary" style="font-size:13px">Save position</button>
             <button type="button" class="btn" style="font-size:13px" onclick="closeJobForm()">Cancel</button>
@@ -133,6 +139,39 @@
 
   </div>
 </main>
+
+<!-- ───── PLATSBANKEN EXPORT PANEL ───── -->
+<div class="modal-overlay" id="af-modal" style="display:none">
+  <div class="modal" style="max-width:660px">
+    <button class="modal-close" onclick="closeAF()">&times;</button>
+    <h2>Publish to <em>Platsbanken</em></h2>
+    <p class="modal-sub" id="af-role"></p>
+
+    <div id="af-blocked" style="display:none">
+      <div class="af-warn">
+        <strong>This position isn't marked as a confirmed vacancy.</strong>
+        <p>Platsbanken is a public job board — real jobseekers will apply. Only publish roles Regma IT is genuinely recruiting for.</p>
+        <p style="margin-top:8px">If this is a real opening, tick <em>“Confirmed Regma vacancy”</em> in <strong>Edit</strong> first.</p>
+      </div>
+      <div class="admin-form-actions">
+        <button class="btn" onclick="closeAF()">Close</button>
+        <button class="btn btn-primary" id="af-edit-btn">Edit position</button>
+      </div>
+    </div>
+
+    <div id="af-ready" style="display:none">
+      <ol class="af-steps">
+        <li>Open <a href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Annonsera i Platsbanken</a> and sign in with your employer account (free).</li>
+        <li>Create a new ad and copy each field below across.</li>
+      </ol>
+      <div id="af-fields"></div>
+      <div class="admin-form-actions">
+        <button class="btn btn-primary" onclick="copyAllAF()">Copy full ad text</button>
+        <a class="btn" href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Open Platsbanken ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <footer>
   <p>© 2026 Regma IT AB · Angered, Gothenburg</p>
@@ -385,7 +424,9 @@ function renderAdminJobs() {
         <span class="admin-row-sub">${esc(j.department || '')} · ${esc(j.type || '')} · ${esc(j.location || '')}${j.salary ? ' · ' + esc(j.salary) : ''}</span>
       </div>
       <span class="job-pill ${j.is_open ? 'open' : 'closed'}">${j.is_open ? 'Open' : 'Hidden'}</span>
+      ${j.verified_opening ? '<span class="job-pill verified" title="Confirmed Regma vacancy — cleared for external publishing">✓ Verified</span>' : ''}
       <div class="admin-row-actions">
+        <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="exportToAF('${j.id}')">↗ Platsbanken</button>
         <button class="btn" onclick="toggleJobOpen('${j.id}')">${j.is_open ? 'Hide' : 'Show'}</button>
         <button class="btn" onclick="editJob('${j.id}')">Edit</button>
         <button class="btn" style="border-color:#f87171;color:#f87171" onclick="deleteJob('${j.id}','${esc(j.title).replace(/'/g,"&#39;")}')">Delete</button>
@@ -398,6 +439,7 @@ function openJobForm() {
   document.getElementById('job-form').reset();
   document.getElementById('job-id').value = '';
   document.getElementById('job-open').checked = true;
+  document.getElementById('job-verified').checked = false;
   document.getElementById('job-form-title').textContent = 'Add a position';
   document.getElementById('job-form-card').style.display = '';
   document.getElementById('job-form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -418,6 +460,10 @@ function editJob(id) {
   document.getElementById('job-requirements').value = j.requirements || '';
   document.getElementById('job-nice').value = j.nice_to_have || '';
   document.getElementById('job-open').checked = !!j.is_open;
+  document.getElementById('job-verified').checked = !!j.verified_opening;
+  document.getElementById('job-deadline').value = j.application_deadline || '';
+  document.getElementById('job-contact-name').value = j.contact_name || '';
+  document.getElementById('job-contact-email').value = j.contact_email || '';
   document.getElementById('job-form-title').textContent = 'Edit position';
   document.getElementById('job-form-card').style.display = '';
   document.getElementById('job-form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -436,13 +482,33 @@ async function saveJob(e) {
     responsibilities: document.getElementById('job-responsibilities').value,
     requirements: document.getElementById('job-requirements').value,
     nice_to_have: document.getElementById('job-nice').value,
-    is_open: document.getElementById('job-open').checked
+    is_open: document.getElementById('job-open').checked,
+    verified_opening: document.getElementById('job-verified').checked,
+    application_deadline: document.getElementById('job-deadline').value || null,
+    contact_name: document.getElementById('job-contact-name').value.trim(),
+    contact_email: document.getElementById('job-contact-email').value.trim()
   };
   const btn = e.target.querySelector('button[type="submit"]');
   btn.classList.add('loading');
-  let error;
-  if (id) ({ error } = await sb.from('jobs').update(row).eq('id', id));
-  else ({ error } = await sb.from('jobs').insert(row));
+
+  const save = r => id ? sb.from('jobs').update(r).eq('id', id) : sb.from('jobs').insert(r);
+  let { error } = await save(row);
+
+  // If the Platsbanken columns haven't been added to the database yet, save
+  // the core fields anyway so nothing is lost, and say what's missing.
+  if (error && /column|schema/i.test(error.message || '')) {
+    const core = { ...row };
+    ['verified_opening', 'application_deadline', 'contact_name', 'contact_email'].forEach(k => delete core[k]);
+    const retry = await save(core);
+    if (!retry.error) {
+      btn.classList.remove('loading');
+      showToast('Saved — but the Platsbanken fields need a one-time database update first.', 'info', 7000);
+      closeJobForm(); await loadJobs();
+      return;
+    }
+    error = retry.error;
+  }
+
   btn.classList.remove('loading');
   if (error) { showToast('Could not save: ' + error.message, 'error', 6000); return; }
   showToast(id ? 'Position updated.' : 'Position added.', 'success');
@@ -457,6 +523,93 @@ async function toggleJobOpen(id) {
   if (error) { showToast('Could not update: ' + error.message, 'error', 6000); return; }
   showToast(j.is_open ? 'Position hidden.' : 'Position is now visible.', 'success');
   await loadJobs();
+}
+
+/* ───────── PLATSBANKEN EXPORT ───────── */
+let afCurrentText = '';
+
+function bullets(t) {
+  return (t || '').split('\n').map(s => s.trim()).filter(Boolean).map(s => '• ' + s).join('\n');
+}
+
+function buildAdText(j) {
+  const parts = [];
+  parts.push(j.summary || '');
+  parts.push('');
+  parts.push('OM REGMA IT AB');
+  parts.push('Regma IT AB är ett svenskt IT-konsultbolag i Angered, Göteborg. Vi arbetar med IT-konsultation, systemarkitektur och teknisk strategi.');
+  if (j.responsibilities) { parts.push(''); parts.push('ARBETSUPPGIFTER'); parts.push(bullets(j.responsibilities)); }
+  if (j.requirements)     { parts.push(''); parts.push('KVALIFIKATIONER');  parts.push(bullets(j.requirements)); }
+  if (j.nice_to_have)     { parts.push(''); parts.push('MERITERANDE');      parts.push(bullets(j.nice_to_have)); }
+  parts.push('');
+  parts.push('ANSÖKAN');
+  parts.push('Ansök via ' + location.origin.replace(/^http:/, 'https:') + '/career.html'
+    + (j.contact_email ? ' eller kontakta ' + (j.contact_name ? j.contact_name + ', ' : '') + j.contact_email + '.' : '.'));
+  return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function afField(label, value, hint) {
+  if (!value) return '';
+  const id = 'af-f-' + Math.random().toString(36).slice(2, 8);
+  return `<div class="af-field">
+    <div class="af-field-head">
+      <label>${esc(label)}${hint ? ` <span class="hint">${esc(hint)}</span>` : ''}</label>
+      <button class="af-copy" onclick="copyField('${id}',this)">Copy</button>
+    </div>
+    <textarea id="${id}" readonly rows="${value.length > 90 ? Math.min(14, Math.ceil(value.length / 70) + 1) : 1}">${esc(value)}</textarea>
+  </div>`;
+}
+
+function exportToAF(id) {
+  const j = allAdminJobs.find(x => x.id === id);
+  if (!j) return;
+  document.getElementById('af-role').textContent = j.title;
+  const blocked = document.getElementById('af-blocked');
+  const ready = document.getElementById('af-ready');
+
+  if (!j.verified_opening) {
+    blocked.style.display = ''; ready.style.display = 'none';
+    document.getElementById('af-edit-btn').onclick = () => { closeAF(); editJob(id); };
+  } else {
+    blocked.style.display = 'none'; ready.style.display = '';
+    afCurrentText = buildAdText(j);
+    const deadline = j.application_deadline
+      ? new Date(j.application_deadline).toLocaleDateString('sv-SE')
+      : '';
+    document.getElementById('af-fields').innerHTML = [
+      afField('Rubrik / Job title', j.title),
+      afField('Yrkesområde / Occupation area', j.department || '', 'pick the closest match in their list'),
+      afField('Anställningsform / Employment type', j.type || 'Tillsvidare'),
+      afField('Ort / Location', j.location || 'Göteborg'),
+      afField('Antal platser / Positions', '1'),
+      j.salary ? afField('Lön / Salary', j.salary) : afField('Lön / Salary', 'Enligt överenskommelse'),
+      deadline ? afField('Sista ansökningsdag / Deadline', deadline) : '',
+      j.contact_name || j.contact_email
+        ? afField('Kontakt / Contact', [j.contact_name, j.contact_email].filter(Boolean).join(' — ')) : '',
+      afField('Annonstext / Ad description', afCurrentText, 'full text — paste into the description box')
+    ].join('');
+  }
+  document.getElementById('af-modal').style.display = '';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAF() {
+  document.getElementById('af-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function copyField(id, btn) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.value).then(() => {
+    const old = btn.textContent; btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = old, 1600);
+  }).catch(() => showToast('Could not copy — select the text manually.', 'error'));
+}
+
+function copyAllAF() {
+  navigator.clipboard.writeText(afCurrentText)
+    .then(() => showToast('Full ad text copied.', 'success'))
+    .catch(() => showToast('Could not copy — select the text manually.', 'error'));
 }
 
 async function importJobPack() {
