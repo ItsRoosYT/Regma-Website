@@ -13,6 +13,7 @@
   <meta property="og:url" content="https://regma.se/about.html" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="visuals.css" />
 </head>
 <body>
 
@@ -64,7 +65,7 @@
   <a href="contact.html" data-i18n="nav_cta">Contact us</a>
 </div>
 
-<div class="page-header">
+<div class="page-header has-photo" style="--ph-img:url('assets/img/office.jpg')">
   <div class="page-header-inner">
     <h1 data-i18n="ph_about_h">About <em>Regma IT</em></h1>
     <p data-i18n="ph_about_p">A Swedish IT consulting company built on trust and expertise.</p>
@@ -72,12 +73,56 @@
 </div>
 
 <main>
+
+  <!-- WHO WE ARE -->
+  <section class="split">
+    <div class="split__media rise wipe">
+      <div class="media"><img src="assets/img/team-sm.jpg" alt="Colleagues working together at a shared table" loading="lazy" /></div>
+      <p class="media-caption">How we work</p>
+    </div>
+    <div class="split__body rise rise-d1">
+      <p class="section-label" style="text-align:left;justify-content:flex-start">Who we are</p>
+      <h2>A consulting firm built on <em>trust and expertise</em></h2>
+      <p data-i18n="about_p1">Regma IT is a Swedish consulting firm operating within IT, software development, and application development. We work closely with our clients to understand their unique challenges and deliver technology that creates lasting value.</p>
+      <p data-i18n="about_p2">Our approach is straightforward: listen carefully, advise honestly, and build reliably. Whether you need strategic IT guidance or a team to build your next product, we bring focused expertise to every engagement.</p>
+    </div>
+  </section>
+
+  <!-- APPROACH BAND -->
+  <section class="band">
+    <div class="band__bg" style="background-image:url('assets/img/hero-forest.jpg')"></div>
+    <div class="band__scrim"></div>
+    <div class="band__inner">
+      <p class="section-label rise">Our approach</p>
+      <h2 class="rise rise-d1">Listen carefully. Advise honestly. <em>Build reliably.</em></h2>
+      <p class="rise rise-d2">Three principles that decide what we take on, how we quote it, and when we tell a client the honest answer is "you don't need us for this."</p>
+    </div>
+  </section>
+
+  <!-- WHO WE SERVE -->
+  <section class="split split--flip">
+    <div class="split__media rise wipe">
+      <div class="media"><img src="assets/img/office-sm.jpg" alt="A modern open-plan office" loading="lazy" /></div>
+      <p class="media-caption">Clients</p>
+    </div>
+    <div class="split__body rise rise-d1">
+      <p class="section-label" style="text-align:left;justify-content:flex-start">Who we serve</p>
+      <h2>From first system to <em>full modernisation</em></h2>
+      <p data-i18n="about_p3">Based in Sweden, we serve clients across industries — from startups finding their footing to established companies modernising their systems.</p>
+      <ul class="split__list">
+        <li>Startups needing a technical foundation that won't need rebuilding</li>
+        <li>Established firms replacing ageing internal systems</li>
+        <li>Companies without an in-house CTO who need senior guidance</li>
+      </ul>
+      <a href="services.html" class="btn">See our services</a>
+    </div>
+  </section>
+
+  <!-- COMPANY DETAILS -->
   <div class="section">
     <div class="about-body">
-      <p class="reveal" data-i18n="about_p1">Regma IT is a Swedish consulting firm operating within IT, software development, and application development. We work closely with our clients to understand their unique challenges and deliver technology that creates lasting value.</p>
-      <p class="reveal" data-i18n="about_p2">Our approach is straightforward: listen carefully, advise honestly, and build reliably. Whether you need strategic IT guidance or a team to build your next product, we bring focused expertise to every engagement.</p>
-      <p class="reveal" data-i18n="about_p3">Based in Sweden, we serve clients across industries — from startups finding their footing to established companies modernising their systems.</p>
-      <ul class="meta-list reveal">
+      <p class="section-label rise">Company details</p>
+      <ul class="meta-list rise rise-d1">
         <li><b data-i18n="meta_company">Company</b> <span>Regma IT AB</span></li>
         <li><b data-i18n="meta_country">Country</b> <span data-i18n="meta_country_val">Sweden (Angered, Gothenburg)</span></li>
         <li><b>Legal form</b> <span>Aktiebolag (AB) · Share capital 25 000 SEK</span></li>

@@ -13,6 +13,7 @@
   <meta property="og:url" content="https://regma.se/career.html" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="visuals.css" />
 </head>
 <body>
 
@@ -64,7 +65,7 @@
   <a href="contact.html" data-i18n="nav_cta">Contact us</a>
 </div>
 
-<div class="page-header careers-hero">
+<div class="page-header careers-hero has-photo" style="--ph-img:url('assets/img/hero-forest.jpg')">
   <div class="page-header-inner">
     <span class="careers-eyebrow">Careers at Regma IT</span>
     <h1>Build your career with <em>Regma IT</em></h1>
@@ -78,9 +79,29 @@
 </div>
 
 <main>
+
+  <!-- WHY REGMA -->
+  <section class="split">
+    <div class="split__media rise wipe">
+      <div class="media"><img src="assets/img/team-sm.jpg" alt="Colleagues working together around a table" loading="lazy" /></div>
+      <p class="media-caption">Life at Regma</p>
+    </div>
+    <div class="split__body rise rise-d1">
+      <p class="section-label" style="text-align:left;justify-content:flex-start">Why Regma</p>
+      <h2>Small team, <em>real responsibility</em></h2>
+      <p>We're not a body-shop that places you somewhere and forgets your name. You'll own work end to end, talk directly to clients, and have a say in how things get built.</p>
+      <ul class="split__list">
+        <li>Direct client contact from day one — no layers in between</li>
+        <li>Based in Gothenburg, with hybrid arrangements</li>
+        <li>A registered Swedish AB with proper employment terms</li>
+        <li>Room to shape your own role as the company grows</li>
+      </ul>
+    </div>
+  </section>
+
   <div class="section">
 
-    <div class="jobs-header">
+    <div class="jobs-header rise">
       <h2>Open positions</h2>
       <p>Browse current openings and apply when you find the right fit.</p>
     </div>
@@ -107,6 +128,18 @@
     <div class="jobs-empty" id="jobs-empty" style="display:none">No positions match your filters. <a href="#" onclick="resetFilters();return false;" style="color:var(--teal);font-weight:600">Clear filters</a></div>
 
   </div>
+
+  <!-- SPECULATIVE APPLICATION BAND -->
+  <section class="band">
+    <div class="band__bg" style="background-image:url('assets/img/nordic-lake.jpg')"></div>
+    <div class="band__scrim"></div>
+    <div class="band__inner">
+      <p class="section-label rise">Nothing that fits?</p>
+      <h2 class="rise rise-d1">Tell us what you're <em>good at</em></h2>
+      <p class="rise rise-d2">We'd rather hear from the right person too early than not at all. Send us a note about what you do and we'll keep you in mind as roles open up.</p>
+      <a href="contact.html" class="btn btn-primary rise rise-d3">Get in touch</a>
+    </div>
+  </section>
 </main>
 
 <footer>

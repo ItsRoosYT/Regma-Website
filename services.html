@@ -13,6 +13,7 @@
   <meta property="og:url" content="https://regma.se/services.html" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="visuals.css" />
 </head>
 <body>
 
@@ -64,7 +65,7 @@
   <a href="contact.html" data-i18n="nav_cta">Contact us</a>
 </div>
 
-<div class="page-header">
+<div class="page-header has-photo" style="--ph-img:url('assets/img/circuit.jpg')">
   <div class="page-header-inner">
     <h1 data-i18n="ph_services_h">Our <em>Services</em></h1>
     <p data-i18n="ph_services_p">Three focused areas of expertise — delivered with clarity and care.</p>
@@ -72,41 +73,80 @@
 </div>
 
 <main>
-  <div class="section">
-    <div class="cards">
-      <div class="card reveal reveal-delay-1">
-        <div class="card-icon">
+
+  <div class="pcards" style="padding-top:clamp(50px,7vw,86px)">
+    <article class="pcard rise rise-d1">
+      <div class="pcard__media">
+        <img src="assets/img/network-sm.jpg" alt="Abstract network of connected points" loading="lazy" />
+        <div class="pcard__icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
           </svg>
         </div>
+      </div>
+      <div class="pcard__body">
         <h3 data-i18n="card1_h">IT Consulting</h3>
         <p data-i18n="card1_p">Strategic guidance to align technology with your business goals — from infrastructure decisions to digital transformation.</p>
       </div>
-      <div class="card reveal reveal-delay-2">
-        <div class="card-icon">
+    </article>
+    <article class="pcard rise rise-d2">
+      <div class="pcard__media">
+        <img src="assets/img/code-sm.jpg" alt="Source code on a screen" loading="lazy" />
+        <div class="pcard__icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
           </svg>
         </div>
+      </div>
+      <div class="pcard__body">
         <h3 data-i18n="card2_h">Software Development</h3>
         <p data-i18n="card2_p">Custom software built around your exact requirements. Clean architecture, clear timelines, and code you can own long-term.</p>
       </div>
-      <div class="card reveal reveal-delay-3">
-        <div class="card-icon">
+    </article>
+    <article class="pcard rise rise-d3">
+      <div class="pcard__media">
+        <img src="assets/img/workspace-sm.jpg" alt="People working at laptops in an office" loading="lazy" />
+        <div class="pcard__icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
           </svg>
         </div>
+      </div>
+      <div class="pcard__body">
         <h3 data-i18n="card3_h">App Development</h3>
         <p data-i18n="card3_p">Web and mobile applications designed for real users. Fast, accessible, and built to scale with your product.</p>
       </div>
-    </div>
-    <div class="services-cta reveal">
-      <p data-i18n="svc_cta_p">Have a project in mind?</p>
-      <a href="contact.html" class="btn btn-primary" data-i18n="btn_touch">Get in touch</a>
-    </div>
+    </article>
   </div>
+
+  <!-- HOW WE WORK -->
+  <section class="split split--flip">
+    <div class="split__media rise wipe">
+      <div class="media"><img src="assets/img/server-sm.jpg" alt="Server racks with network cabling" loading="lazy" /></div>
+      <p class="media-caption">Delivery</p>
+    </div>
+    <div class="split__body rise rise-d1">
+      <p class="section-label" style="text-align:left;justify-content:flex-start">How we work</p>
+      <h2>Simple process. <em>Clear results.</em></h2>
+      <p>No jargon, no surprises — a straightforward path from idea to delivered product.</p>
+      <ul class="split__list">
+        <li><b>Discover</b> — we learn your business, goals and existing systems first</li>
+        <li><b>Design &amp; plan</b> — scope and timeline agreed before any code is written</li>
+        <li><b>Build &amp; deliver</b> — built with precision, handed over clean and documented</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section class="band">
+    <div class="band__bg" style="background-image:url('assets/img/nordic-lake.jpg')"></div>
+    <div class="band__scrim"></div>
+    <div class="band__inner">
+      <h2 class="rise" data-i18n="svc_cta_p">Have a project in mind?</h2>
+      <p class="rise rise-d1">Tell us what you're trying to build and we'll tell you honestly whether we're the right fit.</p>
+      <a href="contact.html" class="btn btn-primary rise rise-d2" data-i18n="btn_touch">Get in touch</a>
+    </div>
+  </section>
 </main>
 
 <footer>

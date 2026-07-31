@@ -1,0 +1,842 @@
+/* ════════════════════════════════════════════════════════════════════
+   REGMA IT — VISUAL SYSTEM
+   Photographic layer: heroes, parallax bands, editorial splits,
+   auto-scrolling strips, media frames.
+
+   Loaded AFTER style.css so it can override.
+   Every component is defined for BOTH the dark base theme and the
+   html.light "classic firm" theme.
+
+   Photography: Unsplash License (free for commercial use, no
+   attribution required). Files live in assets/img/.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Scrim = the gradient veil over photos that keeps text readable.
+     Tuned per-theme so photos feel graded, not pasted on. */
+  --scrim-top:    rgba(13,13,16,.55);
+  --scrim-bottom: rgba(13,13,16,.94);
+  --scrim-side:   rgba(13,13,16,.88);
+  --tint:         rgba(29,158,117,.30);   /* brand grade over photos */
+  --tint-soft:    rgba(29,158,117,.14);
+  --frame-shadow: 0 24px 60px -18px rgba(0,0,0,.65);
+  --ease-out:     cubic-bezier(.22,.61,.36,1);
+  --ease-soft:    cubic-bezier(.4,0,.2,1);
+}
+
+html.light {
+  --scrim-top:    rgba(24,38,32,.42);
+  --scrim-bottom: rgba(19,34,28,.88);
+  --scrim-side:   rgba(19,34,28,.82);
+  --tint:         rgba(29,92,69,.34);
+  --tint-soft:    rgba(29,92,69,.16);
+  --frame-shadow: 0 22px 50px -20px rgba(58,46,20,.38);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   1. MEDIA FRAME — the base image container
+   Handles aspect ratio, brand grade, hover zoom, and the
+   subtle inner hairline that makes photos feel "set" in the page.
+   ───────────────────────────────────────────────────────────── */
+.media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--surface2);
+  isolation: isolate;
+}
+.media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.1s var(--ease-out), filter .6s ease;
+  will-change: transform;
+}
+/* brand grade */
+.media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tint-soft);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  transition: opacity .5s ease;
+  z-index: 1;
+}
+/* inner hairline */
+.media::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.09);
+  pointer-events: none;
+  z-index: 2;
+}
+html.light .media::before {
+  box-shadow: inset 0 0 0 1px rgba(58,46,20,.14);
+}
+.media:hover img { transform: scale(1.055); }
+.media:hover::after { opacity: .55; }
+
+.media.ratio-wide   { aspect-ratio: 16 / 9; }
+.media.ratio-tall   { aspect-ratio: 3 / 4; }
+.media.ratio-square { aspect-ratio: 1 / 1; }
+.media.ratio-cine   { aspect-ratio: 21 / 9; }
+
+/* Duotone variant — pushes a photo fully into brand colour.
+   Used where a photo is texture, not subject. */
+.media.duotone img { filter: grayscale(1) contrast(1.08); }
+.media.duotone::after {
+  background: linear-gradient(140deg, var(--teal), transparent 70%),
+              var(--tint);
+  mix-blend-mode: color;
+  opacity: .9;
+}
+html.light .media.duotone::after {
+  background: linear-gradient(140deg, var(--teal), transparent 65%), var(--tint);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2. PHOTO HERO — full-bleed image behind the headline
+   The single biggest change: replaces the flat-colour hero.
+   ───────────────────────────────────────────────────────────── */
+.photo-hero {
+  position: relative;
+  min-height: clamp(520px, 78vh, 780px);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-bottom: 0;
+  isolation: isolate;
+}
+.photo-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.photo-hero__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Ken Burns: an extremely slow drift. Barely perceptible,
+     but it stops the hero feeling like a static screenshot. */
+  animation: kenburns 34s var(--ease-soft) infinite alternate;
+  transform-origin: 55% 45%;
+}
+@keyframes kenburns {
+  from { transform: scale(1.04) translate3d(0,0,0); }
+  to   { transform: scale(1.16) translate3d(-1.4%, -1.8%, 0); }
+}
+
+/* Layered scrim: vertical for legibility + directional for depth */
+.photo-hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, var(--scrim-top) 0%, transparent 34%, var(--scrim-bottom) 100%),
+    linear-gradient(100deg, var(--scrim-side) 0%, rgba(0,0,0,.30) 46%, transparent 78%);
+}
+/* brand grade sitting on top of the scrim */
+.photo-hero__grade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--tint-soft);
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+/* fine grain — kills gradient banding, adds print texture */
+.photo-hero__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: .16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+.photo-hero__inner {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: 56px;
+  align-items: center;
+}
+.photo-hero__copy { max-width: 620px; }
+
+/* Hero type — always light-on-photo in BOTH themes, because
+   it sits on a dark scrim either way. */
+.photo-hero h1 {
+  font-size: clamp(38px, 5.4vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -.035em;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 22px;
+  text-wrap: balance;
+}
+.photo-hero h1 em {
+  font-style: normal;
+  color: #7fe3bd;
+  display: inline-block;
+}
+html.light .photo-hero h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -.015em;
+}
+html.light .photo-hero h1 em {
+  font-style: italic;
+  color: #e6c883;   /* brass, reads warm against forest */
+}
+.photo-hero p.lede {
+  font-size: clamp(15px, 1.4vw, 18px);
+  line-height: 1.65;
+  color: rgba(255,255,255,.86);
+  max-width: 500px;
+  margin-bottom: 30px;
+}
+
+/* eyebrow badge on glass */
+.photo-hero .badge {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.26);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  margin-bottom: 24px;
+}
+html.light .photo-hero .badge {
+  background: rgba(230,200,131,.18);
+  border-color: rgba(230,200,131,.5);
+  color: #f4e6c4;
+}
+.photo-hero .badge-dot { background: #7fe3bd; box-shadow: 0 0 10px #7fe3bd; }
+html.light .photo-hero .badge-dot { background: #e6c883; box-shadow: 0 0 10px #e6c883; }
+
+/* hero buttons on photo */
+.photo-hero .btn {
+  border-color: rgba(255,255,255,.34);
+  color: #fff;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.photo-hero .btn:hover {
+  background: rgba(255,255,255,.17);
+  border-color: rgba(255,255,255,.55);
+}
+.photo-hero .btn-primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.photo-hero .btn-primary:hover {
+  background: #23b384;
+  border-color: #23b384;
+}
+html.light .photo-hero .btn-primary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #241c08;
+}
+html.light .photo-hero .btn-primary:hover {
+  background: #cb9a37; border-color: #cb9a37;
+}
+
+/* trust row on photo */
+.photo-hero .hero-trust { border-top-color: rgba(255,255,255,.2); }
+.photo-hero .trust-item { color: rgba(255,255,255,.82); }
+.photo-hero .trust-item svg { color: #7fe3bd; }
+html.light .photo-hero .trust-item svg { color: #e6c883; }
+
+/* soft fade into the next section */
+.photo-hero__fade {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 130px;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--bg));
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. GLASS TERMINAL — the existing terminal, floated on the photo
+   ───────────────────────────────────────────────────────────── */
+.photo-hero .terminal {
+  background: rgba(10,16,14,.66);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 30px 70px -22px rgba(0,0,0,.8);
+  animation: floatCard 7s ease-in-out infinite;
+}
+html.light .photo-hero .terminal {
+  background: rgba(16,38,30,.74);
+  border: 1px solid rgba(230,200,131,.34);
+  box-shadow: 0 26px 60px -22px rgba(20,40,30,.7);
+}
+@keyframes floatCard {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-11px); }
+}
+.photo-hero .terminal-bar {
+  background: rgba(255,255,255,.06);
+  border-bottom-color: rgba(255,255,255,.12);
+}
+.photo-hero .t-title { color: rgba(255,255,255,.55); }
+.photo-hero .t-out   { color: rgba(255,255,255,.62); }
+
+/* ─────────────────────────────────────────────────────────────
+   4. PARALLAX BAND — full-width photo section between content
+   Uses background-attachment: fixed on desktop only (it is
+   janky/broken on iOS, so it's disabled at narrow widths).
+   ───────────────────────────────────────────────────────────── */
+.band {
+  position: relative;
+  padding: clamp(80px, 11vw, 150px) 40px;
+  overflow: hidden;
+  isolation: isolate;
+  text-align: center;
+}
+.band__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transform: scale(1.02);
+}
+.band__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, var(--scrim-bottom), rgba(0,0,0,.62) 45%, var(--scrim-bottom));
+}
+.band__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 880px;
+  margin: 0 auto;
+}
+.band h2 {
+  font-size: clamp(26px, 3.4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -.03em;
+  color: #fff;
+  margin-bottom: 18px;
+  text-wrap: balance;
+}
+html.light .band h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.band h2 em { font-style: normal; color: #7fe3bd; }
+html.light .band h2 em { font-style: italic; color: #e6c883; }
+.band p {
+  color: rgba(255,255,255,.82);
+  font-size: clamp(14px, 1.3vw, 17px);
+  max-width: 620px;
+  margin: 0 auto 28px;
+  line-height: 1.7;
+}
+.band .section-label { color: rgba(255,255,255,.6); }
+html.light .band .section-label { color: #e6c883; }
+html.light .band .section-label::before { background: linear-gradient(90deg, transparent, #e6c883); }
+html.light .band .section-label::after  { background: linear-gradient(90deg, #e6c883, transparent); }
+.band .btn {
+  border-color: rgba(255,255,255,.4);
+  color: #fff;
+  background: rgba(255,255,255,.08);
+}
+.band .btn:hover { background: rgba(255,255,255,.18); }
+.band .btn-primary { background: var(--teal); border-color: var(--teal); }
+html.light .band .btn-primary { background: var(--gold); border-color: var(--gold); color: #241c08; }
+
+/* stat row that sits inside a band */
+.band-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 28px;
+  margin-top: 52px;
+}
+.band-stat { position: relative; }
+.band-stat + .band-stat::before {
+  content: '';
+  position: absolute;
+  left: -14px; top: 12%;
+  height: 76%;
+  width: 1px;
+  background: rgba(255,255,255,.2);
+}
+.band-stat .v {
+  display: block;
+  font-size: clamp(24px, 2.8vw, 36px);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: #fff;
+  margin-bottom: 6px;
+}
+html.light .band-stat .v { font-family: 'Fraunces', Georgia, serif; color: #f0e4c6; }
+.band-stat .l {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.62);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. EDITORIAL SPLIT — alternating image / text rows
+   ───────────────────────────────────────────────────────────── */
+.split {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(60px, 8vw, 110px) 40px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+.split--flip .split__media { order: 2; }
+.split__media { position: relative; }
+.split__media .media { aspect-ratio: 4 / 3; box-shadow: var(--frame-shadow); }
+
+/* offset accent panel behind the photo — gives depth without clutter */
+.split__media::before {
+  content: '';
+  position: absolute;
+  inset: 22px -22px -22px 22px;
+  border: 1px solid var(--teal);
+  border-radius: 14px;
+  opacity: .34;
+  z-index: -1;
+}
+.split--flip .split__media::before { inset: 22px 22px -22px -22px; }
+html.light .split__media::before { border-color: var(--gold); opacity: .55; }
+
+.split__body h2 {
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.16;
+  letter-spacing: -.03em;
+  margin-bottom: 16px;
+  text-wrap: balance;
+}
+html.light .split__body h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.split__body h2 em { font-style: normal; color: var(--teal); }
+html.light .split__body h2 em { font-style: italic; }
+.split__body p {
+  color: var(--muted);
+  line-height: 1.75;
+  margin-bottom: 16px;
+  max-width: 52ch;
+}
+.split__list { margin: 22px 0 26px; }
+.split__list li {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 12px;
+  color: var(--text);
+  font-size: 14.5px;
+}
+.split__list li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px;
+  width: 14px; height: 8px;
+  border-left: 2px solid var(--teal);
+  border-bottom: 2px solid var(--teal);
+  transform: rotate(-45deg);
+}
+html.light .split__list li::before { border-color: var(--gold); }
+
+/* caption under a photo — small, quiet, editorial */
+.media-caption {
+  margin-top: 12px;
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. MARQUEE — continuously scrolling image strip
+   Duplicated track + translate = seamless infinite loop.
+   ───────────────────────────────────────────────────────────── */
+.marquee {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(40px, 6vw, 70px) 0;
+  /* fade the strip out at both edges instead of hard-cutting */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+.marquee__track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: marqueeScroll 46s linear infinite;
+}
+.marquee:hover .marquee__track { animation-play-state: paused; }
+@keyframes marqueeScroll {
+  from { transform: translate3d(0, 0, 0); }
+  /* -50% because the track contains the image set exactly twice */
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+.marquee__item {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(230px, 27vw, 340px);
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  filter: grayscale(.55);
+  transition: filter .5s ease, transform .5s var(--ease-out);
+}
+.marquee__item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.marquee__item::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--tint-soft);
+  mix-blend-mode: multiply;
+}
+.marquee__item:hover { filter: grayscale(0); transform: translateY(-6px); }
+.marquee__item .cap {
+  position: absolute;
+  left: 14px; bottom: 12px;
+  z-index: 2;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,.8);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. PHOTO CARDS — service cards with an image head
+   ───────────────────────────────────────────────────────────── */
+.pcards {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 40px clamp(50px, 7vw, 90px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 26px;
+}
+.pcard {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface);
+  transition: transform .45s var(--ease-out), border-color .35s ease, box-shadow .45s ease;
+  display: flex;
+  flex-direction: column;
+}
+.pcard:hover {
+  transform: translateY(-7px);
+  border-color: var(--teal);
+  box-shadow: var(--frame-shadow);
+}
+html.light .pcard:hover { border-color: var(--gold); }
+.pcard__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+.pcard__media img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 1s var(--ease-out);
+}
+.pcard:hover .pcard__media img { transform: scale(1.07); }
+.pcard__media::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.55));
+}
+/* the icon badge overlapping the image edge */
+.pcard__icon {
+  position: absolute;
+  left: 20px; bottom: -22px;
+  z-index: 3;
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 8px 22px -6px rgba(0,0,0,.6);
+}
+html.light .pcard__icon { background: var(--teal); color: #f2e8cf; }
+.pcard__icon svg { width: 22px; height: 22px; }
+.pcard__body { padding: 40px 22px 26px; flex: 1; }
+.pcard__body h3 {
+  font-size: 17px;
+  letter-spacing: -.02em;
+  margin-bottom: 9px;
+}
+html.light .pcard__body h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 600; }
+.pcard__body p { color: var(--muted); font-size: 14px; line-height: 1.68; }
+.pcard__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal);
+  transition: gap .3s ease;
+}
+html.light .pcard__link { color: var(--gold); }
+.pcard:hover .pcard__link { gap: 13px; }
+
+/* ─────────────────────────────────────────────────────────────
+   8. PAGE HEADER WITH PHOTO — for inner pages
+   ───────────────────────────────────────────────────────────── */
+.photo-header {
+  position: relative;
+  padding: clamp(90px, 12vw, 150px) 40px clamp(50px, 7vw, 84px);
+  overflow: hidden;
+  text-align: center;
+  isolation: isolate;
+}
+.photo-header__bg { position: absolute; inset: 0; z-index: 0; }
+.photo-header__bg img {
+  width: 100%; height: 100%; object-fit: cover;
+  animation: kenburns 40s var(--ease-soft) infinite alternate;
+}
+.photo-header__scrim {
+  position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(180deg, var(--scrim-top), rgba(0,0,0,.55) 40%, var(--scrim-bottom));
+}
+.photo-header__inner { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; }
+.photo-header h1 {
+  font-size: clamp(30px, 4.4vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -.035em;
+  color: #fff;
+  margin-bottom: 14px;
+  text-wrap: balance;
+}
+html.light .photo-header h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600; letter-spacing: -.015em;
+}
+.photo-header h1 em { font-style: normal; color: #7fe3bd; }
+html.light .photo-header h1 em { font-style: italic; color: #e6c883; }
+.photo-header p {
+  color: rgba(255,255,255,.84);
+  font-size: clamp(14px, 1.3vw, 17px);
+  line-height: 1.7;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.photo-header .section-label { color: rgba(255,255,255,.62); margin-bottom: 14px; }
+html.light .photo-header .section-label { color: #e6c883; }
+html.light .photo-header .section-label::before { background: linear-gradient(90deg, transparent, #e6c883); }
+html.light .photo-header .section-label::after  { background: linear-gradient(90deg, #e6c883, transparent); }
+.photo-header__fade {
+  position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 90px; z-index: 2; pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--bg));
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8b. PHOTO TREATMENT FOR THE EXISTING .page-header
+   Opt in per page with:
+     <div class="page-header has-photo" style="--ph-img:url('assets/img/x.jpg')">
+   This upgrades every inner page without restructuring its markup.
+   ───────────────────────────────────────────────────────────── */
+.page-header.has-photo {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-bottom: none;
+  /* the base .page-header padding is sized for a flat colour block —
+     a photo needs real height to read as an image rather than a strip */
+  padding: clamp(96px, 13vw, 168px) 24px clamp(58px, 8vw, 96px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.page-header.has-photo::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -2;
+  background-image: var(--ph-img);
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.05);
+  animation: kenburns 44s var(--ease-soft) infinite alternate;
+}
+.page-header.has-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, var(--scrim-top) 0%, rgba(0,0,0,.58) 45%, var(--scrim-bottom) 100%);
+}
+.page-header.has-photo .page-header-inner { max-width: 720px; }
+/* type flips to light-on-photo in both themes */
+.page-header.has-photo h1 {
+  color: #fff;
+  font-size: clamp(30px, 4.2vw, 50px);
+  line-height: 1.08;
+  letter-spacing: -.032em;
+  text-wrap: balance;
+}
+html.light .page-header.has-photo h1 { letter-spacing: -.014em; }
+.page-header.has-photo h1 em { color: #7fe3bd; font-style: normal; }
+html.light .page-header.has-photo h1 em { color: #e6c883; font-style: italic; }
+.page-header.has-photo p,
+.page-header.has-photo .page-header-inner > p { color: rgba(255,255,255,.84); }
+.page-header.has-photo .section-label { color: rgba(255,255,255,.62); }
+html.light .page-header.has-photo .section-label { color: #e6c883; }
+html.light .page-header.has-photo .section-label::before { background: linear-gradient(90deg, transparent, #e6c883); }
+html.light .page-header.has-photo .section-label::after  { background: linear-gradient(90deg, #e6c883, transparent); }
+.page-header.has-photo .badge {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.28);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.page-header.has-photo .badge-dot { background: #7fe3bd; box-shadow: 0 0 8px #7fe3bd; }
+html.light .page-header.has-photo .badge-dot { background: #e6c883; box-shadow: 0 0 8px #e6c883; }
+/* careers hero: eyebrow + stat blocks sitting on the photo */
+.page-header.has-photo .careers-eyebrow {
+  color: #7fe3bd;
+  border-color: rgba(255,255,255,.3);
+  background: rgba(255,255,255,.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+html.light .page-header.has-photo .careers-eyebrow {
+  color: #e6c883;
+  border-color: rgba(230,200,131,.45);
+  background: rgba(230,200,131,.14);
+}
+.page-header.has-photo .careers-hero-stats {
+  border-top-color: rgba(255,255,255,.24);
+  justify-content: center;
+}
+.page-header.has-photo .careers-hero-stats strong { color: #fff; }
+html.light .page-header.has-photo .careers-hero-stats strong { color: #f2e8cf; }
+.page-header.has-photo .careers-hero-stats span { color: rgba(255,255,255,.68); }
+.page-header.has-photo .btn {
+  border-color: rgba(255,255,255,.36);
+  color: #fff;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.page-header.has-photo .btn:hover { background: rgba(255,255,255,.18); }
+/* kill the old decorative radial glows — they fight the photo */
+html.light .page-header.has-photo::before { animation: kenburns 44s var(--ease-soft) infinite alternate; }
+.page-header.has-photo__fade,
+.page-header.has-photo > .ph-fade {
+  position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 80px; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--bg));
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8c. JOB CARDS — bring the careers list in line with .pcard
+   A brand-coloured edge that wipes in on hover, so the list
+   reads as part of the same design language as the cards.
+   ───────────────────────────────────────────────────────────── */
+.job-card {
+  position: relative;
+  overflow: hidden;
+}
+.job-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--teal);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform .38s var(--ease-out);
+}
+html.light .job-card::before { background: var(--gold); }
+.job-card:hover::before { transform: scaleY(1); }
+.job-card:hover { transform: translateY(-3px); }
+
+/* ─────────────────────────────────────────────────────────────
+   9. SCROLL REVEAL — extends the existing .reveal system
+   ───────────────────────────────────────────────────────────── */
+.rise {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity .9s var(--ease-out), transform .9s var(--ease-out);
+}
+.rise.in { opacity: 1; transform: none; }
+.rise-d1 { transition-delay: .10s; }
+.rise-d2 { transition-delay: .20s; }
+.rise-d3 { transition-delay: .30s; }
+.rise-d4 { transition-delay: .40s; }
+
+/* image wipe-in: photo scales down into place as it enters */
+.wipe .media img,
+.wipe.media img { transform: scale(1.18); }
+.wipe.in .media img,
+.wipe.media.in img { transform: scale(1); transition: transform 1.4s var(--ease-out); }
+
+/* ─────────────────────────────────────────────────────────────
+   10. RESPONSIVE
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .photo-hero__inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 96px 26px 60px;
+  }
+  .photo-hero { min-height: auto; }
+  .photo-hero__copy { max-width: 100%; }
+  .split { grid-template-columns: 1fr; padding-left: 26px; padding-right: 26px; }
+  .split--flip .split__media { order: 0; }
+  .split__media::before { display: none; }
+  .pcards { padding-left: 22px; padding-right: 22px; }
+  .band { padding-left: 24px; padding-right: 24px; }
+}
+@media (max-width: 700px) {
+  /* fixed attachment is unreliable on mobile browsers — pin it instead */
+  .band__bg { background-attachment: scroll; }
+  .photo-hero__bg img { animation: none; transform: scale(1.06); }
+  .marquee__item { width: 210px; }
+  .band-stat + .band-stat::before { display: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   11. ACCESSIBILITY — respect reduced-motion
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .photo-hero__bg img,
+  .photo-header__bg img { animation: none; transform: scale(1.05); }
+  .marquee__track { animation: none; }
+  .photo-hero .terminal { animation: none; }
+  .rise { opacity: 1; transform: none; transition: none; }
+  .media img { transition: none; }
+  .band__bg { background-attachment: scroll; }
+}
