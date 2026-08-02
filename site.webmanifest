@@ -1,0 +1,16 @@
+{
+  "name": "Regma IT AB",
+  "short_name": "Regma IT",
+  "description": "Swedish IT consultancy in Gothenburg — IT consulting, software development and technology strategy.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d0d10",
+  "theme_color": "#0d0d10",
+  "lang": "en",
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
