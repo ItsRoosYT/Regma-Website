@@ -1058,3 +1058,24 @@ html.light .footer-contact a:hover { color: var(--gold); border-bottom-color: va
   font-size: 12px; color: var(--muted);
   margin-bottom: 6px; letter-spacing: .01em;
 }
+
+/* ═══════════════════════════════════════════════
+   15 · DEEP-LINKED ROLE (from an external job ad)
+   ═══════════════════════════════════════════════ */
+.jobs-linked-note {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0 auto 20px; max-width: 780px;
+  padding: 12px 16px; border-radius: 11px;
+  background: var(--teal-dim); border: 1px solid var(--teal);
+  color: var(--text); font-size: 13.5px;
+}
+html.light .jobs-linked-note { background: var(--gold-dim); border-color: var(--gold); }
+.jobs-linked-back {
+  margin-left: auto;
+  background: none; border: 0; cursor: pointer;
+  font-family: inherit; font-size: 13.5px; font-weight: 700;
+  color: var(--teal); text-decoration: underline; text-underline-offset: 3px;
+}
+html.light .jobs-linked-back { color: var(--gold); }
+.job-card.job-card--linked { box-shadow: 0 0 0 2px var(--teal), 0 12px 40px rgba(0,0,0,.3); }
+html.light .job-card.job-card--linked { box-shadow: 0 0 0 2px var(--gold), 0 12px 34px rgba(90,75,40,.14); }

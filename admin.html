@@ -662,7 +662,8 @@ function renderAFFields() {
     afField(sv ? 'Sista ansökningsdag' : 'Application deadline',
       deadline || (sv ? '⚠ Sätt ett datum på tjänsten först' : '⚠ Set a deadline on the role first')),
     afField(sv ? 'Ansökningssätt' : 'How to apply',
-      (j.contact_email || 'djomoi@yahoo.com') + ' · https://regma.se/career.html'),
+      (j.contact_email || 'djomoi@yahoo.com') + ' · https://regma.se/career.html?job=' + j.id,
+      'the link opens this role directly, not the full list'),
     afField(sv ? 'Kontaktperson' : 'Contact person',
       [j.contact_name || 'Isaac Djomo', j.contact_email || 'djomoi@yahoo.com', j.contact_phone || '+46 70 508 17 88']
         .filter(Boolean).join(' — ')),

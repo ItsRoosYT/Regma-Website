@@ -229,7 +229,7 @@ function renderJobs() {
       job.location ? `<span class="job-tag">📍 ${esc(job.location)}</span>` : ''
     ].join('');
 
-    return `<div class="job-card" data-dept="${esc(deptKey)}" data-loc="${esc(locKey)}" data-search="${esc((job.title + ' ' + dept + ' ' + (job.location||'') + ' ' + (job.summary||'')).toLowerCase())}">
+    return `<div class="job-card" id="job-${esc(job.id)}" data-job="${esc(job.id)}" data-dept="${esc(deptKey)}" data-loc="${esc(locKey)}" data-search="${esc((job.title + ' ' + dept + ' ' + (job.location||'') + ' ' + (job.summary||'')).toLowerCase())}">
       <div class="job-summary" onclick="this.parentElement.classList.toggle('expanded')">
         <div class="job-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
         <div class="job-meta">
@@ -344,7 +344,56 @@ async function handleApply(role) {
   allJobs = data || [];
   buildFilters();
   renderJobs();
+  focusLinkedJob();
 })();
+
+// Deep link: career.html?job=<id> (or ?role=<title>) opens that one role.
+// Used as the "Ansökningssätt" link on external ads so an applicant lands
+// on the position itself instead of the full list.
+function focusLinkedJob() {
+  const params = new URLSearchParams(location.search);
+  const wanted = params.get('job');
+  const role = params.get('role');
+  if (!wanted && !role) return;
+
+  let card = null;
+  if (wanted) card = document.querySelector(`.job-card[data-job="${CSS.escape(wanted)}"]`);
+  if (!card && role) {
+    const match = allJobs.find(j => (j.title || '').toLowerCase() === role.toLowerCase());
+    if (match) card = document.querySelector(`.job-card[data-job="${CSS.escape(String(match.id))}"]`);
+  }
+
+  const list = document.getElementById('job-list');
+  if (!card) {
+    // Linked role is gone (filled or withdrawn) — say so rather than
+    // dumping the visitor into an unexplained list of 49.
+    const note = document.createElement('div');
+    note.className = 'jobs-empty';
+    note.innerHTML = 'That position is no longer open. Here is everything we currently have — or <a href="#open-application" style="color:var(--teal);font-weight:600">send an open application</a>.';
+    list.parentElement.insertBefore(note, list);
+    return;
+  }
+
+  // Show only the linked role, with a clear way back to the full list
+  document.querySelectorAll('.job-card').forEach(c => {
+    if (c !== card) c.style.display = 'none';
+  });
+  card.classList.add('expanded', 'job-card--linked');
+
+  const back = document.createElement('div');
+  back.className = 'jobs-linked-note';
+  back.innerHTML = `Showing one position linked from an external job ad. <button type="button" class="jobs-linked-back">Show all open roles</button>`;
+  list.parentElement.insertBefore(back, list);
+  back.querySelector('.jobs-linked-back').addEventListener('click', () => {
+    document.querySelectorAll('.job-card').forEach(c => { c.style.display = ''; });
+    card.classList.remove('job-card--linked');
+    back.remove();
+    history.replaceState(null, '', location.pathname);
+    applyFilters();
+  });
+
+  card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
 
 // Show portal/admin links if logged in
 (async () => {
