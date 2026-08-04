@@ -49,6 +49,9 @@ const translations = {
     meta_reg: "Registered",
     meta_reg_val: "1 April 2022 · Bolagsverket",
     contact_orgnr: "Org.nr 559373-8080",
+    meta_seat: "Registered office",
+    meta_seat_val: "Göteborg (Angered), Sweden",
+    ab_6: "<b>Legal form</b> <span>Aktiebolag (AB)</span>",
   },
   sv: {
     nav_home: "Hem", nav_about: "Om oss", nav_services: "Tjänster",
@@ -127,7 +130,7 @@ const translations = {
     ab_2: "Startups som behöver en teknisk grund som inte måste byggas om",
     ab_3: "Etablerade bolag som byter ut åldrande interna system",
     ab_4: "Företag utan egen CTO som behöver senior vägledning",
-    ab_6: "<b>Bolagsform</b> <span>Aktiebolag (AB) · Aktiekapital 25 000 SEK</span>",
+    ab_6: "<b>Bolagsform</b> <span>Aktiebolag (AB)</span>",
     cr_1: "Litet team, <em>verkligt ansvar</em>",
     cr_2: "Vi är ingen konsultmäklare som placerar dig någonstans och sedan glömmer ditt namn. Du äger ditt arbete hela vägen, har direktkontakt med kunder och är med och påverkar hur saker byggs.",
     cr_3: "Direktkontakt med kund från dag ett — inga mellanled",
@@ -151,6 +154,8 @@ const translations = {
     meta_reg: "Registrerat",
     meta_reg_val: "1 april 2022 · Bolagsverket",
     contact_orgnr: "Org.nr 559373-8080",
+    meta_seat: "Säte",
+    meta_seat_val: "Göteborg (Angered), Sverige",
   },
   no: {
     nav_home: "Hjem", nav_about: "Om oss", nav_services: "Tjenester",
