@@ -44,6 +44,11 @@ const translations = {
     // page headers
     ph_about_h: "About <em>Regma IT</em>", ph_about_p: "A Swedish IT consulting company built on trust and expertise.",
     ph_services_h: "Our <em>Services</em>", ph_services_p: "Three focused areas of expertise — delivered with clarity and care.",
+  
+    meta_orgnr: "Organisation number",
+    meta_reg: "Registered",
+    meta_reg_val: "1 April 2022 · Bolagsverket",
+    contact_orgnr: "Org.nr 559373-8080",
   },
   sv: {
     nav_home: "Hem", nav_about: "Om oss", nav_services: "Tjänster",
@@ -141,6 +146,11 @@ const translations = {
     tm_5: "Vi växer vårt team. Ta en titt på våra lediga tjänster.",
     bl_1: "Få våra senaste tankar om IT-strategi och konsulting direkt till din inkorg.",
     bl_2: "Vi arbetar på våra första artiklar. Prenumerera ovan så hör vi av oss när vi publicerar.",
+  
+    meta_orgnr: "Organisationsnummer",
+    meta_reg: "Registrerat",
+    meta_reg_val: "1 april 2022 · Bolagsverket",
+    contact_orgnr: "Org.nr 559373-8080",
   },
   no: {
     nav_home: "Hjem", nav_about: "Om oss", nav_services: "Tjenester",

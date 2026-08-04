@@ -1052,3 +1052,9 @@ html.light .c-row--link:hover .c-icon { background: var(--gold); }
 .footer-contact a:hover { color: var(--teal); border-bottom-color: var(--teal); }
 html.light .footer-contact a:hover { color: var(--gold); border-bottom-color: var(--gold); }
 .footer-contact span { color: var(--muted); }
+
+/* Legal identity line in the footer (ABL 28 kap. 5 §) */
+.footer-orgnr {
+  font-size: 12px; color: var(--muted);
+  margin-bottom: 6px; letter-spacing: .01em;
+}
