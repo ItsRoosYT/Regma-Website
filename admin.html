@@ -174,8 +174,10 @@
 
     <div id="af-ready" style="display:none">
       <ol class="af-steps">
-        <li>Open <a href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Annonsera i Platsbanken</a> and sign in with your employer account (free).</li>
+        <li><strong>One-time setup:</strong> the organisation must be activated with the code Arbetsförmedlingen posts to Regma's digital mailbox (or by letter to the workplace address). It expires after 30 days. The company signatory activates it and accepts the <a href="https://arbetsformedlingen.se/for-arbetsgivare/rekrytera/annonsera-i-platsbanken/annonseringsvillkor" target="_blank" rel="noopener">annonseringsvillkor</a> with their own BankID.</li>
+        <li>Open <a href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Annonsera i Platsbanken</a> and sign in with the employer account (free).</li>
         <li>Create a new ad and copy each field below across.</li>
+        <li>The ad goes live within minutes and is visible to every jobseeker in Sweden — read it once more before submitting.</li>
       </ol>
       <div class="af-lang-row">
         <span class="jobs-filter-label" style="width:auto;text-align:left">Ad language</span>
@@ -644,15 +646,26 @@ function renderAFFields() {
   const deadline = j.application_deadline ? new Date(j.application_deadline).toLocaleDateString('sv-SE') : '';
   const sv = afLang === 'sv';
   document.getElementById('af-fields').innerHTML = [
+    // Employer identity — same on every ad, from the public register
+    afField(sv ? 'Arbetsgivare' : 'Employer', 'Regma IT AB'),
+    afField(sv ? 'Organisationsnummer' : 'Organisation number', '559373-8080'),
+
     afField(sv ? 'Rubrik' : 'Job title', j.title),
-    afField(sv ? 'Yrkesområde' : 'Occupation area', j.department || '', 'pick the closest match in their list'),
+    afField(sv ? 'Yrkesbenämning' : 'Occupation title', j.department || '', 'pick the closest match in their SSYK list'),
     afField(sv ? 'Anställningsform' : 'Employment type', j.type || (sv ? 'Tillsvidare' : 'Permanent')),
+    afField(sv ? 'Omfattning' : 'Extent', j.extent || (sv ? 'Heltid' : 'Full-time')),
+    afField(sv ? 'Varaktighet' : 'Duration', j.duration || (sv ? 'Tillsvidare' : 'Permanent')),
+    afField(sv ? 'Tillträde' : 'Start date', j.start_date || (sv ? 'Enligt överenskommelse' : 'By agreement')),
     afField(sv ? 'Ort' : 'Location', j.location || 'Göteborg'),
-    afField(sv ? 'Antal platser' : 'Number of positions', '1'),
+    afField(sv ? 'Antal platser' : 'Number of positions', String(j.positions || 1)),
     afField(sv ? 'Lön' : 'Salary', j.salary || (sv ? 'Enligt överenskommelse' : 'By agreement')),
-    deadline ? afField(sv ? 'Sista ansökningsdag' : 'Application deadline', deadline) : '',
-    (j.contact_name || j.contact_email)
-      ? afField(sv ? 'Kontakt' : 'Contact', [j.contact_name, j.contact_email].filter(Boolean).join(' — ')) : '',
+    afField(sv ? 'Sista ansökningsdag' : 'Application deadline',
+      deadline || (sv ? '⚠ Sätt ett datum på tjänsten först' : '⚠ Set a deadline on the role first')),
+    afField(sv ? 'Ansökningssätt' : 'How to apply',
+      (j.contact_email || 'djomoi@yahoo.com') + ' · https://regma.se/career.html'),
+    afField(sv ? 'Kontaktperson' : 'Contact person',
+      [j.contact_name || 'Isaac Djomo', j.contact_email || 'djomoi@yahoo.com', j.contact_phone || '+46 70 508 17 88']
+        .filter(Boolean).join(' — ')),
     afField(sv ? 'Annonstext' : 'Ad description', afCurrentText, 'paste into the description box')
   ].join('');
   document.querySelectorAll('#af-lang .filter-btn').forEach(b =>
