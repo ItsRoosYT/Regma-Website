@@ -1,102 +1,232 @@
-# Auto-response email setup
+# Email setup — Regma IT AB
 
-When someone submits a job application, they automatically get a branded
-confirmation email ("We've received your application…"). Here's the one-time setup.
+Everything needed to make the site send email reliably to **anyone**, not just
+to the Resend account owner.
 
-## 1. Create a Resend account (free)
-- Go to https://resend.com and sign up (free tier: 3,000 emails/month).
-- **Verify your domain** so email comes from `noreply@regma.se`:
-  - In Resend → **Domains → Add Domain → `regma.se`**.
-  - Resend shows a few DNS records (SPF, DKIM). Add them in **Loopia** DNS
-    for regma.se (same place you added the website records). These are TXT/CNAME
-    records for email and do **not** affect the website.
-  - Wait until Resend shows the domain as **Verified**.
-- Go to **API Keys → Create API Key**, copy it (starts with `re_...`).
+There are two Edge Functions:
 
-> Not ready to verify the domain? You can test first by editing `FROM` in
-> `application-confirmation/index.ts` to `onboarding@resend.dev` — but that only
-> delivers to your own Resend account email. Switch to `noreply@regma.se` once verified.
-
-## 2. Deploy the Edge Function
-In the Supabase dashboard:
-- **Edge Functions → Create a new function** → name it `application-confirmation`.
-- Paste the contents of `supabase/functions/application-confirmation/index.ts`.
-- Click **Deploy**.
-- Go to **Edge Functions → Secrets** (or Project Settings → Edge Functions) and add:
-  - `RESEND_API_KEY` = the key you copied from Resend.
-
-## 3. Fire it when an application is submitted
-In the Supabase dashboard:
-- **Database → Webhooks → Create a new hook**
-  - Name: `on-application-created`
-  - Table: `applications`
-  - Events: **Insert**
-  - Type: **Supabase Edge Functions** → select `application-confirmation`
-  - Save.
-
-That's it. Submit a test application on the site — the confirmation email
-should arrive within a few seconds.
-
-## Editing the email text
-Open `supabase/functions/application-confirmation/index.ts`, edit the `html`
-block (greeting, wording, signature), and redeploy the function.
+| Function | Fires when | Sends |
+|---|---|---|
+| `application-confirmation` | someone applies for a job | "We've received your application" → the applicant |
+| `contact-notification` | someone submits the contact form | "New enquiry" → Regma, plus an acknowledgement → the sender |
 
 ---
 
-## Contact form notifications (contact-notification)
+## ⚠ Read this first — the problem you are actually fixing
 
-Same pattern, second function. When someone sends the contact form:
-- **You** get a "New enquiry from …" email at djomoi@yahoo.com, with
-  reply-to set to the sender — pressing Reply answers them directly.
-- **They** get a "we received your message" acknowledgement.
+`application-confirmation` has been deployed and running for about a month.
+It works. But it sends from **`onboarding@resend.dev`**, which is Resend's
+**sandbox sender**.
 
-Setup (after step 1 above is done once):
-1. **Edge Functions → Create function** → name `contact-notification`,
-   paste `supabase/functions/contact-notification/index.ts`, Deploy.
-2. **Database → Webhooks → Create**: table `contact_submissions`,
-   event **Insert**, type **Edge Function** → `contact-notification`.
+The sandbox sender can only deliver to **the email address the Resend account
+was registered with** (`rooseveltdjomo81@gmail.com`). Every other recipient is
+rejected with **HTTP 403**, silently.
 
----
-
-## ⚠ Why yahoo got no confirmation but gmail did
-
-**This is the single most important thing on this page.**
-
-Both functions default to sending `from: onboarding@resend.dev`. That is
-Resend's **sandbox sender**, and it can only deliver to the email address the
-Resend account was registered with (`rooseveltdjomo81@gmail.com`). Every other
-recipient is rejected with **HTTP 403** — silently, from the applicant's point
-of view.
-
-So:
-
-| Applicant's email | Result |
+| Applicant's email | What happens |
 |---|---|
-| rooseveltdjomo81@gmail.com (the Resend account address) | delivered ✅ |
-| djomoi@yahoo.com — or any real applicant | 403, never sent ❌ |
+| `rooseveltdjomo81@gmail.com` — the Resend account address | delivered ✅ |
+| `djomoi@yahoo.com` | 403, nothing sent ❌ |
+| Any real applicant | 403, nothing sent ❌ |
 
-It was never a Yahoo problem or a spam-folder problem. Until the domain is
-verified, **no real applicant can ever receive a confirmation.**
+This was never a Yahoo problem or a spam-folder problem. **Until regma.se is
+verified in Resend, no real applicant can receive anything.**
 
-The same applies to `contact-notification`: it tries to notify
-`djomoi@yahoo.com`, which the sandbox sender cannot reach either.
+Verifying the domain (Part 1 below) is the single step that fixes it.
 
-### The fix (one-time, ~20 minutes plus DNS propagation)
+---
 
-1. **Resend → Domains → Add Domain → `regma.se`.**
-2. Add the SPF/DKIM records Resend shows into **Loopia** DNS for regma.se.
-   These are TXT/CNAME records for mail and do not affect the website.
-3. Wait for Resend to show **Verified**.
-4. **Supabase → Edge Functions → Secrets**, add:
+## Part 1 — Verify regma.se in Resend
 
-   | Secret | Value |
-   |---|---|
-   | `RESEND_FROM` | `Regma IT AB <noreply@regma.se>` |
-   | `NOTIFY_EMAIL` | `djomoi@yahoo.com` (where enquiries are sent) |
+**Time:** ~10 minutes of clicking, then 15 minutes to 24 hours for DNS to
+propagate (usually well under an hour with Loopia).
 
-No code change is needed — both functions read these at runtime and fall back
-to the sandbox sender if they are absent.
+1. Sign in at **https://resend.com**.
+2. Go to **Domains** in the left sidebar → **Add Domain**.
+3. Enter `regma.se`. Choose the region closest to Sweden (**eu-west-1** /
+   Ireland) if asked.
+4. Resend now shows a table of DNS records — typically:
+   - one **MX** record (for the `send` subdomain)
+   - one or two **TXT** records (SPF, and DMARC if offered)
+   - one **TXT** or **CNAME** record for **DKIM** (a long key)
 
-### Checking it worked
-Supabase → Edge Functions → your function → **Logs**. A 403 logs an explicit
-message naming the sandbox sender as the cause. Success logs nothing unusual.
+   Leave this page open. You need to copy these exactly.
+
+5. In a second tab, sign in to **Loopia** (https://www.loopia.se → Logga in).
+6. Go to **Mina tjänster / Mina domäner** → click **regma.se** → open the
+   **DNS-redigerare** (DNS editor).
+7. Add each record Resend listed. For every record:
+   - **Subdomän / Namn** — Resend shows something like `send.regma.se` or
+     `resend._domainkey.regma.se`. Loopia usually wants only the part *before*
+     `.regma.se`, so enter `send` or `resend._domainkey`. If Resend shows `@`,
+     that means the root domain — in Loopia that is the domain itself with no
+     subdomain.
+   - **Typ** — MX, TXT or CNAME, exactly as Resend states.
+   - **Värde / Data** — paste exactly. DKIM keys are long; copy the whole
+     string with no line breaks and no added spaces.
+   - **Prioritet** — only for MX. Use the number Resend gives (often `10`).
+   - **TTL** — leave the Loopia default.
+
+   > These are **mail** records. They do not touch the website, and adding
+   > them cannot take regma.se offline.
+
+8. Save in Loopia, go back to Resend and press **Verify DNS Records**.
+   If it says pending, wait 15 minutes and press it again.
+9. Done when the domain shows **Verified** ✅.
+
+**Common snag:** Loopia sometimes appends the domain automatically. If you
+enter `send.regma.se` you can end up with `send.regma.se.regma.se`. If
+verification keeps failing, look at the saved records in Loopia and check for
+a doubled domain.
+
+---
+
+## Part 2 — Get your API key
+
+1. Resend → **API Keys** → **Create API Key**.
+2. Name it `regma-site`, permission **Sending access**.
+3. Copy it (starts with `re_`). You only see it once.
+
+> **Rotate the old key.** A previous key was pasted in plain text in chat and
+> should be considered compromised. Delete it in Resend → API Keys → the old
+> key → Delete, and use the new one everywhere below.
+
+---
+
+## Part 3 — Deploy the functions
+
+For each of the two functions:
+
+1. Supabase dashboard → your project → **Edge Functions** (left sidebar).
+2. **Deploy a new function** → **Via Editor** (or "Create a new function").
+3. **Name it exactly:**
+   - `application-confirmation`
+   - `contact-notification`
+
+   The name becomes the URL, and the webhook in Part 5 refers to it. A typo
+   here means the webhook silently points at nothing.
+4. Delete the placeholder code in the editor and paste the entire contents of:
+   - `supabase/functions/application-confirmation/index.ts`
+   - `supabase/functions/contact-notification/index.ts`
+5. Click **Deploy**.
+
+`application-confirmation` already exists — open it, replace its code with the
+current version from this repo, and redeploy. The new version reads the
+`RESEND_FROM` secret and logs a clear message on a 403.
+
+---
+
+## Part 4 — Set the secrets
+
+Supabase → **Edge Functions** → **Secrets** (may be under *Project Settings →
+Edge Functions → Secrets* depending on dashboard version) → **Add new secret**.
+
+| Name | Value | Why |
+|---|---|---|
+| `RESEND_API_KEY` | your `re_…` key | authenticates with Resend |
+| `RESEND_FROM` | `Regma IT AB <noreply@regma.se>` | **the fix** — leaves the sandbox sender behind |
+| `NOTIFY_EMAIL` | `djomoi@yahoo.com` | where contact enquiries are sent |
+
+Names are case-sensitive. Secrets apply to all functions in the project, so
+you set them once, not per function.
+
+If `RESEND_FROM` is missing, both functions fall back to the sandbox sender —
+i.e. back to the broken behaviour. That fallback is deliberate (nothing
+crashes), but it means **the secret is what actually switches it on**.
+
+You do not need to redeploy after adding secrets; functions read them at
+runtime on the next invocation.
+
+---
+
+## Part 5 — Wire up the triggers
+
+Supabase → **Database** → **Webhooks** → **Create a new hook**.
+
+**Hook 1 — applications** (this may already exist; check first)
+
+| Field | Value |
+|---|---|
+| Name | `on-application-created` |
+| Table | `applications` |
+| Events | **Insert** only |
+| Type | Supabase Edge Functions |
+| Edge Function | `application-confirmation` |
+| Method | POST |
+
+**Hook 2 — contact form** (new)
+
+| Field | Value |
+|---|---|
+| Name | `on-contact-created` |
+| Table | `contact_submissions` |
+| Events | **Insert** only |
+| Type | Supabase Edge Functions |
+| Edge Function | `contact-notification` |
+| Method | POST |
+
+Do not tick Update or Delete — you would email people again every time you
+mark a message as read.
+
+---
+
+## Part 6 — Test it properly
+
+Test with an address that is **not** the Resend account's gmail. That is the
+whole point — the gmail worked before and proves nothing.
+
+1. **Contact form:** open https://regma.se/contact.html, submit using your
+   dad's yahoo address, or any other address you can check.
+   - Expect: an acknowledgement to that address, **and** a "New enquiry"
+     email at `NOTIFY_EMAIL`.
+   - The message should also appear in the admin dashboard inbox
+     (requires `003_admin_inbox.sql` — see below).
+2. **Application:** apply for a role from a non-gmail account.
+   - Expect: "We've received your application".
+
+### If nothing arrives
+
+Supabase → **Edge Functions** → the function → **Logs**. Look at the most
+recent invocation.
+
+| Log line | Meaning | Fix |
+|---|---|---|
+| `Resend 403 … sandbox sender … only delivers to the Resend account's own address` | `RESEND_FROM` is not set, or the domain is not verified yet | finish Part 1, then set the secret in Part 4 |
+| `RESEND_API_KEY is not set` | secret missing or misspelled | Part 4 — check exact spelling |
+| No invocation logged at all | the webhook never fired | Part 5 — check the table name and that the function name matches exactly |
+| `Resend error: 422` | the `from` address is not on a verified domain | the domain in `RESEND_FROM` must be the one you verified |
+
+Also check Resend → **Emails**, which lists every send attempt and its status.
+That distinguishes "Resend refused it" from "Resend sent it and the mailbox
+filtered it".
+
+---
+
+## Related: make messages visible in the admin dashboard
+
+Separate from email. The contact form has been **saving** messages correctly,
+but row-level security hides them from the dashboard — it returns zero rows
+with no error, so the dashboard honestly believes the inbox is empty.
+
+Run **`supabase/migrations/003_admin_inbox.sql`** once in
+Supabase → **SQL Editor** → **New query** → paste → **Run**.
+
+It adds admin read policies for `contact_submissions`, `applications` and
+`newsletter_subscribers`, adds the new/read/archived status column, and
+deletes the diagnostic row used while investigating.
+
+Also outstanding: **`002_platsbanken_fields.sql`**, which adds the job
+deadline and Platsbanken columns the admin panel expects.
+
+---
+
+## Changing the email wording later
+
+Both functions build plain HTML strings — edit the `html` template inside the
+function and redeploy. The brand colours used are:
+
+| Colour | Hex |
+|---|---|
+| Forest green header | `#1d5c45` |
+| Brass rule | `#b3862d` |
+| Body text | `#2a2620` |
+| Muted text | `#6f6a5c` |
