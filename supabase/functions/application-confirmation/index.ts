@@ -9,11 +9,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-// TESTING: "onboarding@resend.dev" works right away but ONLY delivers to your
-// own Resend account email (rooseveltdjomo81@gmail.com).
-// PRODUCTION: after verifying regma.se in Resend, change this to:
-//   const FROM = "Regma IT AB <noreply@regma.se>";
-const FROM = "Regma IT AB <onboarding@resend.dev>";
+
+// IMPORTANT: "onboarding@resend.dev" is Resend's sandbox sender. It can ONLY
+// deliver to the address the Resend account was registered with
+// (rooseveltdjomo81@gmail.com) — every other recipient is rejected with 403.
+// That is exactly why an application sent from that gmail received a
+// confirmation and one sent from a yahoo address silently did not.
+// Fix: verify regma.se at resend.com/domains, then set the Edge Function
+// secret RESEND_FROM to  Regma IT AB <noreply@regma.se>
+const FROM = Deno.env.get("RESEND_FROM") ?? "Regma IT AB <onboarding@resend.dev>";
+const SANDBOX = FROM.includes("resend.dev");
 
 serve(async (req) => {
   try {
@@ -63,7 +68,15 @@ serve(async (req) => {
 
     if (!res.ok) {
       const err = await res.text();
-      console.error("Resend error:", err);
+      if (res.status === 403 && SANDBOX) {
+        console.error(
+          `Resend 403 for ${email}: the sandbox sender ${FROM} only delivers to the ` +
+          `Resend account's own address. Applicants on any other address get nothing. ` +
+          `Verify regma.se and set the RESEND_FROM secret. Raw: ${err}`,
+        );
+      } else {
+        console.error("Resend error:", res.status, err);
+      }
       return new Response("Email failed: " + err, { status: 200 }); // 200 so the insert isn't affected
     }
     return new Response("Confirmation sent", { status: 200 });

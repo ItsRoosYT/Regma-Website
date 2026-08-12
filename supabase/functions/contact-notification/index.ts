@@ -9,14 +9,24 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-// TESTING: "onboarding@resend.dev" delivers only to the Resend account owner.
-// PRODUCTION: after verifying regma.se, change to:
-//   const FROM = "Regma IT AB <noreply@regma.se>";
-const FROM = "Regma IT AB <onboarding@resend.dev>";
-// Where new-enquiry notifications go:
-const NOTIFY = "djomoi@yahoo.com";
+
+// IMPORTANT: the default sender "onboarding@resend.dev" is Resend's sandbox.
+// It can ONLY deliver to the address the Resend account was registered with —
+// every other recipient is rejected with 403. That is why an application from
+// the account's own gmail got a confirmation and one from yahoo did not.
+// Fix: verify regma.se at resend.com/domains, then set the Edge Function
+// secret RESEND_FROM to  Regma IT AB <noreply@regma.se>
+const FROM = Deno.env.get("RESEND_FROM") ?? "Regma IT AB <onboarding@resend.dev>";
+const SANDBOX = FROM.includes("resend.dev");
+
+// Where new-enquiry notifications go. Override with the NOTIFY_EMAIL secret.
+const NOTIFY = Deno.env.get("NOTIFY_EMAIL") ?? "djomoi@yahoo.com";
 
 async function send(to: string, subject: string, html: string, replyTo?: string) {
+  if (!RESEND_API_KEY) {
+    console.error("RESEND_API_KEY is not set — no email sent to", to);
+    return false;
+  }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -25,8 +35,20 @@ async function send(to: string, subject: string, html: string, replyTo?: string)
     },
     body: JSON.stringify({ from: FROM, to: [to], subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
   });
-  if (!res.ok) console.error("Resend error:", res.status, await res.text());
-  return res.ok;
+  if (!res.ok) {
+    const detail = await res.text();
+    if (res.status === 403 && SANDBOX) {
+      console.error(
+        `Resend 403 for ${to}: the sandbox sender ${FROM} can only deliver to the ` +
+        `Resend account's own address. Verify regma.se and set the RESEND_FROM secret. ` +
+        `Raw: ${detail}`,
+      );
+    } else {
+      console.error("Resend error:", res.status, detail);
+    }
+    return false;
+  }
+  return true;
 }
 
 const escapeHtml = (s: string) =>

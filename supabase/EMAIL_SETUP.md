@@ -56,12 +56,47 @@ Setup (after step 1 above is done once):
 2. **Database → Webhooks → Create**: table `contact_submissions`,
    event **Insert**, type **Edge Function** → `contact-notification`.
 
-## Why one address got "a confirmation" and another didn't
+---
 
-Neither of these functions was deployed yet, so **no application or contact
-emails have ever been sent**. The email the gmail account received was
-Supabase's *account sign-up* confirmation (from mail.app.supabase.io), which
-only arrives the first time an account is created. Yahoo very often puts
-mail.app.supabase.io in the spam folder — check there. Once regma.se is
-verified in Resend and FROM is switched to noreply@regma.se, deliverability
-to Yahoo/Hotmail improves substantially.
+## ⚠ Why yahoo got no confirmation but gmail did
+
+**This is the single most important thing on this page.**
+
+Both functions default to sending `from: onboarding@resend.dev`. That is
+Resend's **sandbox sender**, and it can only deliver to the email address the
+Resend account was registered with (`rooseveltdjomo81@gmail.com`). Every other
+recipient is rejected with **HTTP 403** — silently, from the applicant's point
+of view.
+
+So:
+
+| Applicant's email | Result |
+|---|---|
+| rooseveltdjomo81@gmail.com (the Resend account address) | delivered ✅ |
+| djomoi@yahoo.com — or any real applicant | 403, never sent ❌ |
+
+It was never a Yahoo problem or a spam-folder problem. Until the domain is
+verified, **no real applicant can ever receive a confirmation.**
+
+The same applies to `contact-notification`: it tries to notify
+`djomoi@yahoo.com`, which the sandbox sender cannot reach either.
+
+### The fix (one-time, ~20 minutes plus DNS propagation)
+
+1. **Resend → Domains → Add Domain → `regma.se`.**
+2. Add the SPF/DKIM records Resend shows into **Loopia** DNS for regma.se.
+   These are TXT/CNAME records for mail and do not affect the website.
+3. Wait for Resend to show **Verified**.
+4. **Supabase → Edge Functions → Secrets**, add:
+
+   | Secret | Value |
+   |---|---|
+   | `RESEND_FROM` | `Regma IT AB <noreply@regma.se>` |
+   | `NOTIFY_EMAIL` | `djomoi@yahoo.com` (where enquiries are sent) |
+
+No code change is needed — both functions read these at runtime and fall back
+to the sandbox sender if they are absent.
+
+### Checking it worked
+Supabase → Edge Functions → your function → **Logs**. A 403 logs an explicit
+message naming the sandbox sender as the cause. Success logs nothing unusual.
