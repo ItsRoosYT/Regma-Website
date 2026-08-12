@@ -118,7 +118,14 @@
       <div class="app-list" id="app-list"></div>
       <div class="admin-empty" id="admin-empty" style="display:none">No applications yet. When candidates apply on the Careers page, their submissions will appear here.</div>
 
-      <h2 class="section-title" style="text-align:left;font-size:18px;margin:40px 0 20px">Contact Messages</h2>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:40px 0 14px">
+        <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Inbox <span id="msg-unread-badge" class="job-pill open" style="display:none"></span></h2>
+        <div class="jobs-filters" id="msg-tabs" style="margin-left:auto">
+          <button class="filter-btn active" data-mf="active" onclick="setMsgFilter('active')">Messages</button>
+          <button class="filter-btn" data-mf="archived" onclick="setMsgFilter('archived')">Archived</button>
+          <button class="filter-btn" data-mf="all" onclick="setMsgFilter('all')">All</button>
+        </div>
+      </div>
       <div id="contact-list"></div>
 
       <h2 class="section-title" style="text-align:left;font-size:18px;margin:40px 0 20px">Newsletter Subscribers</h2>
@@ -250,33 +257,19 @@ let currentAdmin = null;
 
 async function renderDashboard() {
   const { data: apps } = await sb.from('applications').select('*').order('created_at', { ascending: false });
-  const { data: contacts } = await sb.from('contact_submissions').select('*').order('created_at', { ascending: false });
+  const { data: contacts, error: contactsError } = await sb.from('contact_submissions').select('*').order('created_at', { ascending: false });
   const { data: newsletter } = await sb.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
 
   allApps = apps || [];
-  const cl = contacts || [];
+  allContacts = contacts || [];
+  contactsLoadError = contactsError || null;
   const nl = newsletter || [];
   nlCount = nl.length;
-  clCount = cl.length;
+  clCount = allContacts.filter(c => (c.status || 'new') !== 'archived').length;
 
   updateStats();
   renderApps();
-
-  // Contacts
-  const contactList = document.getElementById('contact-list');
-  if (cl.length === 0) {
-    contactList.innerHTML = '<div class="admin-empty">No contact messages yet.</div>';
-  } else {
-    contactList.innerHTML = cl.map(c => {
-      const d = new Date(c.created_at).toLocaleDateString('en-SE', { year:'numeric', month:'short', day:'numeric' });
-      return `<div class="app-card" style="margin-bottom:8px">
-        <div class="app-card-header"><h3>${esc(c.name)}</h3><span style="font-size:12px;color:var(--muted)">${d}</span></div>
-        <div class="app-meta"><a href="mailto:${esc(c.email)}" style="color:var(--teal)">📧 ${esc(c.email)}</a></div>
-        <div class="app-content"><p>${esc(c.message)}</p></div>
-        <div class="app-actions"><a class="btn" style="border-color:var(--teal);color:var(--teal)" href="mailto:${esc(c.email)}">✉ Reply</a><button class="btn" style="border-color:#f87171;color:#f87171;margin-left:auto" onclick="deleteContact('${c.id}')">🗑 Delete</button></div>
-      </div>`;
-    }).join('');
-  }
+  renderMessages();
 
   // Newsletter
   const nlList = document.getElementById('nl-list');
@@ -401,6 +394,33 @@ async function saveNote(id, text) {
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
 
+/* ───────── JOB EXPIRY ───────── */
+function jobExpired(j) {
+  if (!j.application_deadline) return false;
+  // deadline day itself still counts as open; expired from the day after
+  return new Date(j.application_deadline + 'T23:59:59') < new Date();
+}
+
+async function extendJob(id, days) {
+  const j = allAdminJobs.find(x => x.id === id);
+  if (!j) return;
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const deadline = d.toISOString().slice(0, 10);
+  const { error } = await sb.from('jobs')
+    .update({ application_deadline: deadline, is_open: true })
+    .eq('id', id);
+  if (error) {
+    showToast(/column|schema/i.test(error.message)
+      ? 'Run the Platsbanken database migration first (002_platsbanken_fields.sql).'
+      : 'Could not update: ' + error.message, 'error', 7000);
+    return;
+  }
+  j.application_deadline = deadline; j.is_open = true;
+  renderAdminJobs();
+  showToast('“' + j.title + '” relisted — applications open until ' + deadline + '.', 'success', 4000);
+}
+
 async function deleteApplication(id, name) {
   if (!confirm('Permanently delete the application from ' + name + '? This cannot be undone.')) return;
   const { error } = await sb.from('applications').delete().eq('id', id);
@@ -410,12 +430,115 @@ async function deleteApplication(id, name) {
   showToast('Application deleted.', 'success');
 }
 
+/* ───────── INBOX ───────── */
+let allContacts = [];
+let contactsLoadError = null;
+let msgFilter = 'active';
+
+function setMsgFilter(f) {
+  msgFilter = f;
+  document.querySelectorAll('#msg-tabs .filter-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.mf === f));
+  renderMessages();
+}
+
+function renderMessages() {
+  const el = document.getElementById('contact-list');
+
+  // Surface load failures instead of pretending the inbox is empty —
+  // a missing RLS policy used to render as "No contact messages yet."
+  if (contactsLoadError) {
+    el.innerHTML = `<div class="admin-empty" style="color:#f87171">
+      Could not load messages: ${esc(contactsLoadError.message)}<br>
+      <span style="color:var(--muted);font-size:12.5px">If this mentions permissions or RLS, run
+      <b>003_admin_inbox.sql</b> once in the Supabase SQL editor.</span></div>`;
+    return;
+  }
+
+  const unread = allContacts.filter(c => (c.status || 'new') === 'new').length;
+  const badge = document.getElementById('msg-unread-badge');
+  badge.style.display = unread ? '' : 'none';
+  badge.textContent = unread + ' new';
+
+  const list = allContacts.filter(c => {
+    const s = c.status || 'new';
+    if (msgFilter === 'active') return s !== 'archived';
+    if (msgFilter === 'archived') return s === 'archived';
+    return true;
+  });
+
+  if (!list.length) {
+    // An empty result here is ambiguous: it can mean "nobody has written"
+    // OR "row-level security is filtering the rows out", because RLS returns
+    // zero rows with no error. Say so rather than asserting the inbox is empty.
+    el.innerHTML = msgFilter === 'archived'
+      ? '<div class="admin-empty">No archived messages.</div>'
+      : `<div class="admin-empty">No contact messages visible.<br>
+          <span style="color:var(--muted);font-size:12.5px">If someone has sent one and it is not here,
+          the read policy is hiding it — run <b>003_admin_inbox.sql</b> once in the Supabase SQL editor.</span></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(c => {
+    const s = c.status || 'new';
+    const d = new Date(c.created_at).toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' });
+    return `<div class="app-card${s === 'archived' ? ' admin-row--expired' : ''}" style="margin-bottom:8px${s === 'new' ? ';border-left:3px solid var(--teal)' : ''}">
+      <div class="app-card-header">
+        <h3>${esc(c.name)} ${s === 'new' ? '<span class="job-pill open">New</span>' : ''}${c.replied_at ? '<span class="job-pill verified">Replied</span>' : ''}</h3>
+        <span style="font-size:12px;color:var(--muted)">${d}</span>
+      </div>
+      <div class="app-meta"><a href="mailto:${esc(c.email)}" style="color:var(--teal)">📧 ${esc(c.email)}</a></div>
+      <div class="app-content"><p style="white-space:pre-wrap">${esc(c.message)}</p></div>
+      <div class="app-actions">
+        <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="replyContact('${c.id}')">✉ Reply</button>
+        ${s !== 'archived'
+          ? `${s === 'new' ? `<button class="btn" onclick="setContactStatus('${c.id}','read')">Mark read</button>` : ''}
+             <button class="btn" onclick="setContactStatus('${c.id}','archived')">🗄 Archive</button>`
+          : `<button class="btn" onclick="setContactStatus('${c.id}','read')">↩ Restore</button>`}
+        <button class="btn" style="border-color:#f87171;color:#f87171;margin-left:auto" onclick="deleteContact('${c.id}')">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function setContactStatus(id, status) {
+  const c = allContacts.find(x => x.id === id);
+  if (!c) return;
+  const { error } = await sb.from('contact_submissions').update({ status }).eq('id', id);
+  if (error) {
+    showToast(/column|schema|policy|permission/i.test(error.message)
+      ? 'Run 003_admin_inbox.sql in the Supabase SQL editor first.'
+      : 'Could not update: ' + error.message, 'error', 6000);
+    return;
+  }
+  c.status = status;
+  clCount = allContacts.filter(x => (x.status || 'new') !== 'archived').length;
+  updateStats(); renderMessages();
+}
+
+async function replyContact(id) {
+  const c = allContacts.find(x => x.id === id);
+  if (!c) return;
+  const quoted = (c.message || '').split('\n').map(l => '> ' + l).join('\n');
+  const body = 'Hi ' + (c.name || '').split(' ')[0] + ',\n\n\n\n— Regma IT AB\nregma.se\n\n' + quoted;
+  // opens the admin's own mail client, prefilled
+  location.href = 'mailto:' + encodeURIComponent(c.email)
+    + '?subject=' + encodeURIComponent('Re: your message to Regma IT AB')
+    + '&body=' + encodeURIComponent(body);
+  // record the reply and mark handled (best-effort; ignore column errors pre-migration)
+  const { error } = await sb.from('contact_submissions')
+    .update({ status: 'read', replied_at: new Date().toISOString() }).eq('id', id);
+  if (!error) { c.status = 'read'; c.replied_at = new Date().toISOString(); renderMessages(); }
+}
+
 async function deleteContact(id) {
-  if (!confirm('Delete this contact message?')) return;
+  if (!confirm('Permanently delete this contact message? Archiving keeps it retrievable.')) return;
   const { error } = await sb.from('contact_submissions').delete().eq('id', id);
   if (error) { showToast('Could not delete: ' + error.message, 'error', 6000); return; }
+  allContacts = allContacts.filter(c => c.id !== id);
+  clCount = allContacts.filter(x => (x.status || 'new') !== 'archived').length;
+  updateStats(); renderMessages();
   showToast('Message deleted.', 'success');
-  await renderDashboard();
 }
 
 async function deleteNewsletter(id) {
@@ -431,8 +554,13 @@ let allAdminJobs = [];
 
 async function loadJobs() {
   const { data, error } = await sb.from('jobs').select('*').order('created_at', { ascending: false });
-  if (error) { console.error(error); return; }
-  allAdminJobs = data || [];
+  if (error) {
+    console.error(error);
+    document.getElementById('jobs-admin-list').innerHTML =
+      '<div class="admin-empty" style="color:#f87171">Could not load positions: ' + esc(error.message) + '</div>';
+    return;
+  }
+  allAdminJobs = (data || []).sort((a, b) => jobExpired(a) - jobExpired(b)); // expired sink to the bottom
   renderAdminJobs();
 }
 
@@ -442,24 +570,33 @@ function renderAdminJobs() {
     list.innerHTML = '<div class="admin-empty">No positions yet. Click “Add position” to create your first one.</div>';
     return;
   }
-  list.innerHTML = allAdminJobs.map(j => `
-    <div class="admin-row">
+  list.innerHTML = allAdminJobs.map(j => {
+    const expired = jobExpired(j);
+    const dl = j.application_deadline
+      ? new Date(j.application_deadline + 'T00:00:00').toLocaleDateString('sv-SE') : '';
+    return `
+    <div class="admin-row${expired ? ' admin-row--expired' : ''}">
       <input type="checkbox" class="job-select" value="${j.id}" onchange="updateBulkBar()" aria-label="Select ${esc(j.title)}" />
       <div class="admin-row-main">
         <strong>${esc(j.title)}</strong>
-        <span class="admin-row-sub">${esc(j.department || '')} · ${esc(j.type || '')} · ${esc(j.location || '')}${j.salary ? ' · ' + esc(j.salary) : ''}${j.posted_to_af_at ? ' · posted ' + new Date(j.posted_to_af_at).toLocaleDateString('sv-SE') : ''}</span>
+        <span class="admin-row-sub">${esc(j.department || '')} · ${esc(j.type || '')} · ${esc(j.location || '')}${j.salary ? ' · ' + esc(j.salary) : ''}${dl ? (expired ? ' · <b style="color:#f87171">expired ' + dl + '</b>' : ' · apply by ' + dl) : ''}${j.posted_to_af_at ? ' · posted ' + new Date(j.posted_to_af_at).toLocaleDateString('sv-SE') : ''}</span>
       </div>
-      <span class="job-pill ${j.is_open ? 'open' : 'closed'}">${j.is_open ? 'Open' : 'Hidden'}</span>
+      ${expired
+        ? '<span class="job-pill expired" title="Application deadline has passed — hidden from the public careers page">⏱ Expired</span>'
+        : `<span class="job-pill ${j.is_open ? 'open' : 'closed'}">${j.is_open ? 'Open' : 'Hidden'}</span>`}
       ${j.verified_opening ? '<span class="job-pill verified" title="Confirmed Regma vacancy — cleared for external publishing">✓ Verified</span>' : ''}
       ${j.posted_to_af ? '<span class="job-pill posted" title="Already posted to Platsbanken">↗ Platsbanken</span>' : ''}
       <div class="admin-row-actions">
+        ${expired ? `
+        <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="extendJob('${j.id}', 14)">↻ Extend 14 days</button>
+        <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="extendJob('${j.id}', 30)">Relist 30 days</button>` : `
         <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="exportToAF('${j.id}')">↗ Platsbanken</button>
-        <button class="btn" onclick="toggleJobOpen('${j.id}')">${j.is_open ? 'Hide' : 'Show'}</button>
+        <button class="btn" onclick="toggleJobOpen('${j.id}')">${j.is_open ? 'Hide' : 'Show'}</button>`}
         <button class="btn" onclick="editJob('${j.id}')">Edit</button>
         <button class="btn" style="border-color:#f87171;color:#f87171" onclick="deleteJob('${j.id}','${esc(j.title).replace(/'/g,"&#39;")}')">Delete</button>
       </div>
     </div>
-  `).join('');
+  `; }).join('');
   updateBulkBar();
 }
 

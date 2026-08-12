@@ -98,9 +98,7 @@
           <span><b>+46 70 508 17 88</b><small>Mon–Fri, 09:00–17:00 CET</small></span>
         </a>
         <div class="c-row"><div class="c-icon">📍</div><span data-i18n="contact_loc">Angered, Gothenburg — Sweden</span></div>
-        <div class="c-row"><div class="c-icon">🏢</div><span data-i18n="contact_co">Regma IT AB — Aktiebolag</span></div>
-        <div class="c-row"><div class="c-icon">🔖</div><span data-i18n="contact_sni">SNI 62020 — Data consulting activities</span></div>
-        <div class="c-row"><div class="c-icon">📄</div><span data-i18n="contact_orgnr">Org.nr 559373-8080</span></div>
+        <div class="c-row"><div class="c-icon">🏢</div><span data-i18n="contact_co">Regma IT AB · Org.nr 559373-8080</span></div>
       </div>
       <div class="reveal reveal-delay-1">
         <form id="contact-form" novalidate>
@@ -147,26 +145,91 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script>
-  document.getElementById('contact-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = this.querySelector('button[type="submit"]');
-    btn.classList.add('loading');
+  (function () {
+    const form = document.getElementById('contact-form');
+    const success = document.getElementById('form-success');
 
-    const { error } = await sb.from('contact_submissions').insert({
-      name: document.getElementById('name').value,
-      email: document.getElementById('email').value,
-      message: document.getElementById('message').value
+    function fieldError(input, msg) {
+      let e = input.parentElement.querySelector('.field-error');
+      if (!e) {
+        e = document.createElement('p');
+        e.className = 'field-error';
+        input.parentElement.appendChild(e);
+      }
+      e.textContent = msg || '';
+      e.style.display = msg ? 'block' : 'none';
+      input.classList.toggle('invalid', !!msg);
+      return !msg;
+    }
+
+    function validate() {
+      const name = document.getElementById('name');
+      const email = document.getElementById('email');
+      const message = document.getElementById('message');
+      let ok = true;
+      ok = fieldError(name, name.value.trim().length < 2 ? 'Please enter your name.' : '') && ok;
+      ok = fieldError(email, !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())
+        ? 'Please enter a valid email address.' : '') && ok;
+      ok = fieldError(message, message.value.trim().length < 10
+        ? 'Please tell us a little more (at least 10 characters).' : '') && ok;
+      return ok;
+    }
+
+    // clear a field's error as soon as the visitor fixes it
+    ['name', 'email', 'message'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => { if (el.classList.contains('invalid')) validate(); });
     });
 
-    btn.classList.remove('loading');
-    if (error) {
-      if (window.showToast) showToast('Error sending message. Please try again.', 'error');
-      return;
-    }
-    this.querySelectorAll('input,textarea,button').forEach(el => el.disabled = true);
-    document.getElementById('form-success').style.display = 'block';
-    if (window.showToast) showToast('Message sent! We\'ll get back to you soon.', 'success');
-  });
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!validate()) {
+        form.querySelector('.invalid')?.focus();
+        return;
+      }
+
+      const btn = this.querySelector('button[type="submit"]');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      const { error } = await sb.from('contact_submissions').insert({
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        message: document.getElementById('message').value.trim()
+      });
+
+      btn.classList.remove('loading');
+      btn.disabled = false;
+
+      if (error) {
+        console.error('contact_submissions insert failed:', error);
+        // Say what actually went wrong instead of a generic failure, and
+        // always give a way through that does not depend on the database.
+        const permission = /policy|permission|denied|row-level/i.test(error.message);
+        const msg = permission
+          ? 'The form could not save your message. Please email us directly at djomoi@yahoo.com.'
+          : 'Could not send: ' + error.message + ' — or email djomoi@yahoo.com directly.';
+        if (window.showToast) showToast(msg, 'error', 9000);
+        let box = document.getElementById('form-error');
+        if (!box) {
+          box = document.createElement('div');
+          box.id = 'form-error';
+          box.className = 'form-error';
+          form.appendChild(box);
+        }
+        box.innerHTML = msg.replace('djomoi@yahoo.com',
+          '<a href="mailto:djomoi@yahoo.com">djomoi@yahoo.com</a>');
+        box.style.display = 'block';
+        return;
+      }
+
+      document.getElementById('form-error')?.remove();
+      this.querySelectorAll('input,textarea,button').forEach(el => el.disabled = true);
+      success.style.display = 'block';
+      success.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (window.showToast) showToast('Message sent — we reply within one business day.', 'success', 5000);
+    });
+  })();
 </script>
 </body>
 </html>

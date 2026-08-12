@@ -1079,3 +1079,57 @@ html.light .jobs-linked-note { background: var(--gold-dim); border-color: var(--
 html.light .jobs-linked-back { color: var(--gold); }
 .job-card.job-card--linked { box-shadow: 0 0 0 2px var(--teal), 0 12px 40px rgba(0,0,0,.3); }
 html.light .job-card.job-card--linked { box-shadow: 0 0 0 2px var(--gold), 0 12px 34px rgba(90,75,40,.14); }
+
+/* ═══════════════════════════════════════════════
+   16 · NAV COLLISION FIX
+   .nav-center is absolutely centered, so it ignored flex layout and
+   overlapped the right-side buttons between 640px and ~1250px.
+   ═══════════════════════════════════════════════ */
+@media (max-width: 1380px) {
+  /* let the links participate in the flex row instead of floating over it */
+  .nav-center { position: static; transform: none; margin: 0 auto; }
+  .nav-links { gap: 18px; }
+}
+@media (max-width: 1040px) {
+  /* not enough room for links + controls: hand over to the burger menu */
+  .nav-center, nav .btn-contact { display: none; }
+  .nav-burger { display: flex; }
+}
+
+/* ═══════════════════════════════════════════════
+   17 · EXPIRED JOBS (admin)
+   ═══════════════════════════════════════════════ */
+.admin-row--expired { opacity: .55; }
+.admin-row--expired:hover { opacity: .85; }
+.admin-row--expired strong { text-decoration: line-through; text-decoration-color: rgba(248,113,113,.5); }
+.job-pill.expired {
+  background: rgba(248,113,113,.12);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,.3);
+}
+
+/* ═══════════════════════════════════════════════
+   18 · FORM VALIDATION FEEDBACK
+   ═══════════════════════════════════════════════ */
+.field-error {
+  display: none;
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  color: #f87171;
+}
+input.invalid, textarea.invalid {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 3px rgba(248,113,113,.12) !important;
+}
+.form-error {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  font-size: 13.5px; line-height: 1.55;
+  background: rgba(248,113,113,.09);
+  border: 1px solid rgba(248,113,113,.34);
+  color: var(--text);
+}
+.form-error a { color: var(--teal); font-weight: 600; }
+html.light .form-error a { color: var(--gold); }

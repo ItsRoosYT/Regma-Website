@@ -246,7 +246,7 @@ function renderJobs() {
         ${listBlock('Nice to have', job.nice_to_have)}
         <div class="job-apply-bar">
           ${job.salary ? `<div class="salary-badge">💰 ${esc(job.salary)}</div>` : '<span></span>'}
-          <p>${job.created_at ? timeAgo(job.created_at) + ' · ' : ''}Applications open</p>
+          <p>${job.created_at ? timeAgo(job.created_at) + ' · ' : ''}${job.application_deadline ? 'Apply by ' + new Date(job.application_deadline + 'T00:00:00').toLocaleDateString('sv-SE') : 'Applications open'}</p>
           <button class="btn btn-primary" onclick="handleApply('${esc(job.title).replace(/'/g, "&#39;")}')">Apply now</button>
         </div>
       </div>
@@ -341,7 +341,10 @@ async function handleApply(role) {
     console.error(error);
     return;
   }
-  allJobs = data || [];
+  // Hide roles whose application deadline has passed (deadline day still counts).
+  // Tolerates the column not existing yet: undefined deadline = no expiry.
+  allJobs = (data || []).filter(j =>
+    !j.application_deadline || new Date(j.application_deadline + 'T23:59:59') >= new Date());
   buildFilters();
   renderJobs();
   focusLinkedJob();

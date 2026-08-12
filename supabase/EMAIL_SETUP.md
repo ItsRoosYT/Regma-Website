@@ -40,3 +40,28 @@ should arrive within a few seconds.
 ## Editing the email text
 Open `supabase/functions/application-confirmation/index.ts`, edit the `html`
 block (greeting, wording, signature), and redeploy the function.
+
+---
+
+## Contact form notifications (contact-notification)
+
+Same pattern, second function. When someone sends the contact form:
+- **You** get a "New enquiry from …" email at djomoi@yahoo.com, with
+  reply-to set to the sender — pressing Reply answers them directly.
+- **They** get a "we received your message" acknowledgement.
+
+Setup (after step 1 above is done once):
+1. **Edge Functions → Create function** → name `contact-notification`,
+   paste `supabase/functions/contact-notification/index.ts`, Deploy.
+2. **Database → Webhooks → Create**: table `contact_submissions`,
+   event **Insert**, type **Edge Function** → `contact-notification`.
+
+## Why one address got "a confirmation" and another didn't
+
+Neither of these functions was deployed yet, so **no application or contact
+emails have ever been sent**. The email the gmail account received was
+Supabase's *account sign-up* confirmation (from mail.app.supabase.io), which
+only arrives the first time an account is created. Yahoo very often puts
+mail.app.supabase.io in the spam folder — check there. Once regma.se is
+verified in Resend and FROM is switched to noreply@regma.se, deliverability
+to Yahoo/Hotmail improves substantially.
