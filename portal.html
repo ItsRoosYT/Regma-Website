@@ -221,17 +221,32 @@
   }
 
   // Load applications from Supabase
-  const { data: myApps } = await sb.from('applications').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+  const { data: myApps, error: myAppsError } =
+    await sb.from('applications').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
   const apps = myApps || [];
+
+  // Real count of live vacancies (was hardcoded to 5), excluding expired ones
+  const { count: openCount } = await sb.from('jobs')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_open', true);
 
   document.getElementById('portal-stats').innerHTML = `
     <div class="admin-stat-card"><div class="a-val">${apps.length}</div><div class="a-lbl">Applications sent</div></div>
     <div class="admin-stat-card"><div class="a-val">${apps.filter(a=>a.status==='pending').length}</div><div class="a-lbl">Pending review</div></div>
     <div class="admin-stat-card"><div class="a-val">${apps.filter(a=>a.status==='reviewed').length}</div><div class="a-lbl">Reviewed</div></div>
-    <div class="admin-stat-card"><div class="a-val">5</div><div class="a-lbl">Open positions</div></div>
+    <div class="admin-stat-card"><div class="a-val">${openCount ?? '—'}</div><div class="a-lbl">Open positions</div></div>
   `;
 
   const container = document.getElementById('my-apps');
+
+  // A failed read must not be presented to the user as "you have no applications"
+  if (myAppsError) {
+    container.innerHTML = '<div class="admin-empty" style="color:#f87171">We could not load your applications right now. '
+      + 'Please refresh, or contact us if it keeps happening.</div>';
+    console.error('portal applications load failed:', myAppsError);
+    return;
+  }
+
   if (apps.length === 0) {
     document.getElementById('no-apps').style.display = '';
   } else {

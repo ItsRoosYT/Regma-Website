@@ -40,8 +40,16 @@
 </div>
 
 <main>
-  <div class="section">
+  <div class="section admin-shell">
     <div class="admin-stats" id="admin-stats"></div>
+
+    <nav class="admin-tabs" id="admin-tabs" aria-label="Dashboard sections">
+      <button class="admin-tab active" data-tab="jobs"   onclick="setTab('jobs')">Positions <span class="admin-tab__n" id="tabn-jobs"></span></button>
+      <button class="admin-tab"        data-tab="apps"   onclick="setTab('apps')">Applications <span class="admin-tab__n" id="tabn-apps"></span></button>
+      <button class="admin-tab"        data-tab="inbox"  onclick="setTab('inbox')">Inbox <span class="admin-tab__n" id="tabn-inbox"></span></button>
+      <button class="admin-tab"        data-tab="nl"     onclick="setTab('nl')">Subscribers <span class="admin-tab__n" id="tabn-nl"></span></button>
+      <button class="admin-tab"        data-tab="admins" onclick="setTab('admins')" id="tab-admins" style="display:none">Team</button>
+    </nav>
 
     <!-- ───── MANAGE JOB POSITIONS ───── -->
     <div id="jobs-section">
@@ -108,17 +116,22 @@
 
     <!-- ───── APPLICATIONS ───── -->
     <div id="apps-section">
-      <h2 class="section-title" style="text-align:left;font-size:18px;margin:44px 0 14px;">Applications</h2>
-      <div class="jobs-filters" id="status-filters" style="justify-content:flex-start;margin-bottom:20px">
-        <button class="filter-btn active" data-status="all" onclick="setFilter('all',this)">All</button>
-        <button class="filter-btn" data-status="pending" onclick="setFilter('pending',this)">Pending</button>
-        <button class="filter-btn" data-status="reviewed" onclick="setFilter('reviewed',this)">Reviewed</button>
-        <button class="filter-btn" data-status="rejected" onclick="setFilter('rejected',this)">Rejected</button>
+      <div class="admin-section-head">
+        <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Applications</h2>
+        <div class="jobs-filters" id="status-filters" style="margin-left:auto">
+          <button class="filter-btn active" data-status="all" onclick="setFilter('all',this)">All</button>
+          <button class="filter-btn" data-status="pending" onclick="setFilter('pending',this)">Pending</button>
+          <button class="filter-btn" data-status="reviewed" onclick="setFilter('reviewed',this)">Reviewed</button>
+          <button class="filter-btn" data-status="rejected" onclick="setFilter('rejected',this)">Rejected</button>
+        </div>
       </div>
       <div class="app-list" id="app-list"></div>
       <div class="admin-empty" id="admin-empty" style="display:none">No applications yet. When candidates apply on the Careers page, their submissions will appear here.</div>
+    </div>
 
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:40px 0 14px">
+    <!-- ───── INBOX ───── -->
+    <div id="inbox-section">
+      <div class="admin-section-head">
         <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Inbox <span id="msg-unread-badge" class="job-pill open" style="display:none"></span></h2>
         <div class="jobs-filters" id="msg-tabs" style="margin-left:auto">
           <button class="filter-btn active" data-mf="active" onclick="setMsgFilter('active')">Messages</button>
@@ -127,8 +140,13 @@
         </div>
       </div>
       <div id="contact-list"></div>
+    </div>
 
-      <h2 class="section-title" style="text-align:left;font-size:18px;margin:40px 0 20px">Newsletter Subscribers</h2>
+    <!-- ───── NEWSLETTER ───── -->
+    <div id="nl-section">
+      <div class="admin-section-head">
+        <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Newsletter Subscribers</h2>
+      </div>
       <div id="nl-list" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 20px"></div>
     </div>
 
@@ -218,23 +236,88 @@
 <script src="supabase-client.js"></script>
 <script src="seed-jobs.js"></script>
 <script>
+/* ── Dashboard state ──────────────────────────────────────────────
+   Declared together and up front. These are read by updateStats() and the
+   render functions, which can run early during boot — leaving the `let`s
+   scattered further down the file meant a temporal-dead-zone crash the
+   moment anything called them before their declaration was evaluated. */
 let allApps = [];
+let allContacts = [];
+let allAdminJobs = [];
+let allAdmins = [];
 let nlCount = 0, clCount = 0;
+let appsLoadError = null;
+let nlLoadError = null;
+let contactsLoadError = null;
+let currentAdmin = null;
+let currentFilter = 'all';
+let msgFilter = 'active';
+
+/* ───────── TABS ───────── */
+const ADMIN_TABS = {
+  jobs:   'jobs-section',
+  apps:   'apps-section',
+  inbox:  'inbox-section',
+  nl:     'nl-section',
+  admins: 'admins-section',
+};
+
+function setTab(tab, opts = {}) {
+  if (!ADMIN_TABS[tab]) tab = 'jobs';
+  // permission-gated tabs fall back rather than showing an empty pane
+  if (tab === 'admins' && !currentAdmin?.can_manage_admins) tab = 'jobs';
+  if (tab === 'jobs' && currentAdmin && !currentAdmin.can_manage_jobs) tab = 'apps';
+  if (tab === 'apps' && currentAdmin && !currentAdmin.can_manage_applications) tab = 'inbox';
+
+  for (const [name, id] of Object.entries(ADMIN_TABS)) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = name === tab ? '' : 'none';
+  }
+  document.querySelectorAll('.admin-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === tab));
+
+  if (opts.filter && tab === 'apps') {
+    const btn = document.querySelector(`#status-filters .filter-btn[data-status="${opts.filter}"]`);
+    if (btn) setFilter(opts.filter, btn);
+  }
+  if (opts.filter && tab === 'inbox') setMsgFilter(opts.filter);
+
+  if (!opts.silent) {
+    history.replaceState(null, '', '#' + tab);
+    document.querySelector('.admin-tabs')?.scrollIntoView({ block: 'nearest' });
+  }
+  localStorage.setItem('regma_admin_tab', tab);
+}
 
 function updateStats() {
   const total = allApps.length;
   const pending = allApps.filter(a => (a.status || 'pending') === 'pending').length;
   const reviewed = allApps.filter(a => a.status === 'reviewed').length;
+  const unread = allContacts.filter(c => (c.status || 'new') === 'new').length;
+
+  // Every card is a control: it says what it counts and takes you there.
   document.getElementById('admin-stats').innerHTML = `
-    <div class="admin-stat-card"><div class="a-val">${total}</div><div class="a-lbl">Total applications</div></div>
-    <div class="admin-stat-card"><div class="a-val">${pending}</div><div class="a-lbl">Pending review</div></div>
-    <div class="admin-stat-card"><div class="a-val">${reviewed}</div><div class="a-lbl">Reviewed</div></div>
-    <div class="admin-stat-card"><div class="a-val">${nlCount}</div><div class="a-lbl">Newsletter subs</div></div>
-    <div class="admin-stat-card"><div class="a-val">${clCount}</div><div class="a-lbl">Contact messages</div></div>
+    <button class="admin-stat-card" onclick="setTab('apps',{filter:'all'})" title="Show all applications">
+      <div class="a-val">${total}</div><div class="a-lbl">Total applications</div></button>
+    <button class="admin-stat-card${pending ? ' is-live' : ''}" onclick="setTab('apps',{filter:'pending'})" title="Show applications awaiting review">
+      <div class="a-val">${pending}</div><div class="a-lbl">Pending review</div></button>
+    <button class="admin-stat-card" onclick="setTab('apps',{filter:'reviewed'})" title="Show reviewed applications">
+      <div class="a-val">${reviewed}</div><div class="a-lbl">Reviewed</div></button>
+    <button class="admin-stat-card${unread ? ' is-live' : ''}" onclick="setTab('inbox',{filter:'active'})" title="Open the inbox">
+      <div class="a-val">${clCount}</div><div class="a-lbl">Messages${unread ? ' · ' + unread + ' new' : ''}</div></button>
+    <button class="admin-stat-card" onclick="setTab('nl')" title="Show newsletter subscribers">
+      <div class="a-val">${nlCount}</div><div class="a-lbl">Newsletter subs</div></button>
   `;
+
+  const n = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v || ''; };
+  n('tabn-jobs', allAdminJobs.length || '');
+  n('tabn-apps', total || '');
+  n('tabn-inbox', unread || '');
+  n('tabn-nl', nlCount || '');
+  document.getElementById('tabn-inbox')?.classList.toggle('is-alert', unread > 0);
 }
 
-let currentAdmin = null;
+
 
 (async () => {
   const user = await getUser();
@@ -246,20 +329,28 @@ let currentAdmin = null;
   // Greet + role
   document.getElementById('admin-role-tag').textContent = currentAdmin.role === 'owner' ? 'Owner' : 'Admin';
   // Toggle sections by permission
-  if (!currentAdmin.can_manage_jobs) document.getElementById('jobs-section').style.display = 'none';
-  if (!currentAdmin.can_manage_applications) document.getElementById('apps-section').style.display = 'none';
-  if (currentAdmin.can_manage_admins) document.getElementById('admins-section').style.display = '';
+  // Hide tabs this admin may not use (the panes themselves are toggled by setTab)
+  const hideTab = t => { const b = document.querySelector(`.admin-tab[data-tab="${t}"]`); if (b) b.style.display = 'none'; };
+  if (!currentAdmin.can_manage_jobs) hideTab('jobs');
+  if (!currentAdmin.can_manage_applications) hideTab('apps');
+  if (currentAdmin.can_manage_admins) document.getElementById('tab-admins').style.display = '';
 
   await renderDashboard();
   await loadJobs();
   if (currentAdmin.can_manage_admins) await loadAdmins();
+
+  // Restore the tab from the URL hash, else the last one used
+  const wanted = (location.hash || '').replace('#', '') || localStorage.getItem('regma_admin_tab') || 'jobs';
+  setTab(wanted, { silent: true });
 })();
 
 async function renderDashboard() {
-  const { data: apps } = await sb.from('applications').select('*').order('created_at', { ascending: false });
+  const { data: apps, error: appsError } = await sb.from('applications').select('*').order('created_at', { ascending: false });
   const { data: contacts, error: contactsError } = await sb.from('contact_submissions').select('*').order('created_at', { ascending: false });
-  const { data: newsletter } = await sb.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
+  const { data: newsletter, error: nlError } = await sb.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
 
+  appsLoadError = appsError || null;
+  nlLoadError = nlError || null;
   allApps = apps || [];
   allContacts = contacts || [];
   contactsLoadError = contactsError || null;
@@ -273,19 +364,35 @@ async function renderDashboard() {
 
   // Newsletter
   const nlList = document.getElementById('nl-list');
-  if (nl.length === 0) {
+  if (nlLoadError) {
+    nlList.innerHTML = '<div class="admin-empty" style="color:#f87171">Could not load subscribers: '
+      + esc(nlLoadError.message) + '<br><span style="color:var(--muted);font-size:12.5px">If this mentions permissions or RLS, run 003_admin_inbox.sql.</span></div>';
+  } else if (nl.length === 0) {
     nlList.innerHTML = '<div class="admin-empty">No subscribers yet.</div>';
   } else {
     nlList.innerHTML = nl.map(s => `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted)"><a href="mailto:${esc(s.email)}" style="color:var(--muted)">${esc(s.email)}</a><button class="btn" style="font-size:11px;padding:3px 10px;border-color:#f87171;color:#f87171" onclick="deleteNewsletter('${s.id}')">Remove</button></div>`).join('');
   }
 }
 
-let currentFilter = 'all';
+
+
+
 
 function renderApps() {
   const list = document.getElementById('app-list');
   const empty = document.getElementById('admin-empty');
   const apps = currentFilter === 'all' ? allApps : allApps.filter(a => (a.status || 'pending') === currentFilter);
+
+  // A failed read must not look like an empty inbox.
+  if (appsLoadError) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    empty.style.color = '#f87171';
+    empty.innerHTML = 'Could not load applications: ' + esc(appsLoadError.message)
+      + '<br><span style="color:var(--muted);font-size:12.5px">If this mentions permissions or RLS, run 003_admin_inbox.sql in the Supabase SQL editor.</span>';
+    return;
+  }
+  empty.style.color = '';
 
   if (apps.length === 0) {
     list.innerHTML = '';
@@ -349,11 +456,30 @@ function setFilter(status, btn) {
 
 async function viewCV(path) {
   const { data, error } = await sb.storage.from('cvs').createSignedUrl(path, 120);
-  if (error || !data) {
-    if (window.showToast) showToast('Could not open CV: ' + (error?.message || 'unknown error'), 'error');
+  if (!error && data) { window.open(data.signedUrl, '_blank', 'noopener'); return; }
+
+  // Storage masks "denied" as "not found", so the raw message is misleading.
+  // Work out which it actually is: if we can list the folder, the file is
+  // genuinely gone; if listing is empty/denied too, it is a permissions gap.
+  const msg = (error?.message || '').toLowerCase();
+  if (msg.includes('not found') || msg.includes('object')) {
+    const folder = path.split('/')[0];
+    const { data: listing } = await sb.storage.from('cvs').list(folder, { limit: 100 });
+    const file = path.split('/').slice(1).join('/');
+    if (listing && listing.length) {
+      if (listing.some(o => o.name === file)) {
+        showToast('The file exists but could not be opened — check the cvs bucket policies (004_cv_storage_access.sql).', 'error', 9000);
+      } else {
+        showToast('This CV is no longer in storage. The application record still lists "' + (file || path) + '", but the file was removed.', 'error', 9000);
+      }
+    } else {
+      showToast('No permission to read CVs. Run 004_cv_storage_access.sql in the Supabase SQL editor — admins currently have no read policy on the cvs bucket.', 'error', 11000);
+    }
+    console.error('viewCV failed for path:', path, error);
     return;
   }
-  window.open(data.signedUrl, '_blank', 'noopener');
+  showToast('Could not open CV: ' + (error?.message || 'unknown error'), 'error', 7000);
+  console.error('viewCV failed for path:', path, error);
 }
 
 async function setStatus(id, status) {
@@ -431,9 +557,9 @@ async function deleteApplication(id, name) {
 }
 
 /* ───────── INBOX ───────── */
-let allContacts = [];
-let contactsLoadError = null;
-let msgFilter = 'active';
+
+
+
 
 function setMsgFilter(f) {
   msgFilter = f;
@@ -550,7 +676,7 @@ async function deleteNewsletter(id) {
 }
 
 /* ───────── JOB POSITIONS ───────── */
-let allAdminJobs = [];
+
 
 async function loadJobs() {
   const { data, error } = await sb.from('jobs').select('*').order('created_at', { ascending: false });
@@ -912,7 +1038,7 @@ async function deleteJob(id, title) {
 }
 
 /* ───────── TEAM ACCESS (ADMINS) ───────── */
-let allAdmins = [];
+
 
 async function loadAdmins() {
   const { data, error } = await sb.from('admins').select('*').order('created_at', { ascending: true });

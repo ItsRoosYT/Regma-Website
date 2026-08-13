@@ -1133,3 +1133,95 @@ input.invalid, textarea.invalid {
 }
 .form-error a { color: var(--teal); font-weight: 600; }
 html.light .form-error a { color: var(--gold); }
+
+/* ═══════════════════════════════════════════════
+   18 · ADMIN DASHBOARD — TABBED, DESKTOP-FIRST
+   The panel was one long vertical scroll with five stacked sections and
+   stat cards that displayed counts but weren't clickable. Now: one pane
+   at a time, sticky tabs, and every stat card is a shortcut into its view.
+   ═══════════════════════════════════════════════ */
+.admin-shell { max-width: 1320px; }
+
+/* ── Stat cards are buttons now ── */
+.admin-stats { gap: 12px; }
+.admin-stat-card {
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color .18s var(--ease-out), transform .18s var(--ease-out),
+              background .18s var(--ease-out);
+}
+.admin-stat-card:hover {
+  border-color: var(--teal);
+  background: var(--teal-dim);
+  transform: translateY(-2px);
+}
+html.light .admin-stat-card:hover { border-color: var(--gold); background: var(--gold-dim); }
+.admin-stat-card:active { transform: translateY(0); }
+/* cards with something needing attention */
+.admin-stat-card.is-live .a-val { color: var(--gold); }
+html.light .admin-stat-card.is-live .a-val { color: #b3862d; }
+
+/* ── Tab bar ── */
+.admin-tabs {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; gap: 4px; flex-wrap: wrap;
+  margin: 26px 0 22px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.admin-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 15px;
+  border: 0; border-radius: 8px;
+  background: none; color: var(--muted);
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  cursor: pointer;
+  transition: background .16s var(--ease-out), color .16s var(--ease-out);
+}
+.admin-tab:hover { color: var(--text); background: var(--surface2); }
+.admin-tab.active { background: var(--teal); color: #fff; }
+html.light .admin-tab.active { background: var(--teal); color: #fff; }
+
+.admin-tab__n {
+  min-width: 20px; padding: 1px 6px;
+  border-radius: 20px;
+  background: var(--surface2); color: var(--muted);
+  font-size: 11px; font-weight: 700; text-align: center;
+}
+.admin-tab.active .admin-tab__n { background: rgba(255,255,255,.22); color: #fff; }
+.admin-tab__n:empty { display: none; }
+.admin-tab__n.is-alert { background: var(--gold); color: #23201a; }
+.admin-tab.active .admin-tab__n.is-alert { background: var(--gold); color: #23201a; }
+
+/* ── Panes ── */
+#jobs-section, #apps-section, #inbox-section, #nl-section, #admins-section {
+  animation: paneIn .18s var(--ease-out);
+}
+@keyframes paneIn { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+
+/* Long lists scroll inside the pane instead of stretching the page */
+#jobs-section .admin-list,
+#apps-section .app-list,
+#inbox-section #contact-list {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+}
+#jobs-section .admin-list::-webkit-scrollbar,
+#apps-section .app-list::-webkit-scrollbar,
+#inbox-section #contact-list::-webkit-scrollbar { width: 9px; }
+#jobs-section .admin-list::-webkit-scrollbar-thumb,
+#apps-section .app-list::-webkit-scrollbar-thumb,
+#inbox-section #contact-list::-webkit-scrollbar-thumb {
+  background: var(--border2); border-radius: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #jobs-section, #apps-section, #inbox-section, #nl-section, #admins-section { animation: none; }
+  .admin-stat-card:hover { transform: none; }
+}
