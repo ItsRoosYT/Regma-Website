@@ -9,6 +9,9 @@
   <link rel="manifest" href="site.webmanifest" />
   <meta name="theme-color" content="#0d0d10" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)" />
+  <script>/* set theme before first paint — avoids a dark flash for light-theme users */
+    try { if (localStorage.getItem('regma_theme') !== 'dark') document.documentElement.classList.add('light'); } catch (e) {}
+  </script>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="visuals.css" />
 </head>
@@ -228,5 +231,6 @@ async function handleSignup(e) {
   if (session) window.location.href = getRedirectDest();
 })();
 </script>
+<script src="components.js"></script>
 </body>
 </html>

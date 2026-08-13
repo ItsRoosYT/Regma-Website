@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard — Regma IT AB</title>
+  <script>/* set theme before first paint — avoids a dark flash for light-theme users */
+    try { if (localStorage.getItem('regma_theme') !== 'dark') document.documentElement.classList.add('light'); } catch (e) {}
+  </script>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="visuals.css" />
 </head>

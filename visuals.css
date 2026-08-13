@@ -1225,3 +1225,13 @@ html.light .admin-tab.active { background: var(--teal); color: #fff; }
   #jobs-section, #apps-section, #inbox-section, #nl-section, #admins-section { animation: none; }
   .admin-stat-card:hover { transform: none; }
 }
+
+/* Per-role share button in the job apply bar */
+.job-share {
+  font-size: 12.5px;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+.job-share:hover { border-color: var(--teal); color: var(--teal); }
+html.light .job-share:hover { border-color: var(--gold); color: var(--gold); }
+@media (max-width: 560px) { .job-share { display: none; } }

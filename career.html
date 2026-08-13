@@ -21,6 +21,9 @@
   <link rel="manifest" href="site.webmanifest" />
   <meta name="theme-color" content="#0d0d10" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)" />
+  <script>/* set theme before first paint — avoids a dark flash for light-theme users */
+    try { if (localStorage.getItem('regma_theme') !== 'dark') document.documentElement.classList.add('light'); } catch (e) {}
+  </script>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="visuals.css" />
 </head>
@@ -247,6 +250,7 @@ function renderJobs() {
         <div class="job-apply-bar">
           ${job.salary ? `<div class="salary-badge">💰 ${esc(job.salary)}</div>` : '<span></span>'}
           <p>${job.created_at ? timeAgo(job.created_at) + ' · ' : ''}${job.application_deadline ? 'Apply by ' + new Date(job.application_deadline + 'T00:00:00').toLocaleDateString('sv-SE') : 'Applications open'}</p>
+          <button class="btn job-share" onclick="copyJobLink('${esc(job.id)}',this)" title="Copy a direct link to this position">🔗 Copy link</button>
           <button class="btn btn-primary" onclick="handleApply('${esc(job.title).replace(/'/g, "&#39;")}')">Apply now</button>
         </div>
       </div>
@@ -318,6 +322,40 @@ document.getElementById('job-search').addEventListener('input', function() {
   searchQuery = this.value.toLowerCase().trim();
   applyFilters();
 });
+
+// Copy a direct link to one position — the same ?job= URL used as the
+// "Ansökningssätt" link on external job ads.
+async function copyJobLink(id, btn) {
+  const url = location.origin + location.pathname.replace(/\/$/, '') + '?job=' + encodeURIComponent(id);
+  const label = btn.innerHTML;
+  let copied = false;
+
+  try {
+    await navigator.clipboard.writeText(url);
+    copied = true;
+  } catch (e) {
+    // Clipboard API needs a secure context and permission. Fall back to a
+    // hidden textarea + execCommand, which works in older/stricter setups.
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      copied = document.execCommand('copy');
+      ta.remove();
+    } catch (e2) { copied = false; }
+  }
+
+  if (copied) {
+    btn.innerHTML = '✓ Copied';
+    setTimeout(() => { btn.innerHTML = label; }, 1600);
+  } else if (window.showToast) {
+    // Never leave the user stuck: show the link so it can be copied by hand.
+    showToast('Copy this link: ' + url, 'info', 9000);
+  }
+}
 
 // Apply — redirect to full apply page
 async function handleApply(role) {

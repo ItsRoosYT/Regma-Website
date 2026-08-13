@@ -324,10 +324,43 @@ function applyLang(code) {
   const btn = document.getElementById('lang-current');
   if (btn) btn.textContent = langNames[code];
   document.documentElement.lang = code;
+
+  // Keep ?lang= in the address bar in step, so copying the URL shares the
+  // language the reader is actually looking at. English is the default, so
+  // it drops the parameter rather than adding noise.
+  try {
+    const url = new URL(location.href);
+    if (code === 'en') url.searchParams.delete('lang');
+    else url.searchParams.set('lang', code);
+    history.replaceState(null, '', url);
+  } catch (e) { /* non-blocking */ }
+
+  // Point internal links at the same language so it survives navigation
+  // (the pages are one HTML file each; the language lives in the URL).
+  document.querySelectorAll('a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!href || /^(#|https?:|mailto:|tel:|javascript:)/i.test(href)) return;
+    try {
+      const u = new URL(href, location.origin);
+      if (code === 'en') u.searchParams.delete('lang');
+      else u.searchParams.set('lang', code);
+      a.setAttribute('href', u.pathname.replace(/^\//, '') + u.search + u.hash);
+    } catch (e) { /* leave the link alone */ }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('regma_lang') || 'en';
+  // A ?lang= in the URL wins, so a Swedish view can be linked to and shared
+  // (e.g. regma.se/career.html?lang=sv). Otherwise fall back to the saved
+  // choice, then to the browser's own language, then English.
+  const params = new URLSearchParams(location.search);
+  const fromUrl = params.get('lang');
+  const browser = (navigator.language || '').slice(0, 2).toLowerCase();
+  const saved =
+    (fromUrl && translations[fromUrl] && fromUrl) ||
+    localStorage.getItem('regma_lang') ||
+    (translations[browser] && browser) ||
+    'en';
   applyLang(saved);
 
   const toggle = document.getElementById('lang-toggle');
