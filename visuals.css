@@ -1457,3 +1457,19 @@ html.light .confirm-small a { color: var(--gold); }
 @media (prefers-reduced-motion: reduce) {
   .confirm-mark, .confirm-spinner { animation: none; }
 }
+
+/* ═══════════════════════════════════════════════
+   22 · FIELD VALIDATION FEEDBACK
+   ═══════════════════════════════════════════════ */
+.field-hint {
+  font-size: 12px; line-height: 1.45;
+  margin-top: 5px; min-height: 1em;
+  transition: color .15s var(--ease-out);
+}
+.field-hint.is-ok  { color: var(--teal); }
+.field-hint.is-bad { color: #f87171; }
+html.light .field-hint.is-ok { color: #1d5c45; }
+
+input.input-ok  { border-color: var(--teal) !important; }
+input.input-bad { border-color: #f87171 !important; }
+input.input-bad:focus { box-shadow: 0 0 0 3px rgba(248,113,113,.12) !important; }

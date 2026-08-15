@@ -141,6 +141,19 @@
       </form>
     </div>
 
+    <!-- Your data (GDPR) -->
+    <div class="profile-card" style="margin-top:16px">
+      <h3><svg class="profile-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Your data</h3>
+      <p class="profile-danger-text">Under GDPR you can take a copy of everything we hold about you, or ask us to erase it. Both are your right, and neither needs a reason.</p>
+      <div class="profile-actions" style="gap:10px;flex-wrap:wrap">
+        <button class="btn" style="font-size:12.5px;padding:8px 18px" onclick="exportMyData(this)">⬇ Download my data</button>
+        <button class="btn" style="font-size:12.5px;padding:8px 18px;border-color:#f87171;color:#f87171" onclick="deleteMyAccount()">Delete my account</button>
+      </div>
+      <p class="profile-danger-text" style="margin-top:12px;font-size:12px">
+        Deleting removes your profile, applications and any CV you uploaded. It cannot be undone.
+      </p>
+    </div>
+
     <!-- Account actions -->
     <div class="profile-card profile-danger" style="margin-top:16px">
       <h3><svg class="profile-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Session</h3>
@@ -154,43 +167,7 @@
     <div class="portal-section-header">
       <h2>Open Positions</h2>
     </div>
-    <div class="portal-jobs" id="portal-jobs">
-      <a href="apply.html?role=Senior+IT+Consultant" class="portal-job-row">
-        <div>
-          <strong>Senior IT Consultant</strong>
-          <span>Consulting · Full-time · Gothenburg</span>
-        </div>
-        <span class="portal-job-arrow">→</span>
-      </a>
-      <a href="apply.html?role=Systems+Architect" class="portal-job-row">
-        <div>
-          <strong>Systems Architect</strong>
-          <span>Engineering · Full-time · Gothenburg</span>
-        </div>
-        <span class="portal-job-arrow">→</span>
-      </a>
-      <a href="apply.html?role=Junior+Developer" class="portal-job-row">
-        <div>
-          <strong>Junior Developer</strong>
-          <span>Engineering · Full-time · Gothenburg / Hybrid</span>
-        </div>
-        <span class="portal-job-arrow">→</span>
-      </a>
-      <a href="apply.html?role=UX%2FUI+Designer" class="portal-job-row">
-        <div>
-          <strong>UX/UI Designer</strong>
-          <span>Design · Part-time · Remote / Sweden</span>
-        </div>
-        <span class="portal-job-arrow">→</span>
-      </a>
-      <a href="apply.html?role=Project+Manager" class="portal-job-row">
-        <div>
-          <strong>Project Manager</strong>
-          <span>Operations · Full-time · Gothenburg</span>
-        </div>
-        <span class="portal-job-arrow">→</span>
-      </a>
-    </div>
+    <div class="portal-jobs" id="portal-jobs"></div>
   </div>
 </main>
 
@@ -203,6 +180,7 @@
   </ul>
 </footer>
 <script src="nav.js"></script>
+<script src="validation.js"></script>
 <script src="components.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
@@ -331,6 +309,134 @@ window.changePassword = async function(e) {
 };
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+<script>
+/* Open positions — these were three hardcoded rows pointing at roles that
+   may not exist. Load the real ones, excluding expired. */
+(async () => {
+  const wrap = document.getElementById('portal-jobs');
+  if (!wrap) return;
+  const { data, error } = await sb.from('jobs').select('*').eq('is_open', true)
+    .order('created_at', { ascending: false }).limit(5);
+  if (error) { wrap.innerHTML = '<div class="portal-empty">Could not load positions right now.</div>'; return; }
+
+  const live = (data || []).filter(j =>
+    !j.application_deadline || new Date(j.application_deadline + 'T23:59:59') >= new Date());
+
+  if (!live.length) {
+    wrap.innerHTML = '<div class="portal-empty" style="padding:24px"><p>No open positions at the moment. '
+      + '<a href="contact.html" style="color:var(--teal);font-weight:600">Send us an open application</a>.</p></div>';
+    return;
+  }
+  wrap.innerHTML = live.map(j => `
+    <a href="career.html?job=${encodeURIComponent(j.id)}" class="portal-job-row">
+      <div>
+        <strong>${escapeHtml(j.title)}</strong>
+        <span>${[j.department, j.type, j.location].filter(Boolean).map(escapeHtml).join(' · ')}</span>
+      </div>
+      <span class="portal-job-arrow">→</span>
+    </a>`).join('');
+})();
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : s;
+  return d.innerHTML;
+}
+
+/* ── GDPR: take a copy of everything we hold ─────────────────── */
+async function exportMyData(btn) {
+  const label = btn.textContent;
+  btn.textContent = 'Preparing…';
+  btn.disabled = true;
+  try {
+    const user = await getUser();
+    if (!user) { location.href = 'auth.html'; return; }
+
+    const [{ data: profile }, { data: apps }] = await Promise.all([
+      sb.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+      sb.from('applications').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    ]);
+
+    const payload = {
+      exported_at: new Date().toISOString(),
+      exported_from: 'https://regma.se',
+      controller: 'Regma IT AB, org.nr 559373-8080, Angered, Göteborg, Sweden',
+      account: {
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.name || null,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at || null,
+        sign_in_method: user.app_metadata?.provider || 'email',
+      },
+      profile: profile || null,
+      applications: apps || [],
+      note: 'Uploaded CV files are held in private storage and are not included in this file. Ask us and we will send them to you.',
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'regma-my-data-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    if (window.showToast) showToast('Your data has been downloaded.', 'success');
+  } catch (e) {
+    console.error(e);
+    if (window.showToast) showToast('Could not prepare your data. Please email djomoi@yahoo.com and we will send it.', 'error', 8000);
+  } finally {
+    btn.textContent = label;
+    btn.disabled = false;
+  }
+}
+
+/* ── GDPR: erasure ───────────────────────────────────────────── */
+async function deleteMyAccount() {
+  const user = await getUser();
+  if (!user) { location.href = 'auth.html'; return; }
+
+  if (!confirm('Delete your Regma IT account?\n\nThis removes your profile, every application you have sent, and any CV you uploaded. It cannot be undone.')) return;
+
+  const typed = prompt('This is permanent. Type DELETE to confirm.');
+  if (typed !== 'DELETE') {
+    if (window.showToast) showToast('Cancelled — nothing was deleted.', 'info');
+    return;
+  }
+
+  if (window.showToast) showToast('Deleting your account…', 'info', 4000);
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(SUPABASE_URL + '/functions/v1/delete-account', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      const detail = await res.text();
+      console.error('delete-account failed:', res.status, detail);
+      if (window.showToast) {
+        showToast('We could not delete the account automatically. Email djomoi@yahoo.com and we will erase it manually — that is still your right and we will action it.', 'error', 12000);
+      }
+      return;
+    }
+
+    await sb.auth.signOut();
+    location.href = 'index.html?deleted=1';
+  } catch (e) {
+    console.error(e);
+    if (window.showToast) {
+      showToast('We could not reach the server. Email djomoi@yahoo.com and we will erase your data manually.', 'error', 12000);
+    }
+  }
+}
 </script>
 </body>
 </html>

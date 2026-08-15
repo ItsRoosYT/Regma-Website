@@ -66,6 +66,7 @@
       <div class="form-row" style="margin-top:14px">
         <label for="app-phone">Phone number <span style="color:var(--teal)">*</span></label>
         <input type="tel" id="app-phone" placeholder="+46 70 000 0000" required />
+        <p class="field-hint" id="phone-hint"></p>
         <p class="apply-hint">So we can reach you about your application. Email and phone are both required.</p>
       </div>
     </div>
@@ -156,6 +157,7 @@
   </ul>
 </footer>
 <script src="nav.js"></script>
+<script src="validation.js"></script>
 <script src="components.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
@@ -176,6 +178,7 @@ const role = decodeURIComponent(new URLSearchParams(location.search).get('role')
   // Prefill phone from saved profile if available
   const { data: profile } = await sb.from('profiles').select('phone').eq('id', currentUser.id).single();
   if (profile?.phone) document.getElementById('app-phone').value = profile.phone;
+  attachPhoneValidation(document.getElementById('app-phone'), 'phone-hint');
 })();
 
 function switchType(type) {
@@ -208,10 +211,14 @@ async function submitApp(e, type) {
   e.preventDefault();
 
   // Phone is shared across both application types and required
-  const phone = document.getElementById('app-phone').value.trim();
-  if (!phone) {
-    if (window.showToast) showToast('Please add a phone number so we can reach you.', 'error');
-    document.getElementById('app-phone').focus();
+  const phoneInput = document.getElementById('app-phone');
+  const phoneCheck = validatePhone(phoneInput.value);
+  // Store E.164 so every number in the database has one shape, whatever
+  // the applicant typed.
+  const phone = phoneCheck.ok ? phoneCheck.e164 : '';
+  if (!phoneCheck.ok) {
+    if (window.showToast) showToast(phoneCheck.reason, 'error', 5000);
+    phoneInput.focus();
     return;
   }
 
