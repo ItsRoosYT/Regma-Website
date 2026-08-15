@@ -1299,3 +1299,53 @@ html.light .cv-modal { background: rgba(42,38,32,.55); }
   .cv-viewer__actions .btn span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .cv-viewer { animation: none; } }
+
+/* ═══════════════════════════════════════════════
+   20 · TEAM ACCESS — NAMED ROLES
+   ═══════════════════════════════════════════════ */
+.role-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.role-opt {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 11px 13px; text-align: left;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface2); color: var(--text);
+  font-family: inherit; cursor: pointer;
+  transition: border-color .18s var(--ease-out), background .18s var(--ease-out);
+}
+.role-opt strong { font-size: 13px; font-weight: 700; }
+.role-opt span { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+.role-opt:hover { border-color: var(--border2); }
+.role-opt.on { border-color: var(--teal); background: var(--teal-dim); }
+html.light .role-opt.on { border-color: var(--gold); background: var(--gold-dim); }
+
+.role-custom { margin: 14px 0 4px; }
+.role-custom summary {
+  cursor: pointer; font-size: 12.5px; font-weight: 600;
+  color: var(--muted); padding: 6px 0;
+}
+.role-custom summary:hover { color: var(--text); }
+.role-custom__note { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+
+.role-pill {
+  display: inline-block; margin-left: 8px;
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .03em;
+  text-transform: uppercase;
+  background: var(--surface2); color: var(--muted);
+  border: 1px solid var(--border2);
+  vertical-align: middle;
+}
+.role-pill.role-owner     { background: var(--teal); color: #fff; border-color: transparent; }
+.role-pill.role-admin     { background: rgba(59,130,246,.14); color: #3b82f6; border-color: rgba(59,130,246,.3); }
+.role-pill.role-recruiter { background: var(--teal-dim); color: var(--teal); border-color: transparent; }
+.role-pill.role-editor    { background: var(--gold-dim); color: var(--gold); border-color: transparent; }
+html.light .role-pill.role-editor { color: #8a6520; }
+
+.role-select {
+  padding: 6px 10px; border-radius: 8px;
+  border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--text); font-family: inherit; font-size: 12.5px;
+  cursor: pointer;
+}
+.role-select:hover { border-color: var(--teal); }
+html.light .role-select:hover { border-color: var(--gold); }

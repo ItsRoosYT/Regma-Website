@@ -161,16 +161,30 @@
       <p style="color:var(--muted);font-size:13px;margin:6px 0 18px">Add people by email and choose what they can manage. They sign in normally — access is granted by email.</p>
 
       <div class="admin-card">
-        <h3>Add an admin</h3>
+        <h3>Invite someone</h3>
         <form id="admin-form" onsubmit="addAdmin(event)">
-          <div class="form-row"><label>Email *</label><input type="email" id="new-admin-email" required placeholder="person@email.com" /></div>
-          <div class="admin-perms">
-            <label class="admin-check"><input type="checkbox" id="perm-jobs" checked /> Manage job positions</label>
-            <label class="admin-check"><input type="checkbox" id="perm-apps" checked /> Manage applications</label>
-            <label class="admin-check"><input type="checkbox" id="perm-admins" /> Manage other admins</label>
+          <div class="admin-grid-2">
+            <div class="form-row"><label>Email *</label><input type="email" id="new-admin-email" required placeholder="person@email.com" /></div>
+            <div class="form-row"><label>Name <span class="hint">(optional)</span></label><input type="text" id="new-admin-name" placeholder="Their name" /></div>
           </div>
+
+          <div class="form-row">
+            <label>Role</label>
+            <div class="role-picker" id="role-picker"></div>
+          </div>
+
+          <details class="role-custom" id="role-custom">
+            <summary>Fine-tune permissions</summary>
+            <div class="admin-perms">
+              <label class="admin-check"><input type="checkbox" id="perm-jobs" checked /> Manage job positions</label>
+              <label class="admin-check"><input type="checkbox" id="perm-apps" checked /> Manage applications &amp; CVs</label>
+              <label class="admin-check"><input type="checkbox" id="perm-admins" /> Manage team access</label>
+            </div>
+            <p class="role-custom__note">Changing these switches the role to <b>Custom</b>.</p>
+          </details>
+
           <div class="admin-form-actions">
-            <button type="submit" class="btn btn-primary" style="font-size:13px">Add admin</button>
+            <button type="submit" class="btn btn-primary" style="font-size:13px">Add to team</button>
           </div>
         </form>
       </div>
@@ -1116,34 +1130,170 @@ async function deleteJob(id, title) {
 /* ───────── TEAM ACCESS (ADMINS) ───────── */
 
 
+let adminsLoadError = null;
+
 async function loadAdmins() {
   const { data, error } = await sb.from('admins').select('*').order('created_at', { ascending: true });
-  if (error) { console.error(error); return; }
+  adminsLoadError = error || null;
+  if (error) console.error(error);
   allAdmins = data || [];
+  buildRolePicker();
+  pickRole(pickedRole);
   renderAdmins();
+
+  // Record that this admin was here, for the "last active" column
+  if (currentAdmin?.email) {
+    sb.from('admins').update({ last_seen: new Date().toISOString() })
+      .eq('email', currentAdmin.email).then(() => {});
+  }
+
+  ['perm-jobs','perm-apps','perm-admins'].forEach(id =>
+    document.getElementById(id)?.addEventListener('change', markCustomRole));
+}
+
+const ROLES = {
+  owner:     { label: 'Owner',     desc: 'Full control. Cannot be removed or demoted.',      jobs: true,  apps: true,  admins: true  },
+  admin:     { label: 'Admin',     desc: 'Everything, including managing team access.',      jobs: true,  apps: true,  admins: true  },
+  recruiter: { label: 'Recruiter', desc: 'Post roles and review applicants and CVs.',        jobs: true,  apps: true,  admins: false },
+  editor:    { label: 'Editor',    desc: 'Write and edit job adverts. No applicant data.',   jobs: true,  apps: false, admins: false },
+  viewer:    { label: 'Viewer',    desc: 'Read-only. Can look, cannot change anything.',     jobs: false, apps: false, admins: false },
+};
+
+let pickedRole = 'recruiter';
+
+function buildRolePicker() {
+  const wrap = document.getElementById('role-picker');
+  if (!wrap) return;
+  wrap.innerHTML = Object.entries(ROLES)
+    .filter(([k]) => k !== 'owner')   // owner is not assignable
+    .map(([key, r]) => `
+      <button type="button" class="role-opt${key === pickedRole ? ' on' : ''}" data-role="${key}" onclick="pickRole('${key}')">
+        <strong>${r.label}</strong>
+        <span>${r.desc}</span>
+      </button>`).join('');
+}
+
+function pickRole(key) {
+  pickedRole = key;
+  const r = ROLES[key];
+  if (r) {
+    document.getElementById('perm-jobs').checked   = r.jobs;
+    document.getElementById('perm-apps').checked   = r.apps;
+    document.getElementById('perm-admins').checked = r.admins;
+  }
+  document.querySelectorAll('.role-opt').forEach(b =>
+    b.classList.toggle('on', b.dataset.role === key));
+}
+
+// Ticking a box by hand means the preset no longer describes it
+function markCustomRole() {
+  pickedRole = 'admin';
+  document.querySelectorAll('.role-opt').forEach(b => b.classList.remove('on'));
+}
+
+// Work out which named role a stored row corresponds to
+function roleOf(a) {
+  // The stored role is authoritative — several presets can share a flag
+  // combination, so inferring from flags alone mislabels people.
+  if (a.role && ROLES[a.role]) {
+    const r = ROLES[a.role];
+    const flagsMatch = r.jobs === !!a.can_manage_jobs
+                    && r.apps === !!a.can_manage_applications
+                    && r.admins === !!a.can_manage_admins;
+    if (flagsMatch || a.role === 'owner') return a.role;
+    return null;   // stored role no longer matches its permissions → Custom
+  }
+  const match = Object.entries(ROLES).find(([k, r]) =>
+    k !== 'owner' && r.jobs === !!a.can_manage_jobs
+                  && r.apps === !!a.can_manage_applications
+                  && r.admins === !!a.can_manage_admins);
+  return match ? match[0] : null;
 }
 
 function renderAdmins() {
   const list = document.getElementById('admins-admin-list');
+  if (adminsLoadError) {
+    list.innerHTML = '<div class="admin-empty" style="color:#f87171">Could not load the team: '
+      + esc(adminsLoadError.message)
+      + '<br><span style="color:var(--muted);font-size:12.5px">If this mentions permissions or RLS, run 005_admin_roles.sql.</span></div>';
+    return;
+  }
+  if (!allAdmins.length) {
+    list.innerHTML = '<div class="admin-empty">No one has been added yet.</div>';
+    return;
+  }
+
   list.innerHTML = allAdmins.map(a => {
     const isOwner = a.role === 'owner';
-    const perms = [
-      a.can_manage_jobs ? 'Jobs' : null,
+    const key = roleOf(a);
+    const roleLabel = key ? ROLES[key].label : 'Custom';
+    const can = [
+      a.can_manage_jobs ? 'Positions' : null,
       a.can_manage_applications ? 'Applications' : null,
-      a.can_manage_admins ? 'Admins' : null
-    ].filter(Boolean).join(' · ') || 'No permissions';
-    return `<div class="admin-row">
+      a.can_manage_admins ? 'Team access' : null,
+    ].filter(Boolean).join(' · ') || 'Read-only';
+    const seen = a.last_seen
+      ? 'Last active ' + new Date(a.last_seen).toLocaleDateString('sv-SE')
+      : 'Not signed in yet';
+    const inactive = a.is_active === false;
+
+    return `<div class="admin-row${inactive ? ' admin-row--expired' : ''}">
       <div class="admin-row-main">
-        <strong>${esc(a.email)} ${isOwner ? '<span class="job-pill open">Owner</span>' : ''}</strong>
-        <span class="admin-row-sub">${esc(perms)}</span>
+        <strong>${esc(a.name || a.email)}
+          <span class="role-pill role-${key || 'custom'}">${esc(roleLabel)}</span>
+          ${inactive ? '<span class="job-pill closed">Suspended</span>' : ''}</strong>
+        <span class="admin-row-sub">${esc(a.email)}${a.title ? ' · ' + esc(a.title) : ''} — ${esc(can)} · ${esc(seen)}</span>
       </div>
       <div class="admin-row-actions">
-        ${isOwner ? '<span style="font-size:12px;color:var(--muted)">Full access</span>' :
-          `<button class="btn" onclick="editAdminPerms('${esc(a.email)}')">Edit access</button>
-           <button class="btn" style="border-color:#f87171;color:#f87171" onclick="removeAdmin('${esc(a.email)}')">Remove</button>`}
+        ${isOwner
+          ? '<span style="font-size:12px;color:var(--muted)">Full access · protected</span>'
+          : `<select class="role-select" onchange="changeRole('${esc(a.email)}', this.value)" aria-label="Role for ${esc(a.email)}">
+               ${Object.entries(ROLES).filter(([k]) => k !== 'owner').map(([k, r]) =>
+                 `<option value="${k}"${k === key ? ' selected' : ''}>${r.label}</option>`).join('')}
+               ${key ? '' : '<option value="" selected>Custom</option>'}
+             </select>
+             <button class="btn" onclick="toggleAdminActive('${esc(a.email)}')">${inactive ? 'Restore' : 'Suspend'}</button>
+             <button class="btn" style="border-color:#f87171;color:#f87171" onclick="removeAdmin('${esc(a.email)}')">Remove</button>`}
       </div>
     </div>`;
   }).join('');
+}
+
+async function changeRole(email, key) {
+  const r = ROLES[key];
+  if (!r) return;
+  const { error } = await sb.from('admins').update({
+    role: key,
+    can_manage_jobs: r.jobs,
+    can_manage_applications: r.apps,
+    can_manage_admins: r.admins,
+  }).eq('email', email);
+  if (error) {
+    showToast(/column|schema|constraint/i.test(error.message)
+      ? 'Run 005_admin_roles.sql in the Supabase SQL editor first.'
+      : 'Could not change role: ' + error.message, 'error', 7000);
+    return;
+  }
+  const a = allAdmins.find(x => x.email === email);
+  if (a) Object.assign(a, { role: key, can_manage_jobs: r.jobs, can_manage_applications: r.apps, can_manage_admins: r.admins });
+  renderAdmins();
+  showToast(email + ' is now ' + r.label + '.', 'success');
+}
+
+async function toggleAdminActive(email) {
+  const a = allAdmins.find(x => x.email === email);
+  if (!a) return;
+  const next = a.is_active === false;
+  const { error } = await sb.from('admins').update({ is_active: next }).eq('email', email);
+  if (error) {
+    showToast(/column|schema/i.test(error.message)
+      ? 'Run 005_admin_roles.sql first — the is_active column does not exist yet.'
+      : 'Could not update: ' + error.message, 'error', 7000);
+    return;
+  }
+  a.is_active = next;
+  renderAdmins();
+  showToast(next ? 'Access restored for ' + email : email + ' suspended — they keep the account but lose access.', 'success', 4000);
 }
 
 async function addAdmin(e) {
@@ -1151,7 +1301,9 @@ async function addAdmin(e) {
   const email = document.getElementById('new-admin-email').value.trim().toLowerCase();
   const row = {
     email,
-    role: 'admin',
+    name: document.getElementById('new-admin-name').value.trim() || null,
+    role: pickedRole,
+    invited_by: currentAdmin?.email || null,
     can_manage_jobs: document.getElementById('perm-jobs').checked,
     can_manage_applications: document.getElementById('perm-apps').checked,
     can_manage_admins: document.getElementById('perm-admins').checked
