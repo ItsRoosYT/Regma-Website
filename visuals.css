@@ -1473,3 +1473,61 @@ html.light .field-hint.is-ok { color: #1d5c45; }
 input.input-ok  { border-color: var(--teal) !important; }
 input.input-bad { border-color: #f87171 !important; }
 input.input-bad:focus { box-shadow: 0 0 0 3px rgba(248,113,113,.12) !important; }
+
+/* ═══════════════════════════════════════════════
+   23 · AUTO-REVEAL + INTERACTION POLISH
+   ═══════════════════════════════════════════════ */
+.auto-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .5s var(--ease-out) var(--ar-delay, 0ms),
+              transform .5s var(--ease-out) var(--ar-delay, 0ms);
+}
+.auto-reveal.in { opacity: 1; transform: none; }
+
+/* Buttons acknowledge the press instead of just changing colour */
+.btn, .admin-tab, .filter-btn, .role-opt {
+  transition: background .18s var(--ease-out), border-color .18s var(--ease-out),
+              color .18s var(--ease-out), transform .12s var(--ease-out),
+              box-shadow .18s var(--ease-out);
+}
+.btn:active, .filter-btn:active, .role-opt:active { transform: translateY(1px) scale(.995); }
+
+/* Primary button gets a soft lift on hover */
+.btn-primary:hover { box-shadow: 0 6px 20px var(--teal-glow); }
+html.light .btn-primary:hover { box-shadow: 0 6px 20px rgba(29,92,69,.22); }
+
+/* Avatar in the users list */
+.user-avatar {
+  width: 34px; height: 34px; flex-shrink: 0;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--teal-dim); color: var(--teal);
+  font-size: 14px; font-weight: 800;
+}
+html.light .user-avatar { background: var(--gold-dim); color: #8a6520; }
+
+/* Skeleton shimmer for content that is still loading */
+.skeleton {
+  position: relative; overflow: hidden;
+  background: var(--surface2); border-radius: 8px;
+  color: transparent !important;
+}
+.skeleton::after {
+  content: ''; position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+
+/* Cards lift slightly on hover so lists feel responsive */
+.app-card { transition: border-color .2s var(--ease-out), transform .2s var(--ease-out); }
+.app-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .auto-reveal { opacity: 1; transform: none; transition: none; }
+  .btn:active, .filter-btn:active, .role-opt:active { transform: none; }
+  .app-card:hover { transform: none; }
+  .skeleton::after { animation: none; }
+}
