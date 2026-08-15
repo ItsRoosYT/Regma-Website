@@ -230,3 +230,46 @@ function and redeploy. The brand colours used are:
 | Brass rule | `#b3862d` |
 | Body text | `#2a2620` |
 | Muted text | `#6f6a5c` |
+
+---
+
+## Turning on "Confirm email" (do this LAST)
+
+**Order matters.** Enabling confirmation before custom SMTP is configured
+locks every new applicant out — Supabase's built-in mailer refuses to
+deliver to anyone outside the project team.
+
+1. **Configure custom SMTP first**
+   Authentication → Emails → SMTP Settings:
+
+   | Field | Value |
+   |---|---|
+   | Host | `smtp.resend.com` |
+   | Port | `465` |
+   | Username | `resend` (literally this word) |
+   | Password | your Resend API key |
+   | Sender email | `noreply@regma.se` |
+   | Sender name | `Regma IT AB` |
+
+2. **Brand the email**
+   Authentication → Emails → **Confirm signup** → paste
+   `supabase/email-templates/confirm-signup.html`. The default template is
+   plain text and reads like spam; this one matches the site.
+
+3. **Allow the landing page**
+   Authentication → URL Configuration → **Redirect URLs**, add:
+   - `https://regma.se/confirmed.html`
+   - `https://regma.se/portal.html`
+
+   Without this Supabase refuses the redirect and the link dead-ends.
+
+4. **Send yourself a test signup** with an address that is not the Resend
+   account address. Confirm the email arrives, the button works, and you
+   land on the branded confirmation page.
+
+5. **Only then** turn on Authentication → Sign In / Providers →
+   **Confirm email**.
+
+### Why bother
+With it off, anyone can register using an address they do not own —
+including your dad's, or a client's — and then apply as that person.

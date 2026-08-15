@@ -1349,3 +1349,111 @@ html.light .role-pill.role-editor { color: #8a6520; }
 }
 .role-select:hover { border-color: var(--teal); }
 html.light .role-select:hover { border-color: var(--gold); }
+
+/* ═══════════════════════════════════════════════
+   21 · EMAIL CONFIRMATION LANDING
+   ═══════════════════════════════════════════════ */
+.confirm-page {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 28px 20px;
+  position: relative; isolation: isolate;
+  background: var(--bg);
+}
+.confirm-page::before {
+  content: ''; position: absolute; inset: 0; z-index: -2;
+  background: url('assets/img/hero-forest.jpg') center/cover no-repeat;
+  opacity: .30;
+}
+.confirm-page::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, var(--scrim-top), var(--scrim-bottom));
+}
+html.light .confirm-page::before { opacity: .18; }
+
+.confirm-card {
+  width: min(560px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: clamp(30px, 5vw, 48px) clamp(24px, 5vw, 46px);
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,.4);
+}
+html.light .confirm-card { box-shadow: 0 26px 60px rgba(60,48,28,.18); }
+
+.confirm-mark {
+  width: 62px; height: 62px; margin: 0 auto 20px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  animation: markPop .34s var(--ease-out);
+}
+.confirm-mark svg { width: 30px; height: 30px; }
+.confirm-mark--ok { background: var(--teal-dim); color: var(--teal); }
+.confirm-mark--warn { background: rgba(179,134,45,.14); color: var(--gold); }
+@keyframes markPop { from { transform: scale(.7); opacity: 0 } to { transform: none; opacity: 1 } }
+
+.confirm-eyebrow {
+  font-size: 11px; font-weight: 800; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+.confirm-card h1 {
+  font-size: clamp(23px, 3.4vw, 31px);
+  line-height: 1.2; letter-spacing: -.02em;
+  color: var(--text); margin-bottom: 12px;
+}
+.confirm-lede {
+  font-size: 14.5px; line-height: 1.65; color: var(--muted);
+  max-width: 42ch; margin: 0 auto;
+}
+
+.confirm-actions {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  margin: 26px 0 0;
+}
+
+.confirm-next {
+  list-style: none; margin: 26px auto 0; padding: 20px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 9px;
+  text-align: left; max-width: 380px;
+}
+.confirm-next li {
+  position: relative; padding-left: 24px;
+  font-size: 13.5px; color: var(--muted); line-height: 1.5;
+}
+.confirm-next li::before {
+  content: '✓'; position: absolute; left: 0; top: 0;
+  color: var(--teal); font-weight: 800;
+}
+html.light .confirm-next li::before { color: var(--gold); }
+
+.confirm-resend { display: flex; gap: 8px; margin: 22px auto 0; max-width: 400px; }
+.confirm-resend input { flex: 1; }
+.confirm-note {
+  margin-top: 12px; font-size: 13px; color: var(--teal);
+  background: var(--teal-dim); padding: 10px 14px; border-radius: 9px;
+}
+html.light .confirm-note { color: #1d5c45; background: var(--gold-dim); }
+
+.confirm-small { margin-top: 18px; font-size: 13px; color: var(--muted); }
+.confirm-small a { color: var(--teal); font-weight: 600; }
+html.light .confirm-small a { color: var(--gold); }
+
+.confirm-footer {
+  margin-top: 30px; padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px; color: var(--muted);
+}
+
+.confirm-spinner {
+  width: 34px; height: 34px; margin: 0 auto 20px;
+  border: 3px solid var(--border2); border-top-color: var(--teal);
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+
+@media (max-width: 520px) { .confirm-resend { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) {
+  .confirm-mark, .confirm-spinner { animation: none; }
+}

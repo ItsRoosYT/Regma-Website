@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email confirmed — Regma IT AB</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icon-180.png" />
+  <link rel="manifest" href="site.webmanifest" />
+  <meta name="theme-color" content="#0d0d10" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)" />
+  <script>/* set theme before first paint — avoids a dark flash for light-theme users */
+    try { if (localStorage.getItem('regma_theme') !== 'dark') document.documentElement.classList.add('light'); } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="visuals.css" />
+</head>
+<body>
+
+<main class="confirm-page">
+  <div class="confirm-card" id="confirm-card">
+
+    <!-- working -->
+    <div class="confirm-state" id="state-loading">
+      <div class="confirm-spinner" aria-hidden="true"></div>
+      <h1>Confirming your email…</h1>
+      <p>One moment.</p>
+    </div>
+
+    <!-- confirmed -->
+    <div class="confirm-state" id="state-ok" hidden>
+      <div class="confirm-mark confirm-mark--ok" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <p class="confirm-eyebrow">Regma IT AB</p>
+      <h1>You're all set<span id="ok-name"></span></h1>
+      <p class="confirm-lede">Your email is confirmed and your account is active. You can apply for roles and follow your applications from your portal.</p>
+
+      <div class="confirm-actions">
+        <a href="career.html" class="btn btn-primary">Browse open positions</a>
+        <a href="portal.html" class="btn">Go to my portal</a>
+      </div>
+
+      <ul class="confirm-next">
+        <li>Apply with a CV, or just describe your experience</li>
+        <li>Track the status of every application you send</li>
+        <li>We reply to everyone — including when the answer is no</li>
+      </ul>
+    </div>
+
+    <!-- link expired or already used -->
+    <div class="confirm-state" id="state-expired" hidden>
+      <div class="confirm-mark confirm-mark--warn" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
+      </div>
+      <p class="confirm-eyebrow">Regma IT AB</p>
+      <h1>This link has expired</h1>
+      <p class="confirm-lede">Confirmation links are single-use and time-limited. Enter your email and we'll send a fresh one.</p>
+
+      <form class="confirm-resend" onsubmit="resend(event)">
+        <input type="email" id="resend-email" placeholder="your@email.com" required aria-label="Your email address" />
+        <button type="submit" class="btn btn-primary">Send a new link</button>
+      </form>
+      <div class="confirm-note" id="resend-note" hidden></div>
+
+      <p class="confirm-small">Already confirmed? <a href="auth.html">Sign in instead</a>.</p>
+    </div>
+
+    <!-- something else went wrong -->
+    <div class="confirm-state" id="state-error" hidden>
+      <div class="confirm-mark confirm-mark--warn" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
+      </div>
+      <p class="confirm-eyebrow">Regma IT AB</p>
+      <h1>We couldn't confirm that link</h1>
+      <p class="confirm-lede" id="error-detail">Something went wrong on the way here.</p>
+      <div class="confirm-actions">
+        <a href="auth.html" class="btn btn-primary">Go to sign in</a>
+        <a href="contact.html" class="btn">Contact us</a>
+      </div>
+    </div>
+
+    <p class="confirm-footer">Regma IT AB · Org.nr 559373-8080 · Göteborg</p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="components.js"></script>
+<script>
+function show(id) {
+  document.querySelectorAll('.confirm-state').forEach(el => el.hidden = true);
+  document.getElementById(id).hidden = false;
+}
+
+(async () => {
+  // Supabase returns either a session (in the hash) or an error description.
+  const hash = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+  const query = new URLSearchParams(location.search);
+  const errCode = hash.get('error_code') || query.get('error_code') || '';
+  const errDesc = hash.get('error_description') || query.get('error_description') || '';
+
+  if (errCode || errDesc) {
+    const expired = /expired|invalid|already/i.test(errCode + ' ' + errDesc);
+    if (expired) { show('state-expired'); return; }
+    document.getElementById('error-detail').textContent =
+      decodeURIComponent(errDesc).replace(/\+/g, ' ') || 'Something went wrong on the way here.';
+    show('state-error');
+    return;
+  }
+
+  // The SDK picks the tokens out of the URL itself; give it a moment.
+  let session = null;
+  for (let i = 0; i < 12 && !session; i++) {
+    session = (await sb.auth.getSession()).data.session;
+    if (!session) await new Promise(r => setTimeout(r, 150));
+  }
+
+  if (!session) { show('state-expired'); return; }
+
+  const name = session.user?.user_metadata?.name;
+  if (name) document.getElementById('ok-name').textContent = ', ' + String(name).split(' ')[0];
+  show('state-ok');
+
+  // Tidy the tokens out of the address bar
+  history.replaceState(null, '', location.pathname);
+})();
+
+async function resend(e) {
+  e.preventDefault();
+  const email = document.getElementById('resend-email').value.trim();
+  const note = document.getElementById('resend-note');
+  const btn = e.target.querySelector('button');
+  btn.classList.add('loading');
+
+  const { error } = await sb.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: location.origin + '/confirmed.html' }
+  });
+
+  btn.classList.remove('loading');
+  note.hidden = false;
+  // Deliberately identical wording either way — telling a stranger whether an
+  // address is registered here would leak who has applied to us.
+  note.textContent = error && !/rate|limit/i.test(error.message)
+    ? 'If that address has an account with us, a new link is on its way.'
+    : (/rate|limit/i.test(error?.message || '')
+        ? 'Too many attempts just now — please wait a minute and try again.'
+        : 'If that address has an account with us, a new link is on its way.');
+}
+</script>
+</body>
+</html>

@@ -214,7 +214,11 @@ async function handleSignup(e) {
   const { error } = await sb.auth.signUp({
     email: document.getElementById('signup-email').value,
     password: pass,
-    options: { data: { name: document.getElementById('signup-name').value } }
+    options: {
+      data: { name: document.getElementById('signup-name').value },
+      // where the confirmation link lands once Confirm email is switched on
+      emailRedirectTo: window.location.origin + '/confirmed.html'
+    }
   });
 
   btn.classList.remove('loading');
