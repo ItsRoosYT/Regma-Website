@@ -182,6 +182,24 @@
 </main>
 
 <!-- ───── PLATSBANKEN EXPORT PANEL ───── -->
+<!-- ───── CV VIEWER ───── -->
+<div class="modal-overlay cv-modal" id="cv-modal" style="display:none">
+  <div class="cv-viewer" role="dialog" aria-modal="true" aria-label="CV preview">
+    <div class="cv-viewer__bar">
+      <div class="cv-viewer__meta">
+        <strong id="cv-title">CV</strong>
+        <span id="cv-sub"></span>
+      </div>
+      <div class="cv-viewer__actions">
+        <a class="btn" id="cv-newtab" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a>
+        <a class="btn" id="cv-download" download>⬇ Download</a>
+        <button class="btn cv-close" onclick="closeCV()" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="cv-viewer__body" id="cv-body"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="af-modal" style="display:none">
   <div class="modal" style="max-width:660px">
     <button class="modal-close" onclick="closeAF()">&times;</button>
@@ -253,6 +271,13 @@ let appsLoadError = null;
 let nlLoadError = null;
 let contactsLoadError = null;
 let currentAdmin = null;
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('cv-modal')?.style.display === 'flex') closeCV();
+});
+document.addEventListener('click', e => {
+  if (e.target.id === 'cv-modal') closeCV();
+});
 let currentFilter = 'all';
 let msgFilter = 'active';
 
@@ -413,7 +438,7 @@ function renderApps() {
     let content = '';
     if (app.type === 'cv') {
       content = `${app.cv_path
-        ? `<p><strong>CV:</strong> ${esc(app.cv_name||'document')} (${esc(app.cv_size||'')}) &nbsp; <a href="#" onclick="viewCV('${esc(app.cv_path)}');return false;" style="color:var(--teal);font-weight:600">⬇ View / download</a></p>`
+        ? `<p><strong>CV:</strong> ${esc(app.cv_name||'document')} (${esc(app.cv_size||'')}) &nbsp; <a href="#" onclick="viewCV('${esc(app.cv_path)}','${esc(app.cv_name || '')}');return false;" style="color:var(--teal);font-weight:600">👁 View CV</a></p>`
         : `<p><strong>CV:</strong> ${esc(app.cv_name||'')} (no file stored)</p>`}
         ${app.message?`<p><strong>Message:</strong> ${esc(app.message)}</p>`:''}`;
     } else {
@@ -457,32 +482,80 @@ function setFilter(status, btn) {
   renderApps();
 }
 
-async function viewCV(path) {
-  const { data, error } = await sb.storage.from('cvs').createSignedUrl(path, 120);
-  if (!error && data) { window.open(data.signedUrl, '_blank', 'noopener'); return; }
+async function viewCV(path, name) {
+  const { data, error } = await sb.storage.from('cvs').createSignedUrl(path, 300);
 
-  // Storage masks "denied" as "not found", so the raw message is misleading.
-  // Work out which it actually is: if we can list the folder, the file is
-  // genuinely gone; if listing is empty/denied too, it is a permissions gap.
+  if (error || !data) return explainCVFailure(path, error);
+
+  const file = name || path.split('/').pop() || 'CV';
+  const ext  = (file.split('.').pop() || '').toLowerCase();
+
+  document.getElementById('cv-title').textContent = file;
+  document.getElementById('cv-newtab').href = data.signedUrl;
+  const dl = document.getElementById('cv-download');
+  dl.href = data.signedUrl;
+  dl.setAttribute('download', file);
+
+  const body = document.getElementById('cv-body');
+  const sub  = document.getElementById('cv-sub');
+
+  if (ext === 'pdf') {
+    sub.textContent = 'PDF · link valid 5 minutes';
+    // Sandboxed: the document is served from Supabase (a different origin) and
+    // the sandbox withholds same-origin and script privileges, so nothing in an
+    // uploaded file can reach this page or the admin session.
+    body.innerHTML = '<iframe class="cv-frame" sandbox="allow-popups allow-popups-to-escape-sandbox" ' +
+                     'referrerpolicy="no-referrer" title="CV preview" src="' + encodeURI(data.signedUrl) + '#view=FitH"></iframe>';
+  } else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) {
+    sub.textContent = ext.toUpperCase() + ' · link valid 5 minutes';
+    body.innerHTML = '<img class="cv-image" alt="CV preview" src="' + encodeURI(data.signedUrl) + '">';
+  } else {
+    // Word documents cannot be rendered by the browser. Microsoft's online
+    // viewer would work but means sending an applicant's personal data to a
+    // third party, which is not something to do quietly under GDPR.
+    sub.textContent = ext.toUpperCase() + ' document';
+    body.innerHTML =
+      '<div class="cv-fallback">' +
+        '<div class="cv-fallback__icon">📄</div>' +
+        '<h3>' + esc(file) + '</h3>' +
+        '<p>Word documents cannot be displayed in the browser. Open or download it to read it.</p>' +
+        '<p class="cv-fallback__hint">Tip: asking applicants for PDFs keeps everything previewable here.</p>' +
+      '</div>';
+  }
+
+  document.getElementById('cv-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCV() {
+  document.getElementById('cv-modal').style.display = 'none';
+  // Drop the iframe so the signed URL stops being held open in the background
+  document.getElementById('cv-body').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+// Storage masks "denied" as "not found", so the raw message misleads. Work out
+// which it actually is rather than repeating it.
+async function explainCVFailure(path, error) {
   const msg = (error?.message || '').toLowerCase();
+  console.error('viewCV failed for path:', path, error);
+
   if (msg.includes('not found') || msg.includes('object')) {
     const folder = path.split('/')[0];
-    const { data: listing } = await sb.storage.from('cvs').list(folder, { limit: 100 });
     const file = path.split('/').slice(1).join('/');
+    const { data: listing } = await sb.storage.from('cvs').list(folder, { limit: 100 });
     if (listing && listing.length) {
       if (listing.some(o => o.name === file)) {
         showToast('The file exists but could not be opened — check the cvs bucket policies (004_cv_storage_access.sql).', 'error', 9000);
       } else {
-        showToast('This CV is no longer in storage. The application record still lists "' + (file || path) + '", but the file was removed.', 'error', 9000);
+        showToast('This CV is no longer in storage. The application still lists "' + (file || path) + '", but the file was removed.', 'error', 9000);
       }
     } else {
-      showToast('No permission to read CVs. Run 004_cv_storage_access.sql in the Supabase SQL editor — admins currently have no read policy on the cvs bucket.', 'error', 11000);
+      showToast('No permission to read CVs. Run 004_cv_storage_access.sql in the Supabase SQL editor — admins have no read policy on the cvs bucket yet.', 'error', 11000);
     }
-    console.error('viewCV failed for path:', path, error);
     return;
   }
   showToast('Could not open CV: ' + (error?.message || 'unknown error'), 'error', 7000);
-  console.error('viewCV failed for path:', path, error);
 }
 
 async function setStatus(id, status) {

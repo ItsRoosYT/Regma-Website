@@ -1235,3 +1235,67 @@ html.light .admin-tab.active { background: var(--teal); color: #fff; }
 .job-share:hover { border-color: var(--teal); color: var(--teal); }
 html.light .job-share:hover { border-color: var(--gold); color: var(--gold); }
 @media (max-width: 560px) { .job-share { display: none; } }
+
+/* ═══════════════════════════════════════════════
+   19 · CV VIEWER — read in place, no download round-trip
+   ═══════════════════════════════════════════════ */
+.cv-modal {
+  position: fixed; inset: 0; z-index: 9500;
+  display: none; align-items: center; justify-content: center;
+  padding: clamp(12px, 3vw, 34px);
+  background: rgba(6,8,10,.72);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+html.light .cv-modal { background: rgba(42,38,32,.55); }
+
+.cv-viewer {
+  width: min(1100px, 100%);
+  height: min(92vh, 1000px);
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 30px 90px rgba(0,0,0,.55);
+  animation: cvIn .2s var(--ease-out);
+}
+@keyframes cvIn { from { opacity:0; transform: translateY(8px) scale(.99) } to { opacity:1; transform:none } }
+
+.cv-viewer__bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.cv-viewer__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cv-viewer__meta strong {
+  font-size: 14px; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cv-viewer__meta span { font-size: 11.5px; color: var(--muted); }
+.cv-viewer__actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
+.cv-viewer__actions .btn { font-size: 12.5px; padding: 7px 13px; }
+.cv-close { padding: 7px 12px !important; font-size: 14px !important; }
+.cv-close:hover { border-color: #f87171; color: #f87171; }
+
+.cv-viewer__body {
+  flex: 1; min-height: 0;
+  background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+}
+.cv-frame { width: 100%; height: 100%; border: 0; background: #fff; }
+.cv-image { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.cv-fallback { text-align: center; padding: 40px 28px; max-width: 420px; }
+.cv-fallback__icon { font-size: 46px; margin-bottom: 10px; }
+.cv-fallback h3 { font-size: 16px; color: var(--text); margin-bottom: 10px; overflow-wrap: anywhere; }
+.cv-fallback p { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+.cv-fallback__hint { margin-top: 14px; font-size: 12px; opacity: .8; }
+
+@media (max-width: 700px) {
+  .cv-viewer { height: 100%; border-radius: 10px; }
+  .cv-viewer__actions .btn span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .cv-viewer { animation: none; } }

@@ -235,9 +235,39 @@ async function submitApp(e, type) {
       if (window.showToast) showToast('Please attach your CV file.', 'error');
       return;
     }
-    // Upload the actual file to Supabase Storage (private bucket)
+
+    // Validate for real. The accept="" attribute is only a file-picker hint —
+    // it does not stop anything being submitted. These files are later opened
+    // by an admin, so the upload is the right place to be strict.
+    const okExt  = /.(pdf|doc|docx)$/i.test(file.name);
+    const okType = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ''            // some browsers report no type for .doc
+    ].includes(file.type);
+    if (!okExt || !okType) {
+      btn.classList.remove('loading');
+      if (window.showToast) showToast('Please upload a PDF or Word document (.pdf, .doc, .docx).', 'error', 6000);
+      return;
+    }
+    const MAX_MB = 10;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      btn.classList.remove('loading');
+      if (window.showToast) showToast('That file is ' + (file.size / 1048576).toFixed(1) + ' MB — please keep your CV under ' + MAX_MB + ' MB.', 'error', 6000);
+      return;
+    }
+    if (file.size === 0) {
+      btn.classList.remove('loading');
+      if (window.showToast) showToast('That file appears to be empty.', 'error');
+      return;
+    }
+
+    // Upload the actual file to Supabase Storage (private bucket).
+    // contentType is pinned so the file can never be served back as HTML.
     const path = currentUser.id + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const { error: upErr } = await sb.storage.from('cvs').upload(path, file, { upsert: false });
+    const { error: upErr } = await sb.storage.from('cvs')
+      .upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
     if (upErr) {
       btn.classList.remove('loading');
       if (window.showToast) showToast('Could not upload CV: ' + upErr.message, 'error');
