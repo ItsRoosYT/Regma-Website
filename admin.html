@@ -61,6 +61,7 @@
         <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Job Positions</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" id="import-pack-btn" style="font-size:12.5px;padding:8px 16px;border-color:var(--teal);color:var(--teal)" onclick="importJobPack()">⇪ Import job pack (49)</button>
+          <button class="btn" id="af-queue-btn" style="font-size:12.5px;padding:8px 16px;border-color:var(--teal);color:var(--teal)" onclick="openAfQueue()" title="Step through every confirmed vacancy that is not on Platsbanken yet">↗ Platsbanken</button>
           <button class="btn btn-primary" style="font-size:12.5px;padding:8px 16px" onclick="openJobForm()">＋ Add position</button>
         </div>
       </div>
@@ -89,11 +90,37 @@
           <div class="form-row"><label>Responsibilities <span class="hint">(one per line)</span></label><textarea id="job-responsibilities" rows="4" placeholder="Run client discovery sessions&#10;Design IT strategies&#10;…"></textarea></div>
           <div class="form-row"><label>Requirements <span class="hint">(one per line)</span></label><textarea id="job-requirements" rows="4" placeholder="5+ years experience&#10;Fluent in Swedish & English&#10;…"></textarea></div>
           <div class="form-row"><label>Nice to have <span class="hint">(one per line)</span></label><textarea id="job-nice" rows="3" placeholder="Cloud certifications&#10;…"></textarea></div>
-          <div class="form-row"><label>Application deadline <span class="hint">(for Platsbanken — optional)</span></label><input type="date" id="job-deadline" /></div>
-          <div class="admin-grid-2">
-            <div class="form-row"><label>Contact person <span class="hint">(optional)</span></label><input type="text" id="job-contact-name" placeholder="Name" /></div>
-            <div class="form-row"><label>Contact email <span class="hint">(optional)</span></label><input type="email" id="job-contact-email" placeholder="name@regma.se" /></div>
-          </div>
+          <fieldset class="af-form-block">
+            <legend>For Platsbanken <span class="hint">— only needed if this role goes on Arbetsförmedlingen</span></legend>
+            <div class="form-row af-occ">
+              <label for="job-occ-search">Yrke för Platsbanken <span class="hint">(Arbetsförmedlingen's occupation list — type and pick)</span></label>
+              <input type="text" id="job-occ-search" autocomplete="off" placeholder="e.g. IT-konsult, systemutvecklare, supporttekniker" />
+              <input type="hidden" id="job-occ-id" />
+              <div class="af-occ-list" id="job-occ-list" role="listbox" hidden></div>
+              <p class="field-hint" id="job-occ-chosen"></p>
+            </div>
+            <div class="admin-grid-2">
+              <div class="form-row"><label>Sista ansökningsdag <span class="hint">(1–180 days ahead)</span></label><input type="date" id="job-deadline" /></div>
+              <div class="form-row"><label>Antal platser</label><input type="number" id="job-positions" min="1" max="499" value="1" /></div>
+            </div>
+            <div class="admin-grid-2">
+              <div class="form-row"><label>Omfattning</label>
+                <select id="job-extent"><option value="Heltid">Heltid (full-time)</option><option value="Deltid">Deltid (part-time)</option></select>
+              </div>
+              <div class="form-row"><label>Varaktighet</label>
+                <select id="job-duration">
+                  <option value="Tillsvidare">Tillsvidare (permanent)</option>
+                  <option value="6 månader eller längre">6 månader eller längre</option>
+                  <option value="3 - 6 månader">3–6 månader</option>
+                  <option value="11 dagar - 3 månader">11 dagar – 3 månader</option>
+                </select>
+              </div>
+            </div>
+            <div class="admin-grid-2">
+              <div class="form-row"><label>Contact person <span class="hint">(default: Isaac Djomo)</span></label><input type="text" id="job-contact-name" placeholder="Isaac Djomo" /></div>
+              <div class="form-row"><label>Contact email <span class="hint">(default: djomoi@yahoo.com)</span></label><input type="email" id="job-contact-email" placeholder="djomoi@yahoo.com" /></div>
+            </div>
+          </fieldset>
           <label class="admin-check"><input type="checkbox" id="job-open" checked /> Visible on the careers page (open for applications)</label>
           <label class="admin-check"><input type="checkbox" id="job-verified" /> <span><strong>Confirmed Regma vacancy</strong> — we are genuinely recruiting for this role and may advertise it externally (required for Platsbanken export)</span></label>
           <div class="admin-form-actions">
@@ -250,6 +277,17 @@
     </div>
 
     <div id="af-ready" style="display:none">
+      <!-- Direct publishing through Arbetsförmedlingen's API -->
+      <div class="af-auto" id="af-auto">
+        <div class="af-auto-head">
+          <strong>Publish directly</strong>
+          <span class="af-env" id="af-auto-env"></span>
+        </div>
+        <div id="af-auto-body"><p class="af-auto-muted">Checking the connection…</p></div>
+      </div>
+
+      <details class="af-manual" id="af-manual">
+      <summary>Copy the fields by hand instead</summary>
       <ol class="af-steps">
         <li><strong>One-time setup:</strong> the organisation must be activated with the code Arbetsförmedlingen posts to Regma's digital mailbox (or by letter to the workplace address). It expires after 30 days. The company signatory activates it and accepts the <a href="https://arbetsformedlingen.se/for-arbetsgivare/rekrytera/annonsera-i-platsbanken/annonseringsvillkor" target="_blank" rel="noopener">annonseringsvillkor</a> with their own BankID.</li>
         <li>Open <a href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Annonsera i Platsbanken</a> and sign in with the employer account (free).</li>
@@ -270,6 +308,14 @@
         <button class="btn btn-primary" onclick="copyAllAF()">Copy full ad text</button>
         <a class="btn" href="https://arbetsformedlingen.se/for-arbetsgivare/kom-igang-med-din-rekrytering/annonsera-i-platsbanken" target="_blank" rel="noopener">Open Platsbanken ↗</a>
         <button class="btn" id="af-mark-posted" style="margin-left:auto;border-color:var(--teal);color:var(--teal)" onclick="markPostedToAF()">Mark as posted to Platsbanken</button>
+      </div>
+      </details>
+
+      <!-- Walk through every ready role without closing the panel -->
+      <div class="af-queue-nav" id="af-queue-nav" hidden>
+        <span id="af-queue-pos"></span>
+        <button class="btn" onclick="afQueueStep(-1)">← Previous</button>
+        <button class="btn btn-primary" onclick="afQueueStep(1)">Next ready role →</button>
       </div>
     </div>
   </div>
@@ -902,6 +948,7 @@ async function loadJobs() {
   }
   allAdminJobs = (data || []).sort((a, b) => jobExpired(a) - jobExpired(b)); // expired sink to the bottom
   renderAdminJobs();
+  updateAfQueueButton();
 }
 
 function renderAdminJobs() {
@@ -925,7 +972,8 @@ function renderAdminJobs() {
         ? '<span class="job-pill expired" title="Application deadline has passed — hidden from the public careers page">⏱ Expired</span>'
         : `<span class="job-pill ${j.is_open ? 'open' : 'closed'}">${j.is_open ? 'Open' : 'Hidden'}</span>`}
       ${j.verified_opening ? '<span class="job-pill verified" title="Confirmed Regma vacancy — cleared for external publishing">✓ Verified</span>' : ''}
-      ${j.posted_to_af ? '<span class="job-pill posted" title="Already posted to Platsbanken">↗ Platsbanken</span>' : ''}
+      ${j.posted_to_af ? '<span class="job-pill posted" title="Already posted to Platsbanken">↗ Platsbanken' + (j.af_status === 'UNPUBLISHED' ? ' (taken down)' : '') + '</span>' : ''}
+      ${j.af_last_error ? '<span class="job-pill" style="color:#f87171;border-color:#f87171" title="' + esc(j.af_last_error) + '">⚠ Platsbanken error</span>' : ''}
       <div class="admin-row-actions">
         ${expired ? `
         <button class="btn" style="border-color:var(--teal);color:var(--teal)" onclick="extendJob('${j.id}', 14)">↻ Extend 14 days</button>
@@ -980,6 +1028,8 @@ function openJobForm() {
   document.getElementById('job-id').value = '';
   document.getElementById('job-open').checked = true;
   document.getElementById('job-verified').checked = false;
+  // reset() leaves hidden inputs alone, so clear the occupation explicitly
+  setOccupation(null, null);
   document.getElementById('job-form-title').textContent = 'Add a position';
   document.getElementById('job-form-card').style.display = '';
   document.getElementById('job-form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1004,6 +1054,11 @@ function editJob(id) {
   document.getElementById('job-deadline').value = j.application_deadline || '';
   document.getElementById('job-contact-name').value = j.contact_name || '';
   document.getElementById('job-contact-email').value = j.contact_email || '';
+  document.getElementById('job-positions').value = j.positions || 1;
+  document.getElementById('job-extent').value = /del|part/i.test(j.extent || '') ? 'Deltid' : 'Heltid';
+  document.getElementById('job-duration').value =
+    [...document.getElementById('job-duration').options].some(o => o.value === j.duration) ? j.duration : 'Tillsvidare';
+  setOccupation(j.af_occupation_id, j.af_occupation_label);
   document.getElementById('job-form-title').textContent = 'Edit position';
   document.getElementById('job-form-card').style.display = '';
   document.getElementById('job-form-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1026,7 +1081,13 @@ async function saveJob(e) {
     verified_opening: document.getElementById('job-verified').checked,
     application_deadline: document.getElementById('job-deadline').value || null,
     contact_name: document.getElementById('job-contact-name').value.trim(),
-    contact_email: document.getElementById('job-contact-email').value.trim()
+    contact_email: document.getElementById('job-contact-email').value.trim(),
+    positions: Math.max(1, parseInt(document.getElementById('job-positions').value, 10) || 1),
+    extent: document.getElementById('job-extent').value,
+    duration: document.getElementById('job-duration').value,
+    af_occupation_id: document.getElementById('job-occ-id').value || null,
+    af_occupation_label: document.getElementById('job-occ-id').value
+      ? document.getElementById('job-occ-search').value.trim() : null
   };
   const btn = e.target.querySelector('button[type="submit"]');
   btn.classList.add('loading');
@@ -1036,9 +1097,22 @@ async function saveJob(e) {
 
   // If the Platsbanken columns haven't been added to the database yet, save
   // the core fields anyway so nothing is lost, and say what's missing.
+  // First retry: only the newest columns (migration 006) are missing.
+  if (error && /af_occupation/i.test(error.message || '')) {
+    const { af_occupation_id, af_occupation_label, ...without006 } = row;
+    const retry = await save(without006);
+    if (!retry.error) {
+      btn.classList.remove('loading');
+      showToast('Saved — but the occupation needs migration 006_platsbanken_api.sql before it can be stored.', 'info', 8000);
+      closeJobForm(); await loadJobs();
+      return;
+    }
+    error = retry.error;
+  }
   if (error && /column|schema/i.test(error.message || '')) {
     const core = { ...row };
-    ['verified_opening', 'application_deadline', 'contact_name', 'contact_email'].forEach(k => delete core[k]);
+    ['verified_opening', 'application_deadline', 'contact_name', 'contact_email',
+     'positions', 'extent', 'duration', 'af_occupation_id', 'af_occupation_label'].forEach(k => delete core[k]);
     const retry = await save(core);
     if (!retry.error) {
       btn.classList.remove('loading');
@@ -1064,6 +1138,66 @@ async function toggleJobOpen(id) {
   showToast(j.is_open ? 'Position hidden.' : 'Position is now visible.', 'success');
   await loadJobs();
 }
+
+/* ───────── OCCUPATION PICKER ─────────
+   Platsbanken files every ad under an occupation from Arbetsförmedlingen's
+   own list (the JobTech taxonomy). Its search API is public and allows
+   browser calls, so the admin can pick the exact entry here, once, instead
+   of hunting for it on Arbetsförmedlingen's form every time. */
+const TAXONOMY_SEARCH = 'https://taxonomy.api.jobtechdev.se/v1/taxonomy/suggesters/autocomplete';
+
+function setOccupation(id, label) {
+  document.getElementById('job-occ-id').value = id || '';
+  document.getElementById('job-occ-search').value = label || '';
+  const chosen = document.getElementById('job-occ-chosen');
+  chosen.textContent = id ? '✓ Platsbanken will list this as “' + label + '”' : '';
+  chosen.className = 'field-hint' + (id ? ' is-ok' : '');
+  document.getElementById('job-occ-list').hidden = true;
+}
+
+(() => {
+  const input = document.getElementById('job-occ-search');
+  const list = document.getElementById('job-occ-list');
+  let timer = null, seq = 0;
+
+  input.addEventListener('input', () => {
+    // Typing again means the previous choice no longer matches the box
+    document.getElementById('job-occ-id').value = '';
+    document.getElementById('job-occ-chosen').textContent = '';
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < 2) { list.hidden = true; return; }
+    timer = setTimeout(async () => {
+      const mine = ++seq;
+      try {
+        const res = await fetch(TAXONOMY_SEARCH + '?type=occupation-name&query-string=' + encodeURIComponent(q));
+        const items = res.ok ? await res.json() : [];
+        if (mine !== seq) return;               // a newer search already replied
+        list.innerHTML = items.length
+          ? items.slice(0, 12).map(o =>
+              `<button type="button" role="option" data-id="${esc(o['taxonomy/id'])}" data-label="${esc(o['taxonomy/preferred-label'])}">${esc(o['taxonomy/preferred-label'])}</button>`).join('')
+          : '<p class="af-occ-empty">No match. Try a broader word, e.g. “IT”, “utvecklare”, “support”.</p>';
+        list.hidden = false;
+      } catch (e) {
+        list.innerHTML = '<p class="af-occ-empty">Could not reach Arbetsförmedlingen’s occupation list. Check the connection and try again.</p>';
+        list.hidden = false;
+      }
+    }, 250);
+  });
+
+  list.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-id]');
+    if (b) setOccupation(b.dataset.id, b.dataset.label);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') list.hidden = true;
+    if (e.key === 'Enter' && !list.hidden) {        // Enter picks the top hit instead of submitting
+      const first = list.querySelector('button[data-id]');
+      if (first) { e.preventDefault(); setOccupation(first.dataset.id, first.dataset.label); }
+    }
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.af-occ')) list.hidden = true; });
+})();
 
 /* ───────── PLATSBANKEN EXPORT ───────── */
 let afCurrentText = '';
@@ -1170,6 +1304,8 @@ function exportToAF(id) {
   } else {
     blocked.style.display = 'none'; ready.style.display = '';
     renderAFFields();
+    renderAfAuto(j);
+    updateAfQueueNav();
     // "Mark as posted" reflects current state
     const mark = document.getElementById('af-mark-posted');
     mark.textContent = j.posted_to_af ? '✓ Marked as posted' : 'Mark as posted to Platsbanken';
@@ -1177,6 +1313,164 @@ function exportToAF(id) {
   }
   document.getElementById('af-modal').style.display = '';
   document.body.style.overflow = 'hidden';
+}
+
+/* ───────── DIRECT PUBLISHING (platsbanken Edge Function) ───────── */
+let afConfig = null;          // { configured, missing, env } — fetched once per page load
+
+async function afCall(action, jobId) {
+  const { data: { session } } = await sb.auth.getSession();
+  let res;
+  try {
+    res = await fetch(SUPABASE_URL + '/functions/v1/platsbanken', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, jobId }),
+    });
+  } catch (e) {
+    return { error: 'Could not reach the server. Check your connection.' };
+  }
+  if (res.status === 404) return { error: 'not-deployed' };
+  const body = await res.json().catch(() => ({ error: 'HTTP ' + res.status }));
+  return res.ok ? body : { ...body, error: body.error || ('HTTP ' + res.status) };
+}
+
+// Readable status line for one role
+function afStatusLine(j) {
+  if (!j.af_ad_id) return '';
+  const where = j.af_env === 'sandbox' ? ' (test environment — not public)' : '';
+  const when = j.af_last_sync ? ' · checked ' + new Date(j.af_last_sync).toLocaleString('sv-SE') : '';
+  return `Ad <b>${esc(j.af_ad_id)}</b> — ${esc(j.af_status || 'unknown')}${where}${when}`;
+}
+
+async function renderAfAuto(j) {
+  const body = document.getElementById('af-auto-body');
+  const envTag = document.getElementById('af-auto-env');
+  const manual = document.getElementById('af-manual');
+  body.innerHTML = '<p class="af-auto-muted">Checking the connection…</p>';
+
+  if (!afConfig) afConfig = await afCall('config');
+
+  if (afConfig.error === 'not-deployed' || (afConfig.error && !afConfig.env)) {
+    envTag.textContent = 'not set up';
+    envTag.className = 'af-env af-env--off';
+    body.innerHTML = `<p class="af-auto-muted">Direct publishing isn't switched on yet, so use the copy fields below for now.
+      Once it's on, this panel publishes the ad with one click. The setup steps are in
+      <code>supabase/PLATSBANKEN_API.md</code>.</p>`;
+    manual.open = true;
+    return;
+  }
+
+  // The function is deployed — even without credentials it can check the ad
+  const pre = await afCall('preview', j.id);
+  if (pre.error) { body.innerHTML = `<p class="af-auto-err">${esc(pre.error)}</p>`; manual.open = true; return; }
+
+  envTag.textContent = !pre.configured ? 'waiting for credentials' : (pre.env === 'prod' ? 'LIVE' : 'test mode');
+  envTag.className = 'af-env ' + (!pre.configured ? 'af-env--off' : pre.env === 'prod' ? 'af-env--live' : 'af-env--test');
+
+  const problems = pre.problems || [];
+  const checklist = problems.length
+    ? `<p class="af-auto-muted">Fix these before publishing:</p><ul class="af-problems">${problems.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+       <button class="btn" onclick="closeAF(); editJob('${j.id}')">Edit position</button>`
+    : '<p class="af-auto-ok">✓ Everything Platsbanken requires is filled in.</p>';
+
+  let actions = '';
+  if (!pre.configured) {
+    actions = `<p class="af-auto-muted">Not connected to Arbetsförmedlingen yet — missing: ${esc((pre.missing || []).join(', '))}.
+      Checking the ad works already; the publish button appears once those are added.</p>`;
+    manual.open = true;
+  } else if (!problems.length) {
+    manual.open = false;
+    actions = j.af_ad_id && j.af_status !== 'UNPUBLISHED'
+      ? `<div class="af-auto-actions">
+           <button class="btn btn-primary" onclick="afAction('update','${j.id}',this)">Update ad with current text</button>
+           <button class="btn" onclick="afAction('status','${j.id}',this)">Check status</button>
+           <button class="btn af-danger" onclick="afAction('unpublish','${j.id}',this)">Take the ad down</button>
+         </div>`
+      : `<div class="af-auto-actions">
+           <button class="btn btn-primary" onclick="afAction('publish','${j.id}',this)">${pre.env === 'prod' ? 'Publish on Platsbanken' : 'Send test ad (sandbox)'}</button>
+         </div>`;
+  }
+
+  body.innerHTML = `
+    ${j.af_ad_id ? `<p class="af-auto-status">${afStatusLine(j)}</p>` : ''}
+    ${j.af_last_error ? `<p class="af-auto-err">Last attempt failed: ${esc(j.af_last_error)}</p>` : ''}
+    ${checklist}
+    ${actions}`;
+}
+
+async function afAction(action, jobId, btn) {
+  const j = allAdminJobs.find(x => x.id === jobId);
+  if (action === 'publish' && afConfig?.env === 'prod' &&
+      !confirm('Publish “' + j.title + '” on Platsbanken now?\n\nIt becomes visible to every jobseeker in Sweden within minutes, and real people will apply.')) return;
+  if (action === 'unpublish' &&
+      !confirm('Take “' + j.title + '” down from Platsbanken?')) return;
+
+  btn.classList.add('loading');
+  const r = await afCall(action, jobId);
+  btn.classList.remove('loading');
+
+  if (r.error) {
+    showToast(r.problems ? 'Fix the listed problems first.' : r.error, 'error', 9000);
+  } else {
+    const msg = {
+      publish: r.env === 'prod' ? 'Published on Platsbanken — ad ' + r.af_ad_id : 'Test ad accepted by the sandbox — ad ' + r.af_ad_id,
+      update: 'Platsbanken ad updated.',
+      unpublish: 'Ad taken down from Platsbanken.',
+      status: 'Platsbanken status: ' + r.status,
+    }[action];
+    showToast(msg, 'success', 6000);
+  }
+  await loadJobs();
+  const fresh = allAdminJobs.find(x => x.id === jobId);
+  if (fresh) renderAfAuto(fresh);
+}
+
+/* ───────── READY QUEUE ─────────
+   Confirmed vacancies that are still open, not expired and not yet on
+   Platsbanken. The panel steps through them so nothing is forgotten. */
+function afReadyJobs() {
+  return allAdminJobs.filter(j =>
+    j.verified_opening && j.is_open && !jobExpired(j) &&
+    !j.posted_to_af && !(j.af_ad_id && j.af_env === 'prod' && j.af_status !== 'UNPUBLISHED'));
+}
+
+function openAfQueue() {
+  const ready = afReadyJobs();
+  if (!ready.length) {
+    const verified = allAdminJobs.filter(j => j.verified_opening).length;
+    showToast(verified
+      ? 'Every confirmed vacancy is already on Platsbanken.'
+      : 'No role is marked as a confirmed vacancy yet. Edit a real opening and tick “Confirmed Regma vacancy” first.', 'info', 8000);
+    return;
+  }
+  exportToAF(ready[0].id);
+}
+
+function updateAfQueueNav() {
+  const ready = afReadyJobs();
+  const nav = document.getElementById('af-queue-nav');
+  const i = ready.findIndex(j => j.id === afCurrentJobId);
+  // Hidden when there is nothing to step to: no ready roles, or only this one
+  nav.hidden = ready.length === 0 || (ready.length === 1 && i === 0);
+  document.getElementById('af-queue-pos').textContent = ready.length
+    ? (i === -1 ? ready.length + ' role(s) ready for Platsbanken' : 'Role ' + (i + 1) + ' of ' + ready.length + ' ready for Platsbanken')
+    : '';
+}
+
+function afQueueStep(dir) {
+  const ready = afReadyJobs();
+  if (!ready.length) return;
+  const i = ready.findIndex(j => j.id === afCurrentJobId);
+  const next = ready[(i + dir + ready.length) % ready.length];
+  exportToAF(next.id);
+}
+
+function updateAfQueueButton() {
+  const btn = document.getElementById('af-queue-btn');
+  if (!btn) return;
+  const n = afReadyJobs().length;
+  btn.textContent = '↗ Platsbanken' + (n ? ' (' + n + ' ready)' : '');
 }
 
 async function markPostedToAF() {
@@ -1191,9 +1485,16 @@ async function markPostedToAF() {
       : 'Could not save: ' + error.message, 'error', 6000);
     return;
   }
-  showToast('Marked as posted to Platsbanken.', 'success');
-  closeAF();
   await loadJobs();
+  // Straight on to the next role, so posting several is one continuous flow
+  const next = afReadyJobs()[0];
+  if (next) {
+    showToast('Marked as posted. Next up: ' + next.title, 'success', 5000);
+    exportToAF(next.id);
+  } else {
+    showToast('Marked as posted — that was the last ready role.', 'success', 5000);
+    closeAF();
+  }
 }
 
 function closeAF() {
