@@ -131,6 +131,19 @@ function show(id) {
 
   // Tidy the tokens out of the address bar
   history.replaceState(null, '', location.pathname);
+
+  // If they signed up in order to apply, carry on with that application.
+  let next = null;
+  try { next = localStorage.getItem('regma_after_confirm'); localStorage.removeItem('regma_after_confirm'); } catch (e) {}
+  if (next && /^apply\.html\?role=/.test(next)) {
+    const role = decodeURIComponent(next.split('role=')[1] || '');
+    const primary = document.querySelector('#state-ok .confirm-actions .btn-primary');
+    primary.href = next;
+    primary.textContent = 'Continue your application →';
+    document.querySelector('#state-ok .confirm-lede').textContent =
+      'Your email is confirmed. Taking you back to your application for ' + role + '…';
+    setTimeout(() => { location.href = next; }, 2500);
+  }
 })();
 
 async function resend(e) {

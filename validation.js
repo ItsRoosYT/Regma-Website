@@ -9,12 +9,6 @@
 /* Swedish mobile operator prefixes (national form, after the leading 0) */
 const SE_MOBILE_PREFIXES = ['70', '72', '73', '76', '79'];
 
-/* Swedish landline area codes, longest first so 08 doesn't swallow 084x */
-const SE_AREA_CODES = [
-  '11', '13', '16', '18', '19', '21', '23', '26', '31', '33', '35', '36',
-  '40', '42', '44', '46', '54', '60', '63', '90', '8',
-];
-
 /**
  * Validate and normalise a phone number.
  * Returns { ok, e164, display, reason, kind }
@@ -73,6 +67,11 @@ function validatePhone(raw) {
     return { ok: true, kind: 'international', e164: '+' + digits, display: '+' + digits };
   }
 
+  // A Swedish mobile with the leading 0 forgotten: 705081788
+  if (digits.length === 9 && SE_MOBILE_PREFIXES.includes(digits.slice(0, 2))) {
+    return { ok: true, kind: 'se-mobile', e164: '+46' + digits, display: formatSwedish(digits) };
+  }
+
   // No +, doesn't start 0, isn't Swedish — ambiguous, so ask rather than guess
   return {
     ok: false,
@@ -85,11 +84,11 @@ function classifySwedish(national) {
   if (SE_MOBILE_PREFIXES.includes(national.slice(0, 2))) {
     return national.length === 9 ? 'se-mobile' : null;
   }
-  const area = SE_AREA_CODES.find(a => national.startsWith(a));
-  if (area) {
-    // Swedish landlines run 7–9 digits nationally, area code included
-    return national.length >= 7 && national.length <= 9 ? 'se-landline' : null;
-  }
+  // Landlines: Sweden has ~290 area codes (0303 Kungälv, 0522 Uddevalla…),
+  // far too many to list. Rather than reject a real number, accept any
+  // national number of 7–9 digits that does not begin 0 or 7 (7x is mobile
+  // and non-geographic, handled above).
+  if (/^[1-689]\d{6,8}$/.test(national)) return 'se-landline';
   return null;
 }
 

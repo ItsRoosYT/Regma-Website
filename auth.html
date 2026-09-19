@@ -63,6 +63,26 @@
       <h2>Welcome back</h2>
       <p class="auth-subtitle">Sign in to your account or create a new one to get started.</p>
 
+      <!-- Shown only when the visitor came here to apply for a role -->
+      <div class="auth-apply-note" id="auth-apply-note" hidden>
+        <strong>To apply for <span id="auth-apply-role"></span></strong>
+        New here? Create a free account (it takes a minute). Already have one? Sign in.
+        <span class="auth-apply-alt">Can't get an account to work? Email your CV to
+          <a href="mailto:djomoi@yahoo.com" id="auth-apply-mail">djomoi@yahoo.com</a> instead.</span>
+      </div>
+
+      <!-- Replaces the forms once a confirmation email has been sent -->
+      <div class="auth-check-inbox" id="auth-check-inbox" hidden>
+        <div class="auth-check-icon" aria-hidden="true">✉</div>
+        <h3>Check your inbox</h3>
+        <p>We sent a confirmation link to <strong id="inbox-email"></strong>. Click it and you will come straight back here<span id="inbox-role"></span>.</p>
+        <p class="auth-check-small">Nothing after 2 minutes? Look in your spam or junk folder, then:</p>
+        <button type="button" class="btn" id="inbox-resend" onclick="resendConfirmation()">Send the link again</button>
+        <p class="auth-check-note" id="inbox-note" hidden></p>
+        <p class="auth-check-small">Still stuck? Email your CV to <a href="mailto:djomoi@yahoo.com">djomoi@yahoo.com</a> and we'll handle it from there.</p>
+        <button type="button" class="auth-check-back" onclick="leaveInbox()">← Use a different email</button>
+      </div>
+
       <div class="auth-tabs">
         <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign in</button>
         <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create account</button>
@@ -167,11 +187,70 @@ function showError(id, msg) {
   el.style.display = 'block';
 }
 
+// Only pages on this site — never an arbitrary ?redirect= value, which would
+// turn the sign-in page into an open redirect.
+const SAFE_REDIRECTS = ['apply', 'portal', 'career', 'admin'];
+
 function getRedirectDest() {
   const p = new URLSearchParams(window.location.search);
   const r = p.get('redirect');
   const role = p.get('role');
-  return r ? r + '.html' + (role ? '?role=' + encodeURIComponent(role) : '') : 'portal.html';
+  if (!r || !SAFE_REDIRECTS.includes(r)) return 'portal.html';
+  return r + '.html' + (role ? '?role=' + encodeURIComponent(role) : '');
+}
+
+// Remember where to go after the confirmation link is clicked. The link
+// opens confirmed.html, possibly in a new tab, so the URL alone can't carry it.
+function rememberDest() {
+  try { localStorage.setItem('regma_after_confirm', getRedirectDest()); } catch (e) {}
+}
+
+let pendingEmail = '';
+
+function showInbox(email) {
+  pendingEmail = email;
+  const role = new URLSearchParams(location.search).get('role');
+  document.getElementById('inbox-email').textContent = email;
+  document.getElementById('inbox-role').textContent = role ? ' to finish applying for ' + role : '';
+  document.getElementById('inbox-note').hidden = true;
+  ['form-login', 'form-signup', 'switch-login', 'switch-signup'].forEach(id =>
+    document.getElementById(id).style.display = 'none');
+  document.querySelector('.auth-tabs').style.display = 'none';
+  document.getElementById('auth-apply-note').dataset.wasShown = String(!document.getElementById('auth-apply-note').hidden);
+  document.getElementById('auth-apply-note').hidden = true;
+  document.querySelector('.auth-form-inner h2').textContent = 'Almost there';
+  document.querySelector('.auth-subtitle').textContent = 'One last step before you can sign in.';
+  const box = document.getElementById('auth-check-inbox');
+  box.hidden = false;
+  box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+function leaveInbox() {
+  document.getElementById('auth-check-inbox').hidden = true;
+  document.querySelector('.auth-tabs').style.display = '';
+  const note = document.getElementById('auth-apply-note');
+  if (note.dataset.wasShown === 'true') note.hidden = false;
+  switchTab('signup');
+}
+
+async function resendConfirmation(email) {
+  email = email || pendingEmail;
+  const note = document.getElementById('inbox-note');
+  const btn = document.getElementById('inbox-resend');
+  btn.classList.add('loading');
+  rememberDest();
+  const { error } = await sb.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: location.origin + '/confirmed.html' }
+  });
+  btn.classList.remove('loading');
+  note.hidden = false;
+  note.textContent = error
+    ? (/rate|limit|seconds/i.test(error.message)
+        ? 'Please wait a minute before asking for another link.'
+        : 'Could not send: ' + error.message)
+    : 'Sent. Check your inbox (and spam folder) for ' + email + '.';
 }
 
 async function forgotPassword() {
@@ -196,7 +275,24 @@ async function handleLogin(e) {
   });
 
   btn.classList.remove('loading');
-  if (error) { showError('login-error', error.message); return; }
+  if (error) {
+    // The single most common dead end: an account that exists but was never
+    // confirmed. Supabase's own wording ("Email not confirmed") gives no way out.
+    if (/not confirmed/i.test(error.message)) {
+      rememberDest();
+      showInbox(document.getElementById('login-email').value.trim());
+      document.getElementById('inbox-note').hidden = false;
+      document.getElementById('inbox-note').textContent =
+        'Your account exists but the email address has not been confirmed yet. Click the link we sent, or press the button above for a new one.';
+      return;
+    }
+    if (/invalid login credentials/i.test(error.message)) {
+      showError('login-error', 'Wrong email or password. New here? Choose "Create account" above.');
+      return;
+    }
+    showError('login-error', error.message);
+    return;
+  }
   window.location.href = getRedirectDest();
 }
 
@@ -211,26 +307,56 @@ async function handleSignup(e) {
   const btn = e.target.querySelector('button[type="submit"]');
   btn.classList.add('loading');
 
-  const { error } = await sb.auth.signUp({
-    email: document.getElementById('signup-email').value,
+  const email = document.getElementById('signup-email').value.trim();
+  rememberDest();
+  const { data, error } = await sb.auth.signUp({
+    email,
     password: pass,
     options: {
-      data: { name: document.getElementById('signup-name').value },
-      // where the confirmation link lands once Confirm email is switched on
+      data: { name: document.getElementById('signup-name').value.trim() },
       emailRedirectTo: window.location.origin + '/confirmed.html'
     }
   });
 
   btn.classList.remove('loading');
-  if (error) { showError('signup-error', error.message); return; }
+  if (error) {
+    showError('signup-error', /password/i.test(error.message)
+      ? 'That password is too weak: ' + error.message
+      : error.message);
+    return;
+  }
+
+  // Supabase does not error for an address that is already registered — it
+  // returns a user with no identities. Say so instead of pretending it worked.
+  if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    switchTab('login');
+    document.getElementById('login-email').value = email;
+    showError('login-error', 'You already have an account with ' + email + '. Sign in below, or use "Forgot password?".');
+    return;
+  }
+
+  // Confirm email is ON: there is no session until the link is clicked.
+  // Previously this said "Account created! Redirecting…" and bounced the
+  // applicant straight back to the sign-in form, with no explanation.
+  if (!data.session) { showInbox(email); return; }
 
   const el = document.getElementById('signup-success');
   el.textContent = 'Account created! Redirecting…';
   el.style.display = 'block';
-  setTimeout(() => { window.location.href = getRedirectDest(); }, 1200);
+  setTimeout(() => { window.location.href = getRedirectDest(); }, 900);
 }
 
 (async () => {
+  const p = new URLSearchParams(location.search);
+  const role = p.get('role');
+  if (p.get('redirect') === 'apply' && role) {
+    // Someone applying is far more likely to be new than returning.
+    document.getElementById('auth-apply-role').textContent = role;
+    document.getElementById('auth-apply-note').hidden = false;
+    document.getElementById('auth-apply-mail').href =
+      'mailto:djomoi@yahoo.com?subject=' + encodeURIComponent('Ansökan: ' + role);
+    switchTab('signup');
+  }
   const session = await getSession();
   if (session) window.location.href = getRedirectDest();
 })();

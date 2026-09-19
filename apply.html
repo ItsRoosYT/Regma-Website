@@ -138,12 +138,22 @@
 
       <div class="form-row">
         <label>Link to portfolio or LinkedIn (optional)</label>
-        <input type="url" id="man-link" placeholder="https://" />
+        <!-- type="text", not "url": type="url" silently refused "linkedin.com/in/…"
+             without https:// and blocked the whole form -->
+        <input type="text" inputmode="url" id="man-link" placeholder="linkedin.com/in/your-name" />
       </div>
 
       <div class="auth-success" id="man-success"></div>
       <button type="submit" class="btn btn-primary" style="width:100%;padding:12px" id="man-submit">Submit application</button>
     </form>
+
+    <div class="apply-error" id="apply-error" hidden></div>
+
+    <p class="apply-help">
+      Problems applying? Email your CV to
+      <a href="mailto:djomoi@yahoo.com" id="apply-mail">djomoi@yahoo.com</a>
+      with the job title in the subject line — every application is read either way.
+    </p>
 
   </div>
 </main>
@@ -176,6 +186,8 @@ const role = decodeURIComponent(new URLSearchParams(location.search).get('role')
   document.title = 'Apply: ' + role + ' — Regma IT AB';
   document.getElementById('app-name').value = currentUser.user_metadata?.name || currentUser.email;
   document.getElementById('app-email').value = currentUser.email;
+  document.getElementById('apply-mail').href =
+    'mailto:djomoi@yahoo.com?subject=' + encodeURIComponent('Ansökan: ' + role);
   // Prefill phone from saved profile if available
   const { data: profile } = await sb.from('profiles').select('phone').eq('id', currentUser.id).single();
   if (profile?.phone) document.getElementById('app-phone').value = profile.phone;
@@ -194,7 +206,10 @@ const drop = document.getElementById('file-drop');
 const fileInput = document.getElementById('cv-file');
 const fileSelected = document.getElementById('file-selected');
 
-drop.addEventListener('click', () => fileInput.click());
+// The input sits inside the drop zone, so its own click bubbles back up here.
+// Re-opening the picker from that bubbled click made some mobile browsers
+// open and immediately cancel it.
+drop.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); });
 drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
 drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
 drop.addEventListener('drop', e => {
@@ -218,14 +233,26 @@ async function submitApp(e, type) {
   // the applicant typed.
   const phone = phoneCheck.ok ? phoneCheck.e164 : '';
   if (!phoneCheck.ok) {
-    if (window.showToast) showToast(phoneCheck.reason, 'error', 5000);
+    showApplyError('Phone number: ' + phoneCheck.reason);
     phoneInput.focus();
     return;
   }
 
   const btnId = type === 'cv' ? 'cv-submit' : 'man-submit';
   const btn = document.getElementById(btnId);
+  if (btn.classList.contains('loading') || btn.disabled) return;   // no double submits
   btn.classList.add('loading');
+  document.getElementById('apply-error').hidden = true;
+
+  // A tab left open for a long time can hold an expired session; the upload
+  // and insert would then fail with a baffling "row-level security" error.
+  const { data: fresh } = await sb.auth.getUser();
+  if (!fresh?.user) {
+    btn.classList.remove('loading');
+    showApplyError('Your sign-in has expired. Please sign in again — nothing you typed will be sent until you do.');
+    setTimeout(() => { location.href = 'auth.html?redirect=apply&role=' + encodeURIComponent(role); }, 3000);
+    return;
+  }
 
   const row = {
     user_id: currentUser.id,
@@ -240,34 +267,36 @@ async function submitApp(e, type) {
     const file = fileInput.files[0];
     if (!file) {
       btn.classList.remove('loading');
-      if (window.showToast) showToast('Please attach your CV file.', 'error');
+      showApplyError('Please attach your CV file — or choose "Write it out" above if you do not have one.');
       return;
     }
 
     // Validate for real. The accept="" attribute is only a file-picker hint —
     // it does not stop anything being submitted. These files are later opened
     // by an admin, so the upload is the right place to be strict.
-    const okExt  = /.(pdf|doc|docx)$/i.test(file.name);
-    const okType = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      ''            // some browsers report no type for .doc
-    ].includes(file.type);
-    if (!okExt || !okType) {
+    //
+    // Checked by extension AND by the file's first bytes. The browser-reported
+    // MIME type is NOT used: Android pickers, Google Drive, OneDrive and some
+    // Windows setups report "application/octet-stream" or nothing at all for a
+    // perfectly good PDF, and that check was rejecting real CVs.
+    const ext = (file.name.match(/\.(pdf|docx?)$/i) || [])[1]?.toLowerCase();
+    const kind = ext ? await sniffDocument(file) : null;
+    if (!ext || !kind) {
       btn.classList.remove('loading');
-      if (window.showToast) showToast('Please upload a PDF or Word document (.pdf, .doc, .docx).', 'error', 6000);
+      showApplyError(!ext
+        ? 'Please upload your CV as a PDF or Word file (.pdf, .doc or .docx). Pages, images and ZIP files cannot be opened on our side — export to PDF first.'
+        : 'That file does not look like a real PDF or Word document — it may be damaged. Try exporting it to PDF again.');
       return;
     }
     const MAX_MB = 10;
     if (file.size > MAX_MB * 1024 * 1024) {
       btn.classList.remove('loading');
-      if (window.showToast) showToast('That file is ' + (file.size / 1048576).toFixed(1) + ' MB — please keep your CV under ' + MAX_MB + ' MB.', 'error', 6000);
+      showApplyError('That file is ' + (file.size / 1048576).toFixed(1) + ' MB — please keep your CV under ' + MAX_MB + ' MB.');
       return;
     }
     if (file.size === 0) {
       btn.classList.remove('loading');
-      if (window.showToast) showToast('That file appears to be empty.', 'error');
+      showApplyError('That file appears to be empty.');
       return;
     }
 
@@ -275,10 +304,11 @@ async function submitApp(e, type) {
     // contentType is pinned so the file can never be served back as HTML.
     const path = currentUser.id + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const { error: upErr } = await sb.storage.from('cvs')
-      .upload(path, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
+      .upload(path, file, { upsert: false, contentType: CONTENT_TYPES[kind] });
     if (upErr) {
       btn.classList.remove('loading');
-      if (window.showToast) showToast('Could not upload CV: ' + upErr.message, 'error');
+      showApplyError('Your CV could not be uploaded (' + upErr.message + '). ' +
+        'Try again, or use "Write it out" instead — or email the CV using the address below.');
       console.error(upErr);
       return;
     }
@@ -290,17 +320,23 @@ async function submitApp(e, type) {
     row.experience = document.getElementById('man-exp').value;
     row.skills = document.getElementById('man-skills').value;
     row.why = document.getElementById('man-why').value;
-    row.link = document.getElementById('man-link').value;
+    const link = document.getElementById('man-link').value.trim();
+    row.link = link && !/^https?:\/\//i.test(link) ? 'https://' + link : link;
   }
 
-  // Save phone to profile too so it's remembered next time
-  await sb.from('profiles').upsert({ id: currentUser.id, phone, updated_at: new Date().toISOString() });
+  // Remember the phone for next time. Best effort only — a problem with the
+  // profile must never stop the application itself from going through.
+  try {
+    await sb.from('profiles').upsert({ id: currentUser.id, phone, updated_at: new Date().toISOString() });
+  } catch (e) { console.warn('profile save skipped', e); }
 
   const { error } = await sb.from('applications').insert(row);
   btn.classList.remove('loading');
 
   if (error) {
-    if (window.showToast) showToast('Error submitting. Please try again.', 'error');
+    showApplyError('Your application could not be saved (' + error.message + '). ' +
+      'Please try once more. If it keeps failing, email your CV using the address below — ' +
+      'and mention this message so we can fix it.');
     console.error(error);
     return;
   }
@@ -310,6 +346,32 @@ async function submitApp(e, type) {
   document.getElementById(sid).style.display = 'block';
   btn.disabled = true;
   setTimeout(() => location.href = 'portal.html', 1800);
+}
+
+const CONTENT_TYPES = {
+  pdf:  'application/pdf',
+  doc:  'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+};
+
+// Identify a document by its first bytes ("magic numbers"), which is what the
+// file really is regardless of its name or what the browser claims.
+async function sniffDocument(file) {
+  const b = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  const hex = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+  if (hex.startsWith('25504446')) return 'pdf';           // %PDF
+  if (hex.startsWith('d0cf11e0a1b11ae1')) return 'doc';   // legacy Word (OLE)
+  if (hex.startsWith('504b0304')) return 'docx';          // ZIP container (Office Open XML)
+  return null;
+}
+
+// Errors stay on screen next to the form. A toast disappears after a few
+// seconds, and an applicant who looked away never learned what went wrong.
+function showApplyError(msg) {
+  const el = document.getElementById('apply-error');
+  el.textContent = msg;
+  el.hidden = false;
+  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
