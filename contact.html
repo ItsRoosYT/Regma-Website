@@ -42,6 +42,7 @@
       <li><a href="services.html" data-i18n="nav_services">Services</a></li>
       <li><a href="contact.html" class="active" data-i18n="nav_contact">Contact</a></li>
       <li><a href="career.html" data-i18n="nav_careers">Careers</a></li>
+      <li><a href="help.html">Help</a></li>
     </ul>
   </div>
   <div class="nav-right">
@@ -75,6 +76,7 @@
   <a href="services.html" data-i18n="nav_services">Services</a>
   <a href="career.html" data-i18n="nav_careers">Careers</a>
   <a href="contact.html" data-i18n="nav_cta">Contact us</a>
+  <a href="help.html">Help</a>
 </div>
 
 <main>
@@ -92,9 +94,9 @@
       <div class="contact-info reveal">
         <h2 data-i18n="contact_h1">Where to <em>find us</em></h2>
         <p data-i18n="contact_p">Have a project in mind or just want to explore what we can do together? Send us a message and we'll get back to you within one business day.</p>
-        <a class="c-row c-row--link" href="mailto:djomoi@yahoo.com">
+        <a class="c-row c-row--link" href="mailto:regmaitab@gmail.com">
           <div class="c-icon">✉️</div>
-          <span><b>djomoi@yahoo.com</b><small>We reply within one business day</small></span>
+          <span><b>regmaitab@gmail.com</b><small>We reply within one business day</small></span>
         </a>
         <a class="c-row c-row--link" href="tel:+46705081788">
           <div class="c-icon">📞</div>
@@ -127,7 +129,7 @@
 
 <footer>
   <div class="footer-contact">
-    <a href="mailto:djomoi@yahoo.com">djomoi@yahoo.com</a>
+    <a href="mailto:regmaitab@gmail.com">regmaitab@gmail.com</a>
     <span aria-hidden="true">·</span>
     <a href="tel:+46705081788">+46 70 508 17 88</a>
   </div>
@@ -139,6 +141,7 @@
     <li><a href="services.html" data-i18n="nav_services">Services</a></li>
     <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
     <li><a href="career.html" data-i18n="nav_careers">Careers</a></li>
+    <li><a href="help.html">Help</a></li>
   </ul>
 </footer>
 <script src="nav.js"></script>
@@ -210,8 +213,8 @@
         // always give a way through that does not depend on the database.
         const permission = /policy|permission|denied|row-level/i.test(error.message);
         const msg = permission
-          ? 'The form could not save your message. Please email us directly at djomoi@yahoo.com.'
-          : 'Could not send: ' + error.message + ' — or email djomoi@yahoo.com directly.';
+          ? 'The form could not save your message. Please email us directly at regmaitab@gmail.com.'
+          : 'Could not send: ' + error.message + ' — or email regmaitab@gmail.com directly.';
         if (window.showToast) showToast(msg, 'error', 9000);
         let box = document.getElementById('form-error');
         if (!box) {
@@ -220,8 +223,8 @@
           box.className = 'form-error';
           form.appendChild(box);
         }
-        box.innerHTML = msg.replace('djomoi@yahoo.com',
-          '<a href="mailto:djomoi@yahoo.com">djomoi@yahoo.com</a>');
+        box.innerHTML = msg.replace('regmaitab@gmail.com',
+          '<a href="mailto:regmaitab@gmail.com">regmaitab@gmail.com</a>');
         box.style.display = 'block';
         return;
       }

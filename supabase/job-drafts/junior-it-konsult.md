@@ -27,8 +27,8 @@ wrong; nothing here is fixed.
 | Antal platser | 1 |
 | Lön | Fast månadslön enligt överenskommelse **[CHECK — see note below]** |
 | Sista ansökningsdag | **[CHECK — suggest 3–4 weeks from publishing]** |
-| Ansökningssätt | Via regma.se, eller e-post till djomoi@yahoo.com |
-| Kontaktperson | Isaac Djomo · djomoi@yahoo.com · +46 70 508 17 88 |
+| Ansökningssätt | Via regma.se, eller e-post till regmaitab@gmail.com |
+| Kontaktperson | Isaac Djomo · regmaitab@gmail.com · +46 70 508 17 88 |
 
 > **On salary:** a junior IT consultant in Göteborg is roughly
 > 28 000–34 000 SEK/month in 2026. Platsbanken does not require a figure —
@@ -86,7 +86,7 @@ du vill utvecklas inom.
 
 **Ansökan**
 
-Skicka din ansökan via regma.se eller e-post till djomoi@yahoo.com. Vi
+Skicka din ansökan via regma.se eller e-post till regmaitab@gmail.com. Vi
 läser ansökningar löpande och svarar på alla — även när svaret är nej.
 
 Regma IT AB · Org.nr 559373-8080 · Angered, Göteborg
@@ -142,7 +142,7 @@ you want to grow.
 
 **Applying**
 
-Apply via regma.se or email djomoi@yahoo.com. We review applications as
+Apply via regma.se or email regmaitab@gmail.com. We review applications as
 they arrive and reply to everyone — including when the answer is no.
 
 Regma IT AB · Org.nr 559373-8080 · Angered, Gothenburg, Sweden

@@ -94,7 +94,7 @@ Deleting a function does **not** delete these, but check them anyway.
     |---|---|
     | `RESEND_API_KEY` | your Resend API key, starting `re_` |
     | `RESEND_FROM` | `Regma IT AB <noreply@regma.se>` |
-    | `NOTIFY_EMAIL` | `djomoi@yahoo.com` |
+    | `NOTIFY_EMAIL` | `regmaitab@gmail.com` |
 
 19. If any are missing, click **Add new secret**, type the name in the first
     box and the value in the second, click Save. Names are case-sensitive.

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help &amp; Support — Regma IT AB</title>
+  <meta name="description" content="Get help applying for a job at Regma IT AB, fix account and sign-in problems, or report a problem anonymously. Answers to common questions, plus a confidential reporting channel." />
+  <link rel="canonical" href="https://regma.se/help.html" />
+  <meta property="og:site_name" content="Regma IT AB" />
+  <meta property="og:title" content="Help &amp; Support — Regma IT AB" />
+  <meta property="og:description" content="Stuck applying or signing in? Find answers, or tell us what went wrong — anonymously if you prefer." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://regma.se/help.html" />
+  <meta property="og:locale" content="en_GB" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icon-180.png" />
+  <link rel="manifest" href="site.webmanifest" />
+  <meta name="theme-color" content="#0d0d10" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)" />
+  <script>/* set theme before first paint — avoids a dark flash for light-theme users */
+    try { if (localStorage.getItem('regma_theme') !== 'dark') document.documentElement.classList.add('light'); } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="visuals.css" />
+  <style>
+    /* ── Help centre ──────────────────────────────────────────────
+       Scoped to this page so the shared stylesheet stays untouched. */
+    .help-search-wrap { position: relative; max-width: 620px; margin: 0 auto 8px; }
+    .help-search {
+      width: 100%; padding: 16px 18px 16px 48px; font-size: 16px;
+      border-radius: 12px; border: 1px solid var(--line, #2a2a30);
+      background: var(--card, #17171c); color: inherit; font-family: inherit;
+    }
+    .help-search:focus { outline: 2px solid var(--teal, #4ecdc4); outline-offset: 2px; }
+    .help-search-icon {
+      position: absolute; left: 17px; top: 50%; transform: translateY(-50%);
+      width: 19px; height: 19px; opacity: .5; pointer-events: none;
+    }
+    .help-search-count { text-align: center; font-size: 14px; opacity: .65; min-height: 22px; margin-bottom: 26px; }
+
+    .help-cats { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin-bottom: 34px; }
+    .help-cat {
+      padding: 9px 16px; border-radius: 999px; font-size: 14px; cursor: pointer;
+      border: 1px solid var(--line, #2a2a30); background: transparent;
+      color: inherit; font-family: inherit; transition: all .18s;
+    }
+    .help-cat:hover { border-color: var(--teal, #4ecdc4); }
+    .help-cat.active { background: var(--teal, #4ecdc4); border-color: var(--teal, #4ecdc4); color: #0d0d10; font-weight: 600; }
+
+    .faq-group { margin-bottom: 38px; }
+    .faq-group-title {
+      font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+      opacity: .55; margin: 0 0 14px; font-weight: 600;
+    }
+    .faq-item { border-bottom: 1px solid var(--line, #2a2a30); }
+    .faq-q {
+      width: 100%; text-align: left; padding: 18px 40px 18px 0; position: relative;
+      background: none; border: 0; color: inherit; font-family: inherit;
+      font-size: 16.5px; font-weight: 500; cursor: pointer; line-height: 1.45;
+    }
+    .faq-q:hover { color: var(--teal, #4ecdc4); }
+    .faq-q::after {
+      content: ''; position: absolute; right: 8px; top: 50%; width: 9px; height: 9px;
+      border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+      transform: translateY(-70%) rotate(45deg); transition: transform .22s; opacity: .55;
+    }
+    .faq-item.open .faq-q::after { transform: translateY(-20%) rotate(-135deg); }
+    .faq-a { display: none; padding: 0 0 20px; line-height: 1.75; opacity: .88; max-width: 68ch; }
+    .faq-item.open .faq-a { display: block; }
+    .faq-a p { margin: 0 0 12px; }
+    .faq-a p:last-child { margin-bottom: 0; }
+    .faq-a ol, .faq-a ul { margin: 0 0 12px; padding-left: 22px; }
+    .faq-a li { margin-bottom: 7px; }
+    .faq-a code {
+      background: var(--card, #17171c); padding: 2px 6px;
+      border-radius: 4px; font-size: .9em; border: 1px solid var(--line, #2a2a30);
+    }
+    .faq-a a { color: var(--teal, #4ecdc4); }
+
+    .help-empty { text-align: center; padding: 46px 20px; opacity: .7; display: none; }
+    .help-empty.show { display: block; }
+
+    /* Report box */
+    .report-box {
+      border: 1px solid var(--line, #2a2a30); border-radius: 16px;
+      padding: 30px; background: var(--card, #17171c); margin-top: 8px;
+    }
+    .report-tabs { display: flex; gap: 6px; margin-bottom: 26px; flex-wrap: wrap; }
+    .report-tab {
+      flex: 1 1 170px; padding: 11px 14px; border-radius: 10px; cursor: pointer;
+      border: 1px solid var(--line, #2a2a30); background: transparent; color: inherit;
+      font-family: inherit; font-size: 14.5px; transition: all .18s;
+    }
+    .report-tab.active { background: var(--teal, #4ecdc4); border-color: var(--teal, #4ecdc4); color: #0d0d10; font-weight: 600; }
+    .report-panel { display: none; }
+    .report-panel.active { display: block; }
+
+    .privacy-note {
+      display: flex; gap: 12px; align-items: flex-start; font-size: 14.2px;
+      line-height: 1.65; padding: 15px 17px; border-radius: 10px; margin-bottom: 22px;
+      background: color-mix(in srgb, var(--teal, #4ecdc4) 9%, transparent);
+      border: 1px solid color-mix(in srgb, var(--teal, #4ecdc4) 28%, transparent);
+    }
+    .privacy-note svg { flex-shrink: 0; width: 19px; height: 19px; margin-top: 2px; color: var(--teal, #4ecdc4); }
+
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 9px; margin-bottom: 6px; }
+    .cat-opt {
+      padding: 13px 14px; border-radius: 10px; cursor: pointer; text-align: left;
+      border: 1px solid var(--line, #2a2a30); background: transparent; color: inherit;
+      font-family: inherit; font-size: 14.2px; line-height: 1.4; transition: all .18s;
+    }
+    .cat-opt:hover { border-color: var(--teal, #4ecdc4); }
+    .cat-opt.active { border-color: var(--teal, #4ecdc4); background: color-mix(in srgb, var(--teal, #4ecdc4) 12%, transparent); font-weight: 600; }
+    .cat-opt small { display: block; font-weight: 400; opacity: .62; font-size: 12.4px; margin-top: 3px; }
+
+    .code-display {
+      text-align: center; padding: 30px 22px; border-radius: 12px;
+      background: color-mix(in srgb, var(--teal, #4ecdc4) 9%, transparent);
+      border: 1px solid color-mix(in srgb, var(--teal, #4ecdc4) 32%, transparent);
+    }
+    .code-value {
+      font-size: 30px; font-weight: 700; letter-spacing: .13em; margin: 14px 0;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      color: var(--teal, #4ecdc4); word-break: break-all;
+    }
+    .code-copy {
+      padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 14px;
+      border: 1px solid var(--line, #2a2a30); background: transparent;
+      color: inherit; font-family: inherit;
+    }
+    .code-copy:hover { border-color: var(--teal, #4ecdc4); }
+
+    .status-result { margin-top: 20px; display: none; }
+    .status-result.show { display: block; }
+    .status-pill {
+      display: inline-block; padding: 5px 13px; border-radius: 999px;
+      font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .status-new      { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f655; }
+    .status-seen     { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b55; }
+    .status-resolved { background: #10b98122; color: #34d399; border: 1px solid #10b98155; }
+
+    .esc-list { display: grid; gap: 12px; margin-top: 10px; }
+    .esc-item {
+      display: flex; gap: 15px; align-items: flex-start; padding: 17px 19px;
+      border: 1px solid var(--line, #2a2a30); border-radius: 12px;
+    }
+    .esc-item b { display: block; margin-bottom: 4px; }
+    .esc-item small { opacity: .68; line-height: 1.6; display: block; }
+    .esc-num {
+      flex-shrink: 0; width: 27px; height: 27px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 13px; font-weight: 700;
+      background: var(--teal, #4ecdc4); color: #0d0d10;
+    }
+    @media (max-width: 640px) {
+      .report-box { padding: 22px 18px; }
+      .code-value { font-size: 23px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Regma <em>IT</em></a>
+  <div class="nav-center">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="career.html">Careers</a></li>
+      <li><a href="help.html" class="active">Help</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <a href="contact.html" class="btn-contact">Contact us</a>
+  </div>
+  <button class="nav-burger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-drawer">
+  <a href="index.html">Home</a>
+  <a href="about.html">About</a>
+  <a href="services.html">Services</a>
+  <a href="career.html">Careers</a>
+  <a href="help.html">Help</a>
+  <a href="contact.html">Contact us</a>
+</div>
+
+<main>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <p class="section-label">Help &amp; Support</p>
+      <h1>Stuck? <em>Let's fix it</em></h1>
+      <p>Answers to the things people actually get stuck on — and a way to tell us when something is broken, anonymously if you prefer.</p>
+    </div>
+  </div>
+
+  <!-- ── FAQ ───────────────────────────────────────────────────── -->
+  <div class="section">
+
+    <div class="help-search-wrap">
+      <svg class="help-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <input type="search" id="help-search" class="help-search" placeholder="Search for help — e.g. &ldquo;can't sign in&rdquo;, &ldquo;CV upload&rdquo;" aria-label="Search help articles" autocomplete="off" />
+    </div>
+    <p class="help-search-count" id="search-count"></p>
+
+    <div class="help-cats" id="help-cats">
+      <button class="help-cat active" data-cat="all">Everything</button>
+      <button class="help-cat" data-cat="applying">Applying for a job</button>
+      <button class="help-cat" data-cat="account">Account &amp; sign-in</button>
+      <button class="help-cat" data-cat="after">After you apply</button>
+      <button class="help-cat" data-cat="privacy">Privacy &amp; your data</button>
+      <button class="help-cat" data-cat="company">About Regma IT</button>
+    </div>
+
+    <div id="faq-root"></div>
+
+    <div class="help-empty" id="help-empty">
+      <p><strong>No answers matched that.</strong></p>
+      <p>Try a different word, or just tell us what's wrong using the form below — plain language is fine.</p>
+    </div>
+  </div>
+
+  <!-- ── Report a problem ──────────────────────────────────────── -->
+  <div class="section" id="report">
+    <p class="section-label">Report a problem</p>
+    <h2 style="margin-top:6px">Tell us what <em>went wrong</em></h2>
+    <p style="max-width:66ch;line-height:1.75;opacity:.88">
+      If something on this site is broken, unfair, or just made no sense, we want to know.
+      You do <strong>not</strong> need an account, and you do <strong>not</strong> have to tell us who you are.
+      We read every report.
+    </p>
+
+    <div class="report-box">
+      <div class="report-tabs" role="tablist">
+        <button class="report-tab active" data-panel="send" role="tab" aria-selected="true">Send a report</button>
+        <button class="report-tab" data-panel="check" role="tab" aria-selected="false">Check a report I sent</button>
+      </div>
+
+      <!-- SEND -->
+      <div class="report-panel active" id="panel-send" role="tabpanel">
+        <div id="report-form-wrap">
+          <div class="privacy-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <div>
+              <strong>This is genuinely anonymous.</strong>
+              We do not record your name, your IP address, or whether you are signed in.
+              The email field below is optional — leave it blank and there is no way for us,
+              or anyone else, to work out who sent this.
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>What is this about?</label>
+            <div class="cat-grid" id="cat-grid">
+              <button type="button" class="cat-opt active" data-cat="application">Applying for a job<small>The form, CVs, deadlines</small></button>
+              <button type="button" class="cat-opt" data-cat="account">Account or sign-in<small>Can't register or log in</small></button>
+              <button type="button" class="cat-opt" data-cat="bug">Something is broken<small>A page or button fails</small></button>
+              <button type="button" class="cat-opt" data-cat="conduct">Conduct or fairness<small>How someone was treated</small></button>
+              <button type="button" class="cat-opt" data-cat="privacy">Privacy or my data<small>Your personal information</small></button>
+              <button type="button" class="cat-opt" data-cat="other">Something else<small>Anything not listed</small></button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="report-message">What happened?</label>
+            <textarea id="report-message" rows="7" placeholder="Describe it however you like. Useful details if you have them: what you were trying to do, what you expected, what happened instead, roughly when, and which device or browser you used. Any error message you saw — even copied word for word — helps a lot."></textarea>
+            <p class="field-hint" id="msg-hint"></p>
+          </div>
+
+          <div class="form-row">
+            <label for="report-email">Email <span style="opacity:.6;font-weight:400">— optional, only if you want a reply</span></label>
+            <input type="email" id="report-email" placeholder="you@example.com" autocomplete="off" />
+            <p class="field-hint" style="opacity:.62;margin-top:6px">
+              Leave this blank to stay completely anonymous. If you fill it in, it is used only to reply to this report — never added to any mailing list.
+            </p>
+          </div>
+
+          <div class="apply-error" id="report-error" hidden></div>
+
+          <button type="button" class="btn btn-primary" id="report-submit" style="width:100%;padding:13px">Send report</button>
+        </div>
+
+        <!-- Success -->
+        <div id="report-done" style="display:none">
+          <div class="code-display">
+            <p style="margin:0;font-size:15px">Report received. Your reference code is:</p>
+            <div class="code-value" id="report-code">—</div>
+            <button type="button" class="code-copy" id="copy-code">Copy code</button>
+            <p style="margin:18px auto 0;font-size:14.2px;opacity:.8;line-height:1.7;max-width:46ch">
+              <strong>Write this down or copy it now.</strong> It is the only way to check what
+              happened to your report, and because the report is anonymous we cannot look it
+              up for you or send it to you again.
+            </p>
+          </div>
+          <button type="button" class="btn" id="report-another" style="width:100%;margin-top:16px;padding:12px">Send another report</button>
+        </div>
+      </div>
+
+      <!-- CHECK -->
+      <div class="report-panel" id="panel-check" role="tabpanel">
+        <div class="form-row">
+          <label for="check-code">Your reference code</label>
+          <input type="text" id="check-code" placeholder="RG-XXXXXXXX" autocomplete="off"
+                 style="font-family:ui-monospace,monospace;letter-spacing:.09em;text-transform:uppercase" />
+          <p class="field-hint" style="opacity:.62;margin-top:6px">
+            The code you were given when you sent the report. Nothing else is needed — you stay anonymous.
+          </p>
+        </div>
+        <button type="button" class="btn btn-primary" id="check-submit" style="width:100%;padding:13px">Check status</button>
+        <div class="status-result" id="check-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Other ways to reach us ────────────────────────────────── -->
+  <div class="section">
+    <p class="section-label">Other ways to reach us</p>
+    <h2 style="margin-top:6px">If you'd rather <em>talk to a person</em></h2>
+    <p style="max-width:66ch;line-height:1.75;opacity:.88">
+      The anonymous form above is the fastest route for anything broken. These also work —
+      use whichever you are most comfortable with.
+    </p>
+
+    <div class="esc-list">
+      <div class="esc-item">
+        <span class="esc-num">1</span>
+        <div>
+          <b>Email us directly</b>
+          <small>
+            <a href="mailto:regmaitab@gmail.com" style="color:var(--teal,#4ecdc4)">regmaitab@gmail.com</a>
+            — goes straight to Isaac Djomo, who runs the company. Not anonymous, but it is a real person
+            and you will get a real answer, usually within one business day.
+          </small>
+        </div>
+      </div>
+      <div class="esc-item">
+        <span class="esc-num">2</span>
+        <div>
+          <b>Phone</b>
+          <small>
+            <a href="tel:+46705081788" style="color:var(--teal,#4ecdc4)">+46 70 508 17 88</a>
+            — Monday to Friday, 09:00–17:00 CET. Best if you are mid-application and stuck right now.
+          </small>
+        </div>
+      </div>
+      <div class="esc-item">
+        <span class="esc-num">3</span>
+        <div>
+          <b>Apply by email instead</b>
+          <small>
+            If the application form will not work for you for any reason, do not let that stop you applying.
+            Email your CV to <a href="mailto:regmaitab@gmail.com" style="color:var(--teal,#4ecdc4)">regmaitab@gmail.com</a>
+            with the job title in the subject line. Applications sent this way are read exactly the same way as the ones from the form.
+          </small>
+        </div>
+      </div>
+      <div class="esc-item">
+        <span class="esc-num">4</span>
+        <div>
+          <b>Data protection requests</b>
+          <small>
+            To see, correct or delete the personal data we hold about you, email
+            <a href="mailto:regmaitab@gmail.com" style="color:var(--teal,#4ecdc4)">regmaitab@gmail.com</a>
+            with "GDPR" in the subject. We respond within 30 days, as the GDPR requires.
+            You can also complain to the Swedish authority, IMY
+            (<a href="https://www.imy.se" target="_blank" rel="noopener" style="color:var(--teal,#4ecdc4)">imy.se</a>),
+            without going through us at all.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-contact">
+    <a href="mailto:regmaitab@gmail.com">regmaitab@gmail.com</a>
+    <span aria-hidden="true">·</span>
+    <a href="tel:+46705081788">+46 70 508 17 88</a>
+  </div>
+  <p class="footer-orgnr">Regma IT AB · Org.nr 559373-8080 · Säte: Göteborg</p>
+  <p>© 2026 Regma IT · Sweden</p>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="career.html">Careers</a></li>
+    <li><a href="help.html">Help</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+  </ul>
+</footer>
+
+<script src="nav.js"></script>
+<script src="animations.js"></script>
+<script src="components.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="help-data.js"></script>
+<script src="help.js"></script>
+</body>
+</html>

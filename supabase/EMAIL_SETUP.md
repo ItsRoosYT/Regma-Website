@@ -25,7 +25,7 @@ rejected with **HTTP 403**, silently.
 | Applicant's email | What happens |
 |---|---|
 | `rooseveltdjomo81@gmail.com` — the Resend account address | delivered ✅ |
-| `djomoi@yahoo.com` | 403, nothing sent ❌ |
+| `regmaitab@gmail.com` | 403, nothing sent ❌ |
 | Any real applicant | 403, nothing sent ❌ |
 
 This was never a Yahoo problem or a spam-folder problem. **Until regma.se is
@@ -124,7 +124,7 @@ Edge Functions → Secrets* depending on dashboard version) → **Add new secret
 |---|---|---|
 | `RESEND_API_KEY` | your `re_…` key | authenticates with Resend |
 | `RESEND_FROM` | `Regma IT AB <noreply@regma.se>` | **the fix** — leaves the sandbox sender behind |
-| `NOTIFY_EMAIL` | `djomoi@yahoo.com` | where contact enquiries are sent |
+| `NOTIFY_EMAIL` | `regmaitab@gmail.com` | where contact enquiries are sent |
 
 Names are case-sensitive. Secrets apply to all functions in the project, so
 you set them once, not per function.
@@ -234,6 +234,12 @@ function and redeploy. The brand colours used are:
 ---
 
 ## Turning on "Confirm email" (do this LAST)
+
+> **2026-09-24 — this exact mistake happened.** "Confirm email" was on with no
+> custom SMTP. Every applicant got stuck on "Check your inbox" for a mail that
+> never arrived, could never sign in, and so could never apply — which is why
+> the site had 5 users, all internal. It has been **turned off again**. Do not
+> turn it back on until steps 1–4 below are genuinely finished.
 
 **Order matters.** Enabling confirmation before custom SMTP is configured
 locks every new applicant out — Supabase's built-in mailer refuses to

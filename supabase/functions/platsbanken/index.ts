@@ -44,8 +44,8 @@ const AF_BASE = `https://apier.arbetsformedlingen.se/direct-transferred-job-post
 const COMPANY = {
   name: "Regma IT AB",
   web: "https://regma.se",
-  responsibleEmail: "djomoi@yahoo.com",
-  contact: { firstname: "Isaac", surname: "Djomo", title: "VD", email: "djomoi@yahoo.com", phoneNumber: "+46705081788" },
+  responsibleEmail: "regmaitab@gmail.com",
+  contact: { firstname: "Isaac", surname: "Djomo", title: "VD", email: "regmaitab@gmail.com", phoneNumber: "+46705081788" },
 };
 
 // Taxonomy concept IDs (JobTech taxonomy, fetched 2026-09-19)

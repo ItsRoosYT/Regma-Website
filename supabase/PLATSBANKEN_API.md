@@ -19,25 +19,25 @@ Arbetsförmedlingen, then about 15 minutes of setup in Supabase.
 
 ## Overview
 
-| Step | Who | How long |
-|---|---|---|
-| 1. Ask Arbetsförmedlingen to register Regma as a supplier | You or Isaac, by email | They reply in days to weeks |
-| 2. Run database migration 006 | You | 2 minutes |
-| 3. Deploy the `platsbanken` Edge Function | You | 5 minutes |
-| 4. Add the secrets (sandbox first) | You | 5 minutes |
-| 5. Isaac enters the consent key on arbetsformedlingen.se | Isaac, with BankID | 2 minutes |
-| 6. Send a test ad to the sandbox | You | 2 minutes |
-| 7. Switch to production | You | 1 minute |
+| Step | Who | How long | Status |
+|---|---|---|---|
+| 1. Ask Arbetsförmedlingen to register Regma as a supplier | You or Isaac, by email | They reply in days to weeks | **← next** |
+| 2. Run database migration 006 | You | 2 minutes | ✅ done 2026-09-24 |
+| 3. Deploy the `platsbanken` Edge Function | You | 5 minutes | ✅ done 2026-09-24 |
+| 4. Add the secrets (sandbox first) | You | 5 minutes | blocked on step 1 |
+| 5. Isaac enters the consent key on arbetsformedlingen.se | Isaac, with BankID | 2 minutes | blocked on step 1 |
+| 6. Send a test ad to the sandbox | You | 2 minutes | blocked on step 1 |
+| 7. Switch to production | You | 1 minute | blocked on step 6 |
 
-You can do steps 2 and 3 **today**, before Arbetsförmedlingen replies. The
-panel will then check each ad and list anything missing, even before it can
-publish.
+Steps 2 and 3 are already done — the migration is applied and the function is
+deployed and responding. Everything else waits on Arbetsförmedlingen's reply
+to step 1, so **sending that email is the only thing holding this up.**
 
 ---
 
 ## Step 1 — Email Arbetsförmedlingen
 
-Send this from Isaac's email (djomoi@yahoo.com), since he runs the company.
+Send this from Isaac's email (regmaitab@gmail.com), since he runs the company.
 The address comes from Arbetsförmedlingen's page for the API:
 <https://data.arbetsformedlingen.se/dataservice/direct-transferred-job-posting-api/>
 

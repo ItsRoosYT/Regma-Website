@@ -50,6 +50,7 @@
       <button class="admin-tab active" data-tab="jobs"   onclick="setTab('jobs')">Positions <span class="admin-tab__n" id="tabn-jobs"></span></button>
       <button class="admin-tab"        data-tab="apps"   onclick="setTab('apps')">Applications <span class="admin-tab__n" id="tabn-apps"></span></button>
       <button class="admin-tab"        data-tab="inbox"  onclick="setTab('inbox')">Inbox <span class="admin-tab__n" id="tabn-inbox"></span></button>
+      <button class="admin-tab"        data-tab="reports" onclick="setTab('reports')">Reports <span class="admin-tab__n" id="tabn-reports"></span></button>
       <button class="admin-tab"        data-tab="nl"     onclick="setTab('nl')">Subscribers <span class="admin-tab__n" id="tabn-nl"></span></button>
       <button class="admin-tab"        data-tab="users"  onclick="setTab('users')">Users <span class="admin-tab__n" id="tabn-users"></span></button>
       <button class="admin-tab"        data-tab="admins" onclick="setTab('admins')" id="tab-admins" style="display:none">Team</button>
@@ -118,7 +119,7 @@
             </div>
             <div class="admin-grid-2">
               <div class="form-row"><label>Contact person <span class="hint">(default: Isaac Djomo)</span></label><input type="text" id="job-contact-name" placeholder="Isaac Djomo" /></div>
-              <div class="form-row"><label>Contact email <span class="hint">(default: djomoi@yahoo.com)</span></label><input type="email" id="job-contact-email" placeholder="djomoi@yahoo.com" /></div>
+              <div class="form-row"><label>Contact email <span class="hint">(default: regmaitab@gmail.com)</span></label><input type="email" id="job-contact-email" placeholder="regmaitab@gmail.com" /></div>
             </div>
           </fieldset>
           <label class="admin-check"><input type="checkbox" id="job-open" checked /> Visible on the careers page (open for applications)</label>
@@ -171,6 +172,24 @@
         </div>
       </div>
       <div id="contact-list"></div>
+    </div>
+
+    <!-- ───── ANONYMOUS REPORTS ───── -->
+    <div id="reports-section">
+      <div class="admin-section-head">
+        <h2 class="section-title" style="text-align:left;font-size:18px;margin:0">Reports <span id="rep-new-badge" class="job-pill open" style="display:none"></span></h2>
+        <div class="jobs-filters" id="rep-tabs" style="margin-left:auto">
+          <button class="filter-btn active" data-rf="open" onclick="setRepFilter('open')">Open</button>
+          <button class="filter-btn" data-rf="resolved" onclick="setRepFilter('resolved')">Resolved</button>
+          <button class="filter-btn" data-rf="all" onclick="setRepFilter('all')">All</button>
+        </div>
+      </div>
+      <p style="color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 14px;max-width:70ch">
+        Sent anonymously from the <a href="help.html#report" target="_blank" style="color:var(--teal)">help page</a>.
+        Most have no email attached — the sender checks progress using their reference code, so
+        changing the status and writing a reply here is how they hear back.
+      </p>
+      <div id="report-list"></div>
     </div>
 
     <!-- ───── NEWSLETTER ───── -->
@@ -357,15 +376,19 @@ document.addEventListener('click', e => {
 });
 let currentFilter = 'all';
 let msgFilter = 'active';
+let allReports = [];
+let reportsLoadError = null;
+let repFilter = 'open';
 
 /* ───────── TABS ───────── */
 const ADMIN_TABS = {
-  jobs:   'jobs-section',
-  apps:   'apps-section',
-  inbox:  'inbox-section',
-  nl:     'nl-section',
-  users:  'users-section',
-  admins: 'admins-section',
+  jobs:    'jobs-section',
+  apps:    'apps-section',
+  inbox:   'inbox-section',
+  reports: 'reports-section',
+  nl:      'nl-section',
+  users:   'users-section',
+  admins:  'admins-section',
 };
 
 function setTab(tab, opts = {}) {
@@ -455,12 +478,15 @@ async function renderDashboard() {
   const { data: apps, error: appsError } = await sb.from('applications').select('*').order('created_at', { ascending: false });
   const { data: contacts, error: contactsError } = await sb.from('contact_submissions').select('*').order('created_at', { ascending: false });
   const { data: newsletter, error: nlError } = await sb.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });
+  const { data: reports, error: reportsError } = await sb.from('reports').select('*').order('created_at', { ascending: false });
 
   appsLoadError = appsError || null;
   nlLoadError = nlError || null;
   allApps = apps || [];
   allContacts = contacts || [];
   contactsLoadError = contactsError || null;
+  allReports = reports || [];
+  reportsLoadError = reportsError || null;
   const nl = newsletter || [];
   nlCount = nl.length;
   clCount = allContacts.filter(c => (c.status || 'new') !== 'archived').length;
@@ -468,6 +494,7 @@ async function renderDashboard() {
   updateStats();
   renderApps();
   renderMessages();
+  renderReports();
 
   // Newsletter
   const nlList = document.getElementById('nl-list');
@@ -862,6 +889,122 @@ function setMsgFilter(f) {
   document.querySelectorAll('#msg-tabs .filter-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.mf === f));
   renderMessages();
+}
+
+/* ───────── ANONYMOUS REPORTS ───────── */
+
+const REPORT_CATS = {
+  application: 'Applying for a job',
+  account:     'Account or sign-in',
+  bug:         'Something is broken',
+  conduct:     'Conduct or fairness',
+  privacy:     'Privacy or data',
+  other:       'Something else',
+};
+
+function setRepFilter(f) {
+  repFilter = f;
+  document.querySelectorAll('#rep-tabs .filter-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.rf === f));
+  renderReports();
+}
+
+function renderReports() {
+  const el = document.getElementById('report-list');
+  if (!el) return;
+
+  // Same trap as the inbox: RLS hides rows silently, so an empty list is
+  // ambiguous. Report the error rather than claiming nobody wrote in.
+  if (reportsLoadError) {
+    el.innerHTML = `<div class="admin-empty" style="color:#f87171">
+      Could not load reports: ${esc(reportsLoadError.message)}<br>
+      <span style="color:var(--muted);font-size:12.5px">If this mentions a missing table or permissions, run
+      <b>007_help_and_reports.sql</b> once in the Supabase SQL editor.</span></div>`;
+    return;
+  }
+
+  const fresh = allReports.filter(r => (r.status || 'new') === 'new').length;
+  const badge = document.getElementById('rep-new-badge');
+  if (badge) {
+    badge.style.display = fresh ? '' : 'none';
+    badge.textContent = fresh + ' new';
+  }
+  const tabN = document.getElementById('tabn-reports');
+  if (tabN) tabN.textContent = fresh ? fresh : '';
+
+  const list = allReports.filter(r => {
+    const s = r.status || 'new';
+    if (repFilter === 'open') return s !== 'resolved';
+    if (repFilter === 'resolved') return s === 'resolved';
+    return true;
+  });
+
+  if (!list.length) {
+    el.innerHTML = repFilter === 'resolved'
+      ? '<div class="admin-empty">No resolved reports.</div>'
+      : '<div class="admin-empty">No open reports.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(r => {
+    const s = r.status || 'new';
+    const d = new Date(r.created_at).toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' });
+    const pill = s === 'resolved' ? 'background:#10b98122;color:#34d399'
+               : s === 'seen'     ? 'background:#f59e0b22;color:#fbbf24'
+               :                    'background:#3b82f622;color:#60a5fa';
+    return `
+      <div class="admin-card" style="margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <code style="font-size:13px;letter-spacing:.06em;color:var(--teal)">${esc(r.code)}</code>
+          <span class="job-pill" style="${pill}">${esc(s)}</span>
+          <span style="font-size:12.5px;color:var(--muted)">${esc(REPORT_CATS[r.category] || r.category)}</span>
+          <span style="font-size:12.5px;color:var(--muted);margin-left:auto">${esc(d)}</span>
+        </div>
+        <p style="white-space:pre-wrap;line-height:1.7;margin:0 0 12px">${esc(r.message)}</p>
+        <p style="font-size:12.8px;color:var(--muted);margin:0 0 12px">
+          ${r.email
+            ? `Reply to: <a href="mailto:${esc(r.email)}" style="color:var(--teal)">${esc(r.email)}</a>`
+            : 'Anonymous — no email given. Write a reply below; they read it using their code.'}
+        </p>
+        ${r.reply ? `<div style="padding:11px 13px;border-left:2px solid var(--teal);background:var(--bg);margin-bottom:12px">
+          <p style="font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 5px">Your reply</p>
+          <p style="white-space:pre-wrap;line-height:1.7;margin:0">${esc(r.reply)}</p></div>` : ''}
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          ${s === 'new' ? `<button class="btn" style="font-size:12.5px;padding:7px 14px" onclick="setReportStatus('${r.id}','seen')">Mark as being read</button>` : ''}
+          ${s !== 'resolved' ? `<button class="btn" style="font-size:12.5px;padding:7px 14px" onclick="setReportStatus('${r.id}','resolved')">Mark resolved</button>` : ''}
+          ${s === 'resolved' ? `<button class="btn" style="font-size:12.5px;padding:7px 14px" onclick="setReportStatus('${r.id}','seen')">Reopen</button>` : ''}
+          <button class="btn" style="font-size:12.5px;padding:7px 14px" onclick="writeReportReply('${r.id}')">${r.reply ? 'Edit reply' : 'Write reply'}</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function setReportStatus(id, status) {
+  const { error } = await sb.from('reports').update({ status }).eq('id', id);
+  if (error) { alert('Could not update: ' + error.message); return; }
+  const r = allReports.find(x => x.id === id);
+  if (r) r.status = status;
+  renderReports();
+}
+
+async function writeReportReply(id) {
+  const r = allReports.find(x => x.id === id);
+  const text = prompt(
+    'Reply to report ' + (r ? r.code : '') +
+    '\n\nThe sender reads this by entering their code on the help page, so write it for them directly.',
+    r && r.reply ? r.reply : ''
+  );
+  if (text === null) return;                 // cancelled
+
+  const reply = text.trim();
+  const patch = { reply: reply || null };
+  // Writing a reply implies you have read it — do not leave it sitting on "new".
+  if (reply && (!r || (r.status || 'new') === 'new')) patch.status = 'seen';
+
+  const { error } = await sb.from('reports').update(patch).eq('id', id);
+  if (error) { alert('Could not save the reply: ' + error.message); return; }
+  if (r) Object.assign(r, patch);
+  renderReports();
 }
 
 function renderMessages() {
@@ -1309,10 +1452,10 @@ function renderAFFields() {
     afField(sv ? 'Sista ansökningsdag' : 'Application deadline',
       deadline || (sv ? '⚠ Sätt ett datum på tjänsten först' : '⚠ Set a deadline on the role first')),
     afField(sv ? 'Ansökningssätt' : 'How to apply',
-      (j.contact_email || 'djomoi@yahoo.com') + ' · https://regma.se/career.html?job=' + j.id,
+      (j.contact_email || 'regmaitab@gmail.com') + ' · https://regma.se/career.html?job=' + j.id,
       'the link opens this role directly, not the full list'),
     afField(sv ? 'Kontaktperson' : 'Contact person',
-      [j.contact_name || 'Isaac Djomo', j.contact_email || 'djomoi@yahoo.com', j.contact_phone || '+46 70 508 17 88']
+      [j.contact_name || 'Isaac Djomo', j.contact_email || 'regmaitab@gmail.com', j.contact_phone || '+46 70 508 17 88']
         .filter(Boolean).join(' — ')),
     afField(sv ? 'Annonstext' : 'Ad description', afCurrentText, 'paste into the description box')
   ].join('');

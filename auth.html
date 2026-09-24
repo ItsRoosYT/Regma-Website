@@ -68,7 +68,7 @@
         <strong>To apply for <span id="auth-apply-role"></span></strong>
         New here? Create a free account (it takes a minute). Already have one? Sign in.
         <span class="auth-apply-alt">Can't get an account to work? Email your CV to
-          <a href="mailto:djomoi@yahoo.com" id="auth-apply-mail">djomoi@yahoo.com</a> instead.</span>
+          <a href="mailto:regmaitab@gmail.com" id="auth-apply-mail">regmaitab@gmail.com</a> instead.</span>
       </div>
 
       <!-- Replaces the forms once a confirmation email has been sent -->
@@ -79,7 +79,7 @@
         <p class="auth-check-small">Nothing after 2 minutes? Look in your spam or junk folder, then:</p>
         <button type="button" class="btn" id="inbox-resend" onclick="resendConfirmation()">Send the link again</button>
         <p class="auth-check-note" id="inbox-note" hidden></p>
-        <p class="auth-check-small">Still stuck? Email your CV to <a href="mailto:djomoi@yahoo.com">djomoi@yahoo.com</a> and we'll handle it from there.</p>
+        <p class="auth-check-small">Still stuck? Email your CV to <a href="mailto:regmaitab@gmail.com">regmaitab@gmail.com</a> and we'll handle it from there, or <a href="help.html#report">report the problem anonymously</a>.</p>
         <button type="button" class="auth-check-back" onclick="leaveInbox()">← Use a different email</button>
       </div>
 
@@ -149,6 +149,12 @@
 
       <div class="auth-legal">
         By signing in you agree to our <a href="privacy.html">Privacy Policy</a>.
+      </div>
+
+      <div class="auth-legal" style="margin-top:10px">
+        Trouble signing in or creating an account?
+        <a href="help.html?q=sign+in">Get help</a> ·
+        <a href="help.html#report">report a problem anonymously</a>
       </div>
 
     </div>
@@ -354,7 +360,7 @@ async function handleSignup(e) {
     document.getElementById('auth-apply-role').textContent = role;
     document.getElementById('auth-apply-note').hidden = false;
     document.getElementById('auth-apply-mail').href =
-      'mailto:djomoi@yahoo.com?subject=' + encodeURIComponent('Ansökan: ' + role);
+      'mailto:regmaitab@gmail.com?subject=' + encodeURIComponent('Ansökan: ' + role);
     switchTab('signup');
   }
   const session = await getSession();

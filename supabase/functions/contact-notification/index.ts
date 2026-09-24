@@ -20,7 +20,7 @@ const FROM = Deno.env.get("RESEND_FROM") ?? "Regma IT AB <onboarding@resend.dev>
 const SANDBOX = FROM.includes("resend.dev");
 
 // Where new-enquiry notifications go. Override with the NOTIFY_EMAIL secret.
-const NOTIFY = Deno.env.get("NOTIFY_EMAIL") ?? "djomoi@yahoo.com";
+const NOTIFY = Deno.env.get("NOTIFY_EMAIL") ?? "regmaitab@gmail.com";
 
 async function send(to: string, subject: string, html: string, replyTo?: string) {
   if (!RESEND_API_KEY) {

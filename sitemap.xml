@@ -7,5 +7,6 @@
   <url><loc>https://regma.se/career.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://regma.se/team.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://regma.se/blog.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://regma.se/help.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://regma.se/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

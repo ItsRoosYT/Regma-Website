@@ -24,6 +24,7 @@
       <li><a href="index.html">Home</a></li>
       <li><a href="services.html">Services</a></li>
       <li><a href="career.html">Careers</a></li>
+      <li><a href="help.html">Help</a></li>
       <li><a href="portal.html" class="active">My Portal</a></li>
     </ul>
   </div>
@@ -39,6 +40,7 @@
   <a href="index.html">Home</a>
   <a href="career.html">Careers</a>
   <a href="portal.html">My Portal</a>
+  <a href="help.html">Help</a>
 </div>
 
 <main>
@@ -177,6 +179,7 @@
     <li><a href="index.html">Home</a></li>
     <li><a href="career.html">Careers</a></li>
     <li><a href="portal.html">Portal</a></li>
+    <li><a href="help.html">Help</a></li>
   </ul>
 </footer>
 <script src="nav.js"></script>
@@ -388,7 +391,7 @@ async function exportMyData(btn) {
     if (window.showToast) showToast('Your data has been downloaded.', 'success');
   } catch (e) {
     console.error(e);
-    if (window.showToast) showToast('Could not prepare your data. Please email djomoi@yahoo.com and we will send it.', 'error', 8000);
+    if (window.showToast) showToast('Could not prepare your data. Please email regmaitab@gmail.com and we will send it.', 'error', 8000);
   } finally {
     btn.textContent = label;
     btn.disabled = false;
@@ -424,7 +427,7 @@ async function deleteMyAccount() {
       const detail = await res.text();
       console.error('delete-account failed:', res.status, detail);
       if (window.showToast) {
-        showToast('We could not delete the account automatically. Email djomoi@yahoo.com and we will erase it manually — that is still your right and we will action it.', 'error', 12000);
+        showToast('We could not delete the account automatically. Email regmaitab@gmail.com and we will erase it manually — that is still your right and we will action it.', 'error', 12000);
       }
       return;
     }
@@ -434,7 +437,7 @@ async function deleteMyAccount() {
   } catch (e) {
     console.error(e);
     if (window.showToast) {
-      showToast('We could not reach the server. Email djomoi@yahoo.com and we will erase your data manually.', 'error', 12000);
+      showToast('We could not reach the server. Email regmaitab@gmail.com and we will erase your data manually.', 'error', 12000);
     }
   }
 }
