@@ -806,11 +806,31 @@ async function loadUsers(force) {
       usersLoaded = true;
     }
   } catch (e) {
-    usersError = e.message;
+    // A function that was never deployed answers the browser's CORS preflight
+    // with 404. A preflight must return 2xx, so the browser aborts before any
+    // status reaches us and reports only "Failed to fetch". Asking a function
+    // that IS deployed tells the two cases apart: gateway fine = list-users is
+    // simply missing; gateway unreachable = connection problem.
+    usersError = (await functionsGatewayAlive()) ? 'not-deployed' : 'offline';
     allUsers = []; userStats = null;
   }
   renderUserStats();
   renderUsers();
+}
+
+// Is Supabase reachable at all? Any answer counts, including 401 — what
+// matters is that a response came back rather than the request failing.
+async function functionsGatewayAlive() {
+  try {
+    await fetch(SUPABASE_URL + '/functions/v1/platsbanken', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 // While the account list is unavailable, show who we do know about. This
@@ -887,6 +907,15 @@ function renderUsers() {
         '</ol>' +
         '<button class="btn btn-primary" onclick="loadUsers(true)">Retry</button>' +
       '</div>' + knownPeopleFallback();
+    return;
+  }
+  if (usersError === 'offline') {
+    list.innerHTML =
+      '<div class="admin-empty" style="color:#f87171">Could not reach Supabase at all.' +
+      '<br><span style="color:var(--muted);font-size:12.5px">This looks like a connection problem rather than a missing account list — ' +
+      'check the internet connection, then ' +
+      '<button class="btn" style="padding:2px 10px;font-size:12px" onclick="loadUsers(true)">Retry</button>.</span></div>' +
+      knownPeopleFallback();
     return;
   }
   if (usersError) {
