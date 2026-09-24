@@ -1,0 +1,19 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Regma IT AB — round logo</title>
+  <desc>Circular version of the Regma IT mark: "Regma" in off-white above "IT" in teal, on the brand's near-black circle.</desc>
+  <!-- Round avatar version. The area outside the circle is left transparent,
+       so it sits correctly on any background — which is why this is a PNG
+       and not a JPG once rendered. -->
+  <circle cx="512" cy="512" r="512" fill="#0d0d10"/>
+  <circle cx="512" cy="512" r="496" fill="none" stroke="#1D9E75" stroke-width="10" opacity=".55"/>
+
+  <text x="512" y="455" text-anchor="middle"
+        font-family="Inter, 'Segoe UI', system-ui, sans-serif"
+        font-size="176" font-weight="800" letter-spacing="-5" fill="#f0f0f2">Regma</text>
+  <text x="509" y="690" text-anchor="middle"
+        font-family="Inter, 'Segoe UI', system-ui, sans-serif"
+        font-size="216" font-weight="800" letter-spacing="6" fill="#1D9E75">IT</text>
+  <text x="512" y="810" text-anchor="middle"
+        font-family="Inter, 'Segoe UI', system-ui, sans-serif"
+        font-size="40" font-weight="500" letter-spacing="9" fill="#72728a">GÖTEBORG</text>
+</svg>
