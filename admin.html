@@ -794,7 +794,10 @@ async function loadUsers(force) {
     const body = await res.json();
 
     if (!res.ok || body.error) {
-      usersError = body.error || ('HTTP ' + res.status);
+      // 404 means the function was never deployed — by far the most common
+      // cause of an empty Users tab, and not something a generic error
+      // message helps anyone solve.
+      usersError = res.status === 404 ? 'not-deployed' : (body.error || ('HTTP ' + res.status));
       allUsers = []; userStats = null;
     } else {
       allUsers = body.accounts || [];
@@ -808,6 +811,41 @@ async function loadUsers(force) {
   }
   renderUserStats();
   renderUsers();
+}
+
+// While the account list is unavailable, show who we do know about. This
+// comes from applications and enquiries, which the dashboard can already
+// read — so it is everyone who has been in touch, not everyone who signed up.
+function knownPeopleFallback() {
+  const people = new Map();
+  const add = (email, name, when, what) => {
+    if (!email) return;
+    const key = email.toLowerCase();
+    const row = people.get(key) || { email, name: name || '', first: when, sources: new Set() };
+    if (name && !row.name) row.name = name;
+    if (when && (!row.first || when < row.first)) row.first = when;
+    row.sources.add(what);
+    people.set(key, row);
+  };
+  (allApps || []).forEach(a => add(a.email, a.name, a.created_at, 'applied'));
+  (allContacts || []).forEach(c => add(c.email, c.name, c.created_at, 'enquiry'));
+
+  if (!people.size) return '';
+
+  const rows = [...people.values()].sort((a, b) => String(b.first).localeCompare(String(a.first)));
+  return '<div class="users-fallback">' +
+    '<h4>Meanwhile: ' + rows.length + ' ' + (rows.length === 1 ? 'person' : 'people') + ' we already know about</h4>' +
+    '<p>From applications and contact enquiries. This is not the full list of registered accounts — ' +
+    'someone who signed up but never applied will not appear here.</p>' +
+    rows.map(p => `
+      <div class="admin-row">
+        <div class="user-avatar">${esc((p.name || p.email).charAt(0).toUpperCase())}</div>
+        <div class="admin-row-main">
+          <strong>${esc(p.name || p.email)}</strong>
+          <span class="admin-row-sub">${esc(p.email)} · first seen ${p.first ? new Date(p.first).toLocaleDateString('sv-SE') : '—'} · ${[...p.sources].join(', ')}</span>
+        </div>
+      </div>`).join('') +
+    '</div>';
 }
 
 function renderUserStats() {
@@ -832,10 +870,30 @@ function renderUserStats() {
 function renderUsers() {
   const list = document.getElementById('users-list');
 
+  if (usersError === 'not-deployed') {
+    list.innerHTML =
+      '<div class="users-setup">' +
+        '<h3>The account list needs one Edge Function deployed</h3>' +
+        '<p>Reading the list of registered accounts needs Supabase\'s service key, which must never sit in a web page. ' +
+        'A small server-side function does it instead — and <b>list-users</b> has not been deployed yet, so there is ' +
+        'nothing here to read from. Nobody\'s account is missing or broken.</p>' +
+        '<ol>' +
+          '<li>Open <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com/dashboard</a> and pick the Regma project.</li>' +
+          '<li>Click <b>Edge Functions</b> in the left sidebar.</li>' +
+          '<li>Click <b>Deploy a new function</b>, then <b>Via Editor</b>.</li>' +
+          '<li>Name it exactly <code>list-users</code>.</li>' +
+          '<li>Delete the example code, then paste everything from <code>supabase/functions/list-users/index.ts</code>.</li>' +
+          '<li>Click <b>Deploy function</b>, wait for the green message, then press Retry below.</li>' +
+        '</ol>' +
+        '<button class="btn btn-primary" onclick="loadUsers(true)">Retry</button>' +
+      '</div>' + knownPeopleFallback();
+    return;
+  }
   if (usersError) {
     list.innerHTML = '<div class="admin-empty" style="color:#f87171">Could not load accounts: ' + esc(usersError) +
       '<br><span style="color:var(--muted);font-size:12.5px">If this says "Not an administrator", your email is missing from the admins table. ' +
-      'If it is a 404, deploy the <b>list-users</b> Edge Function.</span></div>';
+      'Press <button class="btn" style="padding:2px 10px;font-size:12px" onclick="loadUsers(true)">Retry</button> once that is fixed.</span></div>' +
+      knownPeopleFallback();
     return;
   }
   if (!allUsers.length) {

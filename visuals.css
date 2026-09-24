@@ -1680,3 +1680,23 @@ html.light .user-avatar { background: var(--gold-dim); color: #8a6520; }
   height: 100%; min-height: 220px;
   color: var(--muted); font-size: 14px;
 }
+
+/* Users tab — setup instructions when the account function is missing */
+.users-setup {
+  padding: 20px 22px;
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.users-setup h3 { margin: 0 0 8px; font-size: 16px; }
+.users-setup p { margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 70ch; }
+.users-setup ol { margin: 0 0 16px; padding-left: 22px; font-size: 14px; line-height: 1.75; }
+.users-setup code {
+  padding: 1px 6px; border-radius: 5px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.users-setup a { color: var(--teal); font-weight: 600; }
+.users-fallback { margin-top: 22px; }
+.users-fallback h4 { margin: 0 0 4px; font-size: 14px; }
+.users-fallback > p { margin: 0 0 12px; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 70ch; }
