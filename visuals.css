@@ -1673,3 +1673,10 @@ html.light .user-avatar { background: var(--gold-dim); color: #8a6520; }
 }
 .af-queue-nav[hidden] { display: none; }
 .af-queue-nav span { margin-right: auto; font-size: 13px; color: var(--muted); }
+
+/* CV preview while the file is being fetched */
+.cv-loading {
+  display: grid; place-items: center;
+  height: 100%; min-height: 220px;
+  color: var(--muted); font-size: 14px;
+}

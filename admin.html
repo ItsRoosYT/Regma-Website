@@ -561,8 +561,16 @@ function setFilter(status, btn) {
   renderApps();
 }
 
+// The in-memory copy of the CV currently on screen
+let cvBlobUrl = null;
+function revokeCVBlob() {
+  if (cvBlobUrl) { URL.revokeObjectURL(cvBlobUrl); cvBlobUrl = null; }
+}
+
 async function viewCV(path, name) {
-  const { data, error } = await sb.storage.from('cvs').createSignedUrl(path, 300);
+  // A longer window than before: the preview is fetched immediately, but the
+  // same link is what "Open in new tab" falls back to.
+  const { data, error } = await sb.storage.from('cvs').createSignedUrl(path, 900);
 
   if (error || !data) return explainCVFailure(path, error);
 
@@ -579,12 +587,39 @@ async function viewCV(path, name) {
   const sub  = document.getElementById('cv-sub');
 
   if (ext === 'pdf') {
-    sub.textContent = 'PDF · link valid 5 minutes';
-    // Sandboxed: the document is served from Supabase (a different origin) and
-    // the sandbox withholds same-origin and script privileges, so nothing in an
-    // uploaded file can reach this page or the admin session.
-    body.innerHTML = '<iframe class="cv-frame" sandbox="allow-popups allow-popups-to-escape-sandbox" ' +
-                     'referrerpolicy="no-referrer" title="CV preview" src="' + encodeURI(data.signedUrl) + '#view=FitH"></iframe>';
+    sub.textContent = 'PDF · loading…';
+    body.innerHTML = '<div class="cv-loading">Opening the CV…</div>';
+
+    // Chrome refuses to run its PDF viewer inside a sandboxed iframe, which is
+    // what "blocked" meant here. So the file is fetched and shown from memory
+    // instead. The blob is forced to application/pdf, so an uploaded file can
+    // never be interpreted as a web page, which is what the sandbox guarded
+    // against in the first place.
+    try {
+      const res = await fetch(data.signedUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = new Blob([await res.arrayBuffer()], { type: 'application/pdf' });
+      revokeCVBlob();
+      cvBlobUrl = URL.createObjectURL(blob);
+
+      sub.textContent = 'PDF · ' + (blob.size / 1024).toFixed(0) + ' KB';
+      // The buttons use the in-memory copy too, so neither depends on the
+      // signed link still being valid.
+      document.getElementById('cv-newtab').href = cvBlobUrl;
+      dl.href = cvBlobUrl;
+      body.innerHTML = '<embed class="cv-frame" type="application/pdf" src="' +
+                       cvBlobUrl + '#view=FitH" title="CV preview">';
+    } catch (e) {
+      console.error('CV preview failed', e);
+      sub.textContent = 'PDF · preview unavailable';
+      body.innerHTML =
+        '<div class="cv-fallback">' +
+          '<div class="cv-fallback__icon">📄</div>' +
+          '<h3>' + esc(file) + '</h3>' +
+          '<p>The CV could not be shown here (' + esc(e.message) + '), but the file itself is fine — ' +
+          'use <strong>Open in new tab</strong> or <strong>Download</strong> above.</p>' +
+        '</div>';
+    }
   } else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) {
     sub.textContent = ext.toUpperCase() + ' · link valid 5 minutes';
     body.innerHTML = '<img class="cv-image" alt="CV preview" src="' + encodeURI(data.signedUrl) + '">';
@@ -608,8 +643,9 @@ async function viewCV(path, name) {
 
 function closeCV() {
   document.getElementById('cv-modal').style.display = 'none';
-  // Drop the iframe so the signed URL stops being held open in the background
+  // Drop the preview so the file stops being held open in the background
   document.getElementById('cv-body').innerHTML = '';
+  revokeCVBlob();
   document.body.style.overflow = '';
 }
 
